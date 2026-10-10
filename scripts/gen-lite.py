@@ -178,6 +178,15 @@ def gtk_theme(name, T, d):
     # xfce4-notifyd's own theme file reaches the card and its buttons, but not the summary/body labels
     # (they keep the GTK theme's font: Inter bold); those two rules have to live in the GTK theme itself
     css += textwrap.dedent(f"""\
+    /* Alt+Tab (xfwm4 tabwin): a ledger strip, not a rounded tray: ink, gold hairline frame, flat tiles;
+       the chosen window gets a faint tint and a short accent rule beneath it. No glow. */
+    #xfwm-tabwin {{ background-color: {A(p['base'], 0.97)}; border: 1px solid {A(p['accent2'], 0.35)}; border-radius: 3px; padding: 14px 16px 10px 16px;
+                    -XfwmTabwinWidget-icon-size: 48px; -XfwmTabwinWidget-preview-size: 144px; }}
+    #xfwm-tabwin button {{ background: none; border: none; border-radius: 0; box-shadow: none; padding: 8px 10px 6px 10px; margin: 0 2px;
+                           border-bottom: 1px solid transparent; }}
+    #xfwm-tabwin button:hover, #xfwm-tabwin button:checked, #xfwm-tabwin button:active, #xfwm-tabwin button:focus {{
+                           background-color: {A(p['text'], 0.06)}; border-bottom: 1px solid {p['accent']}; box-shadow: none; }}
+    #xfwm-tabwin label {{ font-family: "{disp}"; font-weight: normal; font-size: 13px; color: {p['subtext']}; letter-spacing: 0.4px; }}
     #XfceNotifyWindow label#summary {{ font-family: "{disp}"; font-weight: normal; font-size: 15px; color: {p['text']}; letter-spacing: 0.4px; }}
     #XfceNotifyWindow label#body {{ font-family: Inter; font-size: 12px; color: {p['subtext']}; }}
     """)

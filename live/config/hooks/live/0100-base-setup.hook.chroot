@@ -1,0 +1,110 @@
+#!/bin/sh
+# Tenka: system setup inside the image.
+set -e
+
+# ---------------------------------------------------------------- identity
+if [ ! -e /usr/lib/os-release.debian ]; then
+  dpkg-divert --quiet --local --rename --add --divert /usr/lib/os-release.debian /usr/lib/os-release
+fi
+cat > /usr/lib/os-release <<'EOF'
+PRETTY_NAME="Tenka 0.1 · The way of the blade"
+NAME="Tenka"
+VERSION_ID="0.1"
+VERSION="0.1 (Dawn)"
+VERSION_CODENAME=trixie
+DEBIAN_VERSION_CODENAME=trixie
+ID=tenka
+ID_LIKE=debian
+HOME_URL="https://github.com/naman-sharma12345/tenka"
+SUPPORT_URL="https://github.com/naman-sharma12345/tenka/issues"
+BUG_REPORT_URL="https://github.com/naman-sharma12345/tenka/issues"
+LOGO=tenka
+EOF
+ln -sf ../usr/lib/os-release /etc/os-release
+printf 'Tenka 0.1 \\n \\l\n\n' > /etc/issue
+printf 'Tenka 0.1\n' > /etc/issue.net
+mkdir -p /etc/tenka; [ -f /etc/tenka/theme ] || echo samurai > /etc/tenka/theme
+install -Dm644 /usr/share/tenka/themes/samurai/crest-1024.png /usr/share/pixmaps/tenka.png 2>/dev/null || true
+install -Dm644 /usr/share/tenka/themes/samurai/crest-1024.png /usr/share/icons/hicolor/512x512/apps/tenka.png 2>/dev/null || true
+
+# ---------------------------------------------------------------- services
+systemctl enable sddm.service || true
+systemctl set-default graphical.target || true
+systemctl enable NetworkManager.service || true
+systemctl enable tenka-session-default.service || true
+systemctl enable zramswap.service 2>/dev/null || true
+for s in spice-vdagentd qemu-guest-agent open-vm-tools; do systemctl enable "$s" 2>/dev/null || true; done
+# low-end: nothing heavy idling in the background
+for s in apt-daily.timer apt-daily-upgrade.timer man-db.timer e2scrub_all.timer; do systemctl disable "$s" 2>/dev/null || true; done
+printf 'ALGO=zstd\nPERCENT=50\nPRIORITY=100\n' > /etc/default/zramswap
+printf 'vm.swappiness=100\nvm.vfs_cache_pressure=50\nvm.page-cluster=0\n' > /etc/sysctl.d/90-tenka-zram.conf
+[ -f /etc/X11/Xwrapper.config ] && sed -i 's/^allowed_users=.*/allowed_users=anybody/' /etc/X11/Xwrapper.config || true
+
+# ---------------------------------------------------------------- sessions
+for f in /usr/share/wayland-sessions/hyprland.desktop /usr/share/wayland-sessions/hyprland-uwsm.desktop /usr/share/xsessions/xfce.desktop; do
+  [ -f "$f" ] && { grep -q '^Hidden=' "$f" || printf 'NoDisplay=true\nHidden=true\n' >> "$f"; }
+done
+mkdir -p /etc/sddm.conf.d
+cat > /etc/sddm.conf.d/10-tenka.conf <<'EOF'
+[General]
+DisplayServer=x11
+InputMethod=
+Numlock=none
+
+[Theme]
+Current=tenka-samurai
+CursorTheme=Bibata-Modern-Classic
+CursorSize=24
+Font=Inter
+
+[Users]
+RememberLastSession=true
+RememberLastUser=true
+EOF
+cat > /etc/environment.d/90-tenka.conf <<'EOF'
+QT_QPA_PLATFORMTHEME=qt6ct
+XCURSOR_SIZE=24
+EOF
+
+# ---------------------------------------------------------------- boot look
+plymouth-set-default-theme tenka-samurai || true
+mkdir -p /etc/default/grub.d
+cat > /etc/default/grub.d/90-tenka.cfg <<'EOF'
+GRUB_DISTRIBUTOR="Tenka"
+GRUB_THEME="/usr/share/grub/themes/tenka-samurai/theme.txt"
+GRUB_GFXMODE=1920x1080,1280x720,auto
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash loglevel=3"
+GRUB_TIMEOUT=5
+EOF
+
+# ---------------------------------------------------------------- installer
+if [ -f /etc/calamares/settings.conf ]; then
+  sed -i 's/^branding:.*/branding: tenka-samurai/' /etc/calamares/settings.conf
+fi
+for f in /usr/share/applications/calamares-install-debian.desktop /etc/skel/Desktop/calamares-install-debian.desktop; do
+  [ -f "$f" ] && sed -i -e 's/^Name=.*/Name=Install Tenka/' -e 's/^Name\[[^]]*\]=.*//' -e 's/^Icon=.*/Icon=tenka/' -e 's/^Comment=.*/Comment=Put Tenka on this computer/' "$f"
+done
+
+# ---------------------------------------------------------------- user defaults
+grep -q 'bashrc.d' /etc/skel/.bashrc || cat >> /etc/skel/.bashrc <<'EOF'
+
+# Tenka
+for f in ~/.bashrc.d/*.sh; do [ -r "$f" ] && . "$f"; done
+EOF
+mkdir -p /etc/firefox-esr
+cat > /etc/firefox-esr/tenka.js <<'EOF'
+// Tenka defaults: quiet, smooth, lean on old hardware
+pref("toolkit.telemetry.enabled", false);
+pref("datareporting.healthreport.uploadEnabled", false);
+pref("datareporting.policy.dataSubmissionEnabled", false);
+pref("browser.newtabpage.activity-stream.feeds.section.topstories", false);
+pref("browser.newtabpage.activity-stream.showSponsoredTopSites", false);
+pref("general.smoothScroll.msdPhysics.enabled", true);
+pref("browser.sessionstore.interval", 60000);
+pref("browser.cache.disk.capacity", 262144);
+pref("browser.theme.toolbar-theme", 0);
+pref("layout.css.prefers-color-scheme.content-override", 0);
+EOF
+
+fc-cache -f >/dev/null 2>&1 || true
+update-initramfs -u -k all || true

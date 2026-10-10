@@ -1,0 +1,83 @@
+# --- live system + boot
+live-boot
+live-config
+live-config-systemd
+systemd-sysv
+systemd-timesyncd
+dbus-user-session
+sudo
+locales
+console-setup
+keyboard-configuration
+user-setup
+linux-image-amd64
+firmware-linux-free
+plymouth
+plymouth-themes
+# --- installer
+calamares
+calamares-settings-debian
+squashfs-tools
+rsync
+dosfstools
+e2fsprogs
+btrfs-progs
+cryptsetup
+efibootmgr
+os-prober
+grub-efi-amd64-bin
+grub-pc-bin
+grub2-common
+# --- VM guest support + graphics
+spice-vdagent
+qemu-guest-agent
+open-vm-tools
+open-vm-tools-desktop
+libgl1-mesa-dri
+libegl-mesa0
+libglx-mesa0
+mesa-vulkan-drivers
+mesa-utils
+# --- network + audio
+network-manager
+wpasupplicant
+iw
+pipewire-audio
+wireplumber
+pipewire-pulse
+pavucontrol
+alsa-utils
+# --- CLI
+bash-completion
+curl
+wget
+ca-certificates
+git
+nano
+less
+btop
+fastfetch
+starship
+eza
+cava
+unzip
+xz-utils
+# --- look
+fonts-inter
+fonts-inter-variable
+fonts-jetbrains-mono
+fonts-noto-color-emoji
+fonts-noto-core
+papirus-icon-theme
+bibata-cursor-theme
+orchis-gtk-theme
+gnome-themes-extra
+gtk2-engines-murrine
+qt6ct
+qt6-wayland
+qt-style-kvantum
+qt6-style-kvantum
+# --- apps
+firefox-esr
+xdg-user-dirs
+xdg-utils

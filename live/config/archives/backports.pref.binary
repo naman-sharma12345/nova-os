@@ -1,0 +1,3 @@
+Package: src:hyprland src:hyprlock src:hypridle src:hyprpaper src:hyprpolkitagent src:hyprland-qtutils src:hyprland-guiutils src:hyprpicker src:xdg-desktop-portal-hyprland src:aquamarine src:hyprutils src:hyprlang src:hyprgraphics src:hyprcursor src:hyprtoolkit src:hyprwire src:udis86 src:hyprland-qt-support src:uwsm src:mesa src:libxkbcommon src:alsa-lib src:elfutils src:pipewire src:wireplumber src:wayland-protocols
+Pin: release n=trixie-backports
+Pin-Priority: 990

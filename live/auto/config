@@ -1,0 +1,27 @@
+#!/bin/sh
+set -e
+. ../distro.conf 2>/dev/null || . ./distro.conf
+
+lb config noauto \
+  --mode debian \
+  --distribution trixie \
+  --architectures amd64 \
+  --archive-areas "main contrib non-free-firmware" \
+  --parent-archive-areas "main contrib non-free-firmware" \
+  --security true --updates true \
+  --apt-recommends false \
+  --apt-indices false \
+  --cache-packages true \
+  --debian-installer none \
+  --bootloaders "grub-pc grub-efi" \
+  --binary-images iso-hybrid \
+  --chroot-squashfs-compression-type zstd \
+  --iso-application "${DISTRO_NAME}" \
+  --iso-publisher "${DISTRO_NAME} project; ${DISTRO_URL}" \
+  --iso-volume "${DISTRO_NAME} ${DISTRO_VERSION}" \
+  --image-name "${DISTRO_ID}-${DISTRO_VERSION}" \
+  --memtest none \
+  --firmware-binary false --firmware-chroot false \
+  --win32-loader false \
+  --bootappend-live "boot=live components quiet splash loglevel=3 username=live user-fullname=Live hostname=${DISTRO_ID} locales=en_US.UTF-8 keyboard-layouts=us" \
+  "${@}"

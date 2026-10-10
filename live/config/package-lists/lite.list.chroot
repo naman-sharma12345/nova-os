@@ -1,0 +1,37 @@
+# --- login (themed SDDM greeter, Qt6 QML)
+sddm
+qml6-module-qtquick-effects
+qml6-module-qtquick-layouts
+qml6-module-qtquick-controls
+qml6-module-qtquick-window
+qml6-module-qt5compat-graphicaleffects
+qml-qt6
+# --- Tenka Lite: XFCE 4.20, for low-end machines and VMs without 3D
+xserver-xorg-core
+xserver-xorg-video-all
+xserver-xorg-input-all
+xserver-xorg-legacy
+x11-xserver-utils
+xfwm4
+xfce4-panel
+xfce4-session
+xfdesktop4
+xfce4-settings
+xfconf
+xfce4-terminal
+xfce4-whiskermenu-plugin
+xfce4-pulseaudio-plugin
+xfce4-notifyd
+xfce4-power-manager
+xfce4-screensaver
+xfce4-docklike-plugin
+xfce4-clipman-plugin
+xfce4-genmon-plugin
+xfce4-screenshooter
+mousepad
+ristretto
+thunar-volman
+xclip
+# --- low-end tuning
+zram-tools
+librsvg2-bin

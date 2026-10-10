@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 40" width="600" height="40">
+  <defs>
+    <linearGradient id="gl" gradientUnits="userSpaceOnUse" x1="20" y1="0" x2="580" y2="0"><stop offset="0" stop-color="#e2bd6b" stop-opacity="0"/><stop offset="0.35" stop-color="#e2bd6b"/><stop offset="0.65" stop-color="#e2bd6b"/><stop offset="1" stop-color="#e2bd6b" stop-opacity="0"/></linearGradient>
+    <radialGradient id="bead" cx="0.38" cy="0.35" r="0.7"><stop offset="0" stop-color="#d9f7e8"/><stop offset="0.45" stop-color="#5fc9a0"/><stop offset="1" stop-color="#1f6b52"/></radialGradient>
+    <radialGradient id="glow" r="0.5"><stop offset="0" stop-color="#5fc9a0" stop-opacity="0.5"/><stop offset="1" stop-color="#5fc9a0" stop-opacity="0"/></radialGradient>
+  </defs>
+  <g fill="none" stroke="url(#gl)" stroke-width="1.6" stroke-linecap="round">
+    <path d="M 20,20 L 262,20"/><path d="M 338,20 L 580,20"/>
+    <path d="M 120,23.5 L 250,23.5" stroke-width="0.8"/><path d="M 350,23.5 L 480,23.5" stroke-width="0.8"/>
+  </g>
+  <g fill="none" stroke="#e2bd6b" stroke-width="1.6" stroke-linecap="round">
+    <path d="M 262,20 c 9.600000000000001,0 14.4,-8.0 9.600000000000001,-12.8 c -4.800000000000001,-4.800000000000001 -11.200000000000001,-1.6 -8.0,4.800000000000001 c 2.4000000000000004,4.0 6.4,2.4000000000000004 5.6000000000000005,-0.8"/><path d="M 338,20 c -9.600000000000001,0 -14.4,-8.0 -9.600000000000001,-12.8 c 4.800000000000001,-4.800000000000001 11.200000000000001,-1.6 8.0,4.800000000000001 c -2.4000000000000004,4.0 -6.4,2.4000000000000004 -5.6000000000000005,-0.8"/>
+    <path d="M 232,20 c 6.0,0 9.0,-5.0 6.0,-8.0 c -3.0,-3.0 -7.0,-1.0 -5.0,3.0 c 1.5,2.5 4.0,1.5 3.5,-0.5"/><path d="M 368,20 c -6.0,0 -9.0,-5.0 -6.0,-8.0 c 3.0,-3.0 7.0,-1.0 5.0,3.0 c -1.5,2.5 -4.0,1.5 -3.5,-0.5"/>
+  </g>
+  <circle cx="300" cy="20" r="16" fill="url(#glow)"/>
+  <circle cx="300" cy="20" r="8" fill="url(#bead)" stroke="#e2bd6b" stroke-width="1.2"/>
+</svg>

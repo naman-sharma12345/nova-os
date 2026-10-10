@@ -1,0 +1,13 @@
+#!/bin/sh
+# Tenka: carry both boot splashes in the initramfs so "plymouth.splash=tenka-xianxia"
+# (the Tianxia boot entry) can pick the jade one without a rebuild.
+PREREQ="plymouth"
+prereqs() { echo "$PREREQ"; }
+case "$1" in prereqs) prereqs; exit 0;; esac
+. /usr/share/initramfs-tools/hook-functions
+for t in tenka-samurai tenka-xianxia; do
+  src=/usr/share/plymouth/themes/$t
+  [ -d "$src" ] || continue
+  mkdir -p "${DESTDIR}$src"
+  cp -a "$src/." "${DESTDIR}$src/"
+done

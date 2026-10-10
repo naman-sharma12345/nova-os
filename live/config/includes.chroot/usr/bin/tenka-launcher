@@ -1,0 +1,4 @@
+#!/bin/sh
+if pgrep -x qs >/dev/null 2>&1; then exec qs -c tenka ipc call launcher toggle; fi
+pkill -x fuzzel && exit 0
+exec fuzzel

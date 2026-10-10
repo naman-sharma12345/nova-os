@@ -1,0 +1,19 @@
+[Icon Theme]
+Name=Tenka-Xianxia
+Comment=Tenka's hand-drawn gold line icons over Papirus-Dark
+Inherits=Papirus-Dark,hicolor
+Directories=scalable/apps,scalable/places
+
+[scalable/apps]
+Size=48
+MinSize=16
+MaxSize=512
+Type=Scalable
+Context=Applications
+
+[scalable/places]
+Size=48
+MinSize=16
+MaxSize=512
+Type=Scalable
+Context=Places

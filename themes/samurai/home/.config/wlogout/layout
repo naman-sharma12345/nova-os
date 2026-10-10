@@ -1,0 +1,6 @@
+{"label": "lock", "action": "tenka-lock", "text": "Guard", "keybind": "l"}
+{"label": "logout", "action": "hyprctl dispatch exit || loginctl terminate-user $USER", "text": "Retreat", "keybind": "e"}
+{"label": "suspend", "action": "systemctl suspend", "text": "Rest", "keybind": "u"}
+{"label": "hibernate", "action": "systemctl hibernate", "text": "Meditate", "keybind": "h"}
+{"label": "reboot", "action": "systemctl reboot", "text": "Return", "keybind": "r"}
+{"label": "shutdown", "action": "systemctl poweroff", "text": "Sheathe", "keybind": "s"}

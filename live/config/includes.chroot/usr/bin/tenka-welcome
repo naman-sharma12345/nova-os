@@ -1,0 +1,15 @@
+#!/bin/sh
+# First-login welcome and theme picker.
+mkdir -p "$HOME/.config/tenka"
+args=""
+if [ "$(cat /run/tenka/mode 2>/dev/null)" = lite ] || [ "${XDG_CURRENT_DESKTOP:-}" = XFCE ]; then
+  args="--lite --reason $(sed -n 's/^reason: //p' /run/tenka-hwdetect.reason 2>/dev/null | tr ' ' '_' )"
+fi
+QML=$(command -v qml6 || echo /usr/lib/qt6/bin/qml)
+QT_QPA_PLATFORMTHEME= "$QML" /usr/share/tenka/welcome/Welcome.qml -- $args 2>/dev/null
+rc=$?
+touch "$HOME/.config/tenka/welcomed"
+case $rc in
+  10) tenka-theme samurai ;; 11) tenka-theme xianxia ;;
+  20) tenka-perf on; tenka-theme samurai ;; 21) tenka-perf on; tenka-theme xianxia ;;
+esac

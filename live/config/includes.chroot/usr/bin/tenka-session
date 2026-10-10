@@ -1,0 +1,24 @@
+#!/bin/sh
+# Started by Hyprland at login.
+tenka-theme --init
+dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE 2>/dev/null
+if command -v qs >/dev/null 2>&1 && [ -d /etc/xdg/quickshell/tenka ]; then
+  # the Tenka shell draws everything: wallpaper, desk, bar, dock, launcher, control center,
+  # notifications, OSD, power menu. Performance mode makes glass frost itself instead of asking
+  # the compositor to blur.
+  [ -e "$HOME/.config/tenka/perf" ] && export TENKA_SELF_BLUR=1
+  tenka-wallpaper restore >/dev/null 2>&1
+  qs -c tenka >/dev/null 2>&1 &
+else
+  tenka-wallpaper restore &
+  waybar >/dev/null 2>&1 &
+  mako >/dev/null 2>&1 &
+  swayosd-server >/dev/null 2>&1 &
+fi
+hypridle >/dev/null 2>&1 &
+nm-applet --indicator >/dev/null 2>&1 &
+for a in /usr/libexec/hyprpolkitagent /usr/lib/hyprpolkitagent/hyprpolkitagent /usr/lib/x86_64-linux-gnu/libexec/hyprpolkitagent; do [ -x "$a" ] && { "$a" >/dev/null 2>&1 & break; }; done
+wl-paste --type text --watch cliphist store >/dev/null 2>&1 &
+wl-paste --type image --watch cliphist store >/dev/null 2>&1 &
+sleep 1; tenka-sound login &
+[ -e "$HOME/.config/tenka/welcomed" ] || tenka-welcome &

@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Tenka Lite
+Exec=tenka-lite-apply --login
+OnlyShowIn=XFCE;
+NoDisplay=true

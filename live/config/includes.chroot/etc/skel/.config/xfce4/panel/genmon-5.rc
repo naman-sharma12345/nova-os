@@ -1,0 +1,5 @@
+Command=tenka-clock --lite
+UseLabel=0
+Text=
+UpdatePeriod=20000
+Font=Marcellus 12

@@ -1,0 +1,11 @@
+[Unit]
+Description=Tenka: choose Hyprland or Tenka Lite for this hardware
+After=live-config.service systemd-udev-settle.service
+Before=sddm.service display-manager.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/tenka/tenka-session-default
+
+[Install]
+WantedBy=graphical.target

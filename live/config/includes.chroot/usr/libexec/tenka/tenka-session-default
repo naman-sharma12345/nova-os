@@ -1,0 +1,20 @@
+#!/bin/sh
+# Runs before SDDM. Picks Tenka (Hyprland) or Tenka Lite as the default/autologin session.
+mode=$(/usr/libexec/tenka/tenka-hwdetect 2>/run/tenka-hwdetect.reason)
+mkdir -p /run/tenka; echo "$mode" > /run/tenka/mode
+if [ "$mode" = lite ]; then sess=tenka-lite.desktop; else sess=tenka.desktop; fi
+# live session autologin (live-config writes /etc/sddm.conf)
+if [ -f /etc/sddm.conf ] && grep -q '^\[Autologin\]' /etc/sddm.conf; then
+  if grep -q '^Session=' /etc/sddm.conf; then sed -i "s/^Session=.*/Session=$sess/" /etc/sddm.conf
+  else sed -i "/^\[Autologin\]/a Session=$sess" /etc/sddm.conf; fi
+fi
+# first boot of an installed system: preselect in the greeter
+st=/var/lib/sddm/state.conf
+if [ ! -s "$st" ] || ! grep -q '^Session=' "$st"; then
+  mkdir -p /var/lib/sddm
+  case "$mode" in lite) p=/usr/share/xsessions/tenka-lite.desktop ;; *) p=/usr/share/wayland-sessions/tenka.desktop ;; esac
+  printf '[Last]\nSession=%s\n' "$p" > "$st"; chown sddm:sddm "$st" 2>/dev/null
+fi
+# live boot can pick the theme pack from the boot menu
+case "$(cat /proc/cmdline)" in *tenka.theme=xianxia*) /usr/libexec/tenka/tenka-theme-system xianxia ;; esac
+exit 0

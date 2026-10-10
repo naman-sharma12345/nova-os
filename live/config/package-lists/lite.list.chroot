@@ -32,6 +32,8 @@ mousepad
 ristretto
 thunar-volman
 xclip
+wmctrl
+x11-utils
 # --- low-end tuning
 zram-tools
 librsvg2-bin

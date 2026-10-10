@@ -1,6 +1,7 @@
 #!/bin/sh
 # Tenka: system setup inside the image.
 set -e
+mkdir -p /etc/default /etc/sysctl.d /etc/sddm.conf.d
 
 # ---------------------------------------------------------------- identity
 if [ ! -e /usr/lib/os-release.debian ]; then
@@ -55,12 +56,13 @@ Numlock=none
 Current=tenka-samurai
 CursorTheme=Bibata-Modern-Classic
 CursorSize=24
-Font=Inter
+Font=Marcellus
 
 [Users]
 RememberLastSession=true
 RememberLastUser=true
 EOF
+mkdir -p /etc/environment.d
 cat > /etc/environment.d/90-tenka.conf <<'EOF'
 QT_QPA_PLATFORMTHEME=qt6ct
 XCURSOR_SIZE=24
@@ -73,8 +75,9 @@ cat > /etc/default/grub.d/90-tenka.cfg <<'EOF'
 GRUB_DISTRIBUTOR="Tenka"
 GRUB_THEME="/usr/share/grub/themes/tenka-samurai/theme.txt"
 GRUB_GFXMODE=1920x1080,1280x720,auto
-GRUB_CMDLINE_LINUX_DEFAULT="quiet splash loglevel=3"
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash loglevel=0 rd.systemd.show_status=false systemd.show_status=false rd.udev.log_level=0 udev.log_priority=0 vt.global_cursor_default=0"
 GRUB_TIMEOUT=5
+GRUB_TIMEOUT_STYLE=menu
 EOF
 
 # ---------------------------------------------------------------- installer

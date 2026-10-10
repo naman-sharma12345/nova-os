@@ -1,0 +1,2 @@
+#!/bin/sh
+cliphist list | fuzzel --dmenu --prompt 'recall  ' | cliphist decode | wl-copy

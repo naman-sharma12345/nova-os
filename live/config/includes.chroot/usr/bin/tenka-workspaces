@@ -1,0 +1,16 @@
+#!/bin/sh
+# Tenka Lite workspace indicator (genmon): as minimal as the Tenka shell's bar. The current
+# workspace is a short accent stroke, the others small dots. Clicking cycles to the next one.
+T=$(cat "$HOME/.config/tenka/theme" 2>/dev/null || cat /etc/tenka/theme 2>/dev/null || echo samurai)
+if [ "$T" = xianxia ]; then ON="#5fc9a0"; else ON="#d8412f"; fi
+OFF="#efe6d6"
+cur=$(xprop -root _NET_CURRENT_DESKTOP 2>/dev/null | awk '{print $3}'); n=$(xprop -root _NET_NUMBER_OF_DESKTOPS 2>/dev/null | awk '{print $3}')
+cur=${cur:-0}; n=${n:-4}
+if [ "$1" = next ]; then wmctrl -s $(( (cur + 1) % n )) 2>/dev/null || xdotool set_desktop $(( (cur + 1) % n )) 2>/dev/null; exit 0; fi
+out=""
+i=0; while [ $i -lt "$n" ]; do
+  if [ $i -eq "$cur" ]; then out="$out<span foreground='$ON' font='Inter Bold 9'>━━</span> "
+  else out="$out<span foreground='$OFF' alpha='40%' font='Inter 7'>●</span> "; fi
+  i=$((i + 1))
+done
+echo "<txt>$out</txt><txtclick>tenka-workspaces next</txtclick><tool>Workspace $((cur + 1)) of $n</tool>"

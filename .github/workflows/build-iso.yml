@@ -1,0 +1,54 @@
+name: Build ISO
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to attach the ISO to (e.g. v0.1.0)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  iso:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Free disk space on the runner
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/share/boost
+          sudo docker image prune -af || true
+          df -h /
+
+      - name: Build the ISO in a Debian 13 container
+        run: |
+          docker run --rm --privileged -v "$PWD":/src -w /src debian:trixie bash -euxc '
+            apt-get update
+            apt-get install -y --no-install-recommends live-build debootstrap squashfs-tools xorriso \
+              grub-pc-bin grub-efi-amd64-bin grub-common mtools dosfstools python3 python3-pil rsync \
+              librsvg2-bin ca-certificates make zstd fonts-inter python3-numpy
+            make iso BUILD=/src/build
+          '
+          ls -lh build/live/*.iso
+
+      - name: Checksums
+        run: |
+          cd build/live
+          for f in *.iso; do sha256sum "$f" > "$f.sha256"; done
+          cat *.sha256
+
+      - name: Attach to release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          name: Tenka ${{ github.event.inputs.tag || github.ref_name }}
+          draft: false
+          files: |
+            build/live/*.iso
+            build/live/*.iso.sha256

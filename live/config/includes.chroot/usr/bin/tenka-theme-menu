@@ -1,0 +1,3 @@
+#!/bin/sh
+c=$(printf 'Tenka · Samurai\nTianxia · Xianxia\n' | fuzzel --dmenu --prompt 'choose your path  ' --lines 2 --width 30)
+case "$c" in Tenka*) tenka-theme samurai ;; Tianxia*) tenka-theme xianxia ;; esac

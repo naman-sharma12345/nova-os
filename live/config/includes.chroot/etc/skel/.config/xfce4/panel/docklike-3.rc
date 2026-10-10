@@ -1,0 +1,6 @@
+[user]
+pinned=/usr/share/applications/kitty.desktop;/usr/share/applications/thunar.desktop;/usr/share/applications/firefox-esr.desktop;/usr/share/applications/org.xfce.mousepad.desktop;/usr/share/applications/mpv.desktop;
+onlyDisplayVisible=false
+showPreviews=false
+indicatorStyle=4
+indicatorOrientation=0

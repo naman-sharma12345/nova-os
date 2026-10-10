@@ -1,0 +1,52 @@
+#!/bin/bash
+# Applies the current theme pack to the XFCE (Tenka Lite) session.
+T=$(tenka-theme --current); D=/usr/share/tenka/themes/$T; . "$D/theme.env"
+x() { xfconf-query -c "$1" -p "$2" --create -t "$3" -s "$4" 2>/dev/null; }
+x xsettings /Net/ThemeName string "$THEME_GTK"
+x xsettings /Net/IconThemeName string "$THEME_ICONS"
+x xsettings /Gtk/CursorThemeName string "$THEME_CURSOR"
+x xsettings /Gtk/CursorThemeSize int 24
+x xsettings /Gtk/FontName string "Inter 10"
+x xsettings /Gtk/MonospaceFontName string "JetBrains Mono 10"
+x xsettings /Xft/Antialias int 1
+x xsettings /Xft/HintStyle string hintslight
+x xsettings /Xft/RGBA string rgb
+x xfwm4 /general/theme string "$THEME_GTK"
+x xfwm4 /general/title_font string "Marcellus 11"
+x xfce4-notifyd /theme string "$THEME_GTK"
+x xfce4-notifyd /notify-location string top-right
+# wallpaper on every monitor/workspace (1080p copies are lighter for Lite)
+W=$(ls "$D"/wallpapers/1080/00-desktop.jpg 2>/dev/null | head -1); [ -z "$W" ] && W=$(ls "$D"/wallpapers/1080/13-*.jpg 2>/dev/null | head -1); [ -z "$W" ] && W=$(ls "$D"/wallpapers/1080/0*.jpg 2>/dev/null | head -1); [ -z "$W" ] && W=$(ls "$D"/wallpapers/0*.jpg | head -1)
+ln -sf "$W" "$HOME/.cache/tenka/wallpaper"
+for p in $(xfconf-query -c xfce4-desktop -l 2>/dev/null | grep -E 'last-image$'); do x xfce4-desktop "$p" string "$W"; done
+for m in $(xrandr --listmonitors 2>/dev/null | awk 'NR>1 {print $NF}'); do
+  for ws in 0 1 2 3; do
+    x xfce4-desktop "/backdrop/screen0/monitor$m/workspace$ws/last-image" string "$W"
+    x xfce4-desktop "/backdrop/screen0/monitor$m/workspace$ws/image-style" int 5
+  done
+done
+# lock screen art follows the theme (xfce4-screensaver slideshow reads /usr/share/tenka/lock -> per-user link)
+mkdir -p "$HOME/.cache/tenka"; ln -sfn "$D/lock" "$HOME/.cache/tenka/lock"
+x xfce4-screensaver /screensavers/xfce-personal-slideshow/location string "$HOME/.cache/tenka/lock"
+# whisker menu label + crest (Whisker 2.x keeps its settings in xfconf and follows them live)
+x xfce4-panel /plugins/plugin-1/button-title string "$THEME_DISPLAY"
+x xfce4-panel /plugins/plugin-1/show-button-title bool false
+x xfce4-panel /plugins/plugin-1/button-icon string "$D/crest-1024.png"
+# floating panel: centred, 12 px below the top edge
+w=$(xrandr 2>/dev/null | awk '/\*/ {split($1,a,"x"); print a[1]; exit}'); w=${w:-1920}
+x xfce4-panel /panels/panel-1/position string "p=0;x=$((w/2));y=31"
+x xfce4-panel /panels/panel-1/length double 97
+# restart the panel only if it is already up (at login the session starts it with these settings)
+if xfce4-panel --version >/dev/null 2>&1 && pgrep -u "$(id -u)" -x xfce4-panel >/dev/null; then
+  [ "$1" = --login ] || (xfce4-panel -r >/dev/null 2>&1 &)
+fi
+# the desk title card (clock, seal, date, proverb), mirroring the Tenka shell
+if command -v conky >/dev/null; then
+  pkill -u "$(id -u)" -f 'conky -c /usr/share/tenka/conky/desk.conf' 2>/dev/null
+  (setsid conky -c /usr/share/tenka/conky/desk.conf >/dev/null 2>&1 &)
+fi
+if [ "$1" = --login ]; then
+  tenka-sound login &
+  [ -e "$HOME/.config/tenka/welcomed" ] || tenka-welcome &
+fi
+exit 0

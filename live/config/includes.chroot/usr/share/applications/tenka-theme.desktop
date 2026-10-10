@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Choose your path
+GenericName=Switch theme (Tenka / Tianxia)
+Comment=Swap the whole desktop between the Samurai and Xianxia themes
+Exec=tenka-welcome --picker
+Icon=preferences-desktop-theme
+Categories=Settings;DesktopSettings;
+Keywords=theme;samurai;xianxia;tenka;tianxia;

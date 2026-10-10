@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Tenka Lite
+Comment=Same art, lighter engine (XFCE): for older PCs and VMs without 3D
+Exec=/usr/bin/tenka-lite-session
+Type=Application
+DesktopNames=XFCE

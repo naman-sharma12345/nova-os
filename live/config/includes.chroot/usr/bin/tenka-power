@@ -1,0 +1,4 @@
+#!/bin/sh
+if pgrep -x qs >/dev/null 2>&1; then exec qs -c tenka ipc call power toggle; fi
+pkill -x wlogout && exit 0
+exec wlogout -b 6 -T 380 -B 380 -c 0 -r 0 --protocol layer-shell

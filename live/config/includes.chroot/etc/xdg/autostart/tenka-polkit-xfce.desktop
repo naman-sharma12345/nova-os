@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Authentication agent
+Exec=/usr/libexec/hyprpolkitagent
+OnlyShowIn=XFCE;
+NoDisplay=true

@@ -1,0 +1,32 @@
+#!/bin/bash
+# Root half of tenka-theme: boot splash, GRUB, SDDM, os-release, installer branding.
+set -u
+T="$1"; case "$T" in samurai|xianxia) ;; *) exit 1 ;; esac
+D=/usr/share/tenka/themes/$T
+. "$D/theme.env"
+mkdir -p /etc/tenka; echo "$T" > /etc/tenka/theme
+
+# os-release: the display name follows the theme
+sed -i -e "s/^NAME=.*/NAME=\"$THEME_DISPLAY\"/" \
+       -e "s/^PRETTY_NAME=.*/PRETTY_NAME=\"$THEME_DISPLAY $(. /usr/lib/os-release; echo $VERSION_ID) · $THEME_TAGLINE\"/" /usr/lib/os-release
+
+# SDDM greeter
+mkdir -p /etc/sddm.conf.d
+printf '[Theme]\nCurrent=tenka-%s\nCursorTheme=%s\nCursorSize=24\nFont=Marcellus\n' "$T" "$THEME_CURSOR" > /etc/sddm.conf.d/20-tenka-theme.conf
+
+# installer branding (live session)
+[ -f /etc/calamares/settings.conf ] && sed -i "s/^branding:.*/branding: tenka-$T/" /etc/calamares/settings.conf
+
+# GRUB (installed systems)
+if [ -d /boot/grub ] && command -v update-grub >/dev/null && [ ! -d /run/live ]; then
+  mkdir -p /etc/default/grub.d
+  printf 'GRUB_THEME="/usr/share/grub/themes/tenka-%s/theme.txt"\nGRUB_GFXMODE=1920x1080,1280x720,auto\nGRUB_DISTRIBUTOR="%s"\n' "$T" "$THEME_DISPLAY" > /etc/default/grub.d/90-tenka.cfg
+  update-grub >/dev/null 2>&1
+fi
+
+# Plymouth (rebuilds the initramfs on installed systems)
+if command -v plymouth-set-default-theme >/dev/null; then
+  if [ -d /run/live ]; then plymouth-set-default-theme "tenka-$T"
+  else plymouth-set-default-theme -R "tenka-$T" >/dev/null 2>&1; fi
+fi
+exit 0

@@ -1,0 +1,19 @@
+# Tenka prompt: quiet, one line, theme-coloured via the terminal palette
+add_newline = true
+format = """$directory$git_branch$git_status$python$rust$nodejs$cmd_duration
+$character"""
+[directory]
+style = "bold yellow"
+truncation_length = 3
+truncation_symbol = "…/"
+[git_branch]
+symbol = " "
+style = "italic red"
+[git_status]
+style = "red"
+[character]
+success_symbol = "[❯](bold red)"
+error_symbol = "[❯](bold purple)"
+[cmd_duration]
+style = "dimmed white"
+format = " [$duration]($style)"

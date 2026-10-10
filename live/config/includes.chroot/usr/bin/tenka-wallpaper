@@ -1,0 +1,28 @@
+#!/bin/bash
+# tenka-wallpaper first|next|prev|set <file>|restore
+# Cross-fades: a new swaybg layer fades in (Hyprland layer animation), then the old one is released.
+T=$(tenka-theme --current); D=/usr/share/tenka/themes/$T/wallpapers
+C="$HOME/.cache/tenka"; mkdir -p "$C"
+mapfile -t W < <(ls "$D"/[0-9]*.jpg "$D"/[0-9]*.png 2>/dev/null | sort)
+cur=$(readlink -f "$C/wallpaper" 2>/dev/null)
+idx=0; for i in "${!W[@]}"; do [ "${W[$i]}" = "$cur" ] && idx=$i; done
+case "${1:-restore}" in
+  first) f="${W[0]}" ;;
+  next) f="${W[$(( (idx+1) % ${#W[@]} ))]}" ;;
+  prev) f="${W[$(( (idx-1+${#W[@]}) % ${#W[@]} ))]}" ;;
+  set) f="$2" ;;
+  restore) f="$cur"; [ -f "$f" ] && [[ "$f" == "$D"/* ]] || f="${W[0]}" ;;
+esac
+[ -f "$f" ] || exit 1
+ln -sf "$f" "$C/wallpaper"
+# Under the Tenka shell the wallpaper is drawn (and cross-faded) by the shell itself.
+J="$HOME/.config/tenka/shell-theme.json"
+if pgrep -x qs >/dev/null 2>&1 && [ -f "$J" ] && command -v jq >/dev/null; then
+  tmp=$(mktemp) && jq --arg w "$f" '.wallpaper = $w' "$J" > "$tmp" && mv "$tmp" "$J"
+  exit 0
+fi
+old=$(pgrep -x swaybg)
+setsid swaybg -m fill -i "$f" >/dev/null 2>&1 &
+sleep 1.4
+[ -n "$old" ] && kill $old 2>/dev/null
+exit 0

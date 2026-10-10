@@ -32,3 +32,14 @@ gvfs
 imv
 jq
 python3
+
+# the Tenka shell (Quickshell) and what it uses
+quickshell
+qml6-module-qtquick-particles
+qml6-module-qtquick-effects
+qml6-module-qtquick-controls
+qml6-module-qtquick-layouts
+mpv
+mpv-mpris
+hyprsunset
+curl

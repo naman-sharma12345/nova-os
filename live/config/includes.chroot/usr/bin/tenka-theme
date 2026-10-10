@@ -1,0 +1,65 @@
+#!/bin/bash
+# tenka-theme: switch the whole desktop between theme packs, live.
+#   tenka-theme samurai|xianxia   (aliases: tenka|tianxia)
+#   tenka-theme --current | --list | --init
+set -u
+THEMES=/usr/share/tenka/themes
+STATE="$HOME/.config/tenka"
+mkdir -p "$STATE" "$HOME/.cache/tenka"
+
+current() { cat "$STATE/theme" 2>/dev/null || cat /etc/tenka/theme 2>/dev/null || echo samurai; }
+
+case "${1:-}" in
+  --current) current; exit 0 ;;
+  --list) ls "$THEMES"; exit 0 ;;
+  --init) T=$(current); INIT=1 ;;
+  tenka|samurai) T=samurai; INIT=0 ;;
+  tianxia|xianxia) T=xianxia; INIT=0 ;;
+  ""|-h|--help) echo "usage: tenka-theme samurai|xianxia  (or tenka|tianxia)"; exit 0 ;;
+  *) echo "unknown theme: $1 (try: samurai, xianxia)"; exit 1 ;;
+esac
+
+D="$THEMES/$T"
+[ -d "$D" ] || { echo "theme pack missing: $D"; exit 1; }
+. "$D/theme.env"
+
+# 1. user configs (overlay)
+cp -rT "$D/home" "$HOME"
+echo "$T" > "$STATE/theme"
+ln -sf "$D/crest-1024.png" "$HOME/.cache/tenka/crest.png" 2>/dev/null
+ln -sf "/etc/xdg/quickshell/tenka/assets/$T/seal.png" "$HOME/.cache/tenka/seal.png" 2>/dev/null
+[ "${INIT}" = 1 ] && [ -e "$HOME/.cache/tenka/wallpaper" ] && exit 0
+
+# 2. GTK / icons / cursor / fonts
+if command -v gsettings >/dev/null; then
+  gsettings set org.gnome.desktop.interface gtk-theme "$THEME_GTK" 2>/dev/null
+  gsettings set org.gnome.desktop.interface icon-theme "$THEME_ICONS" 2>/dev/null
+  gsettings set org.gnome.desktop.interface cursor-theme "$THEME_CURSOR" 2>/dev/null
+  gsettings set org.gnome.desktop.interface cursor-size 24 2>/dev/null
+  gsettings set org.gnome.desktop.interface font-name "Inter 11" 2>/dev/null
+  gsettings set org.gnome.desktop.interface color-scheme prefer-dark 2>/dev/null
+fi
+
+# 3. live reload of the Hyprland session
+if [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
+  hyprctl setcursor "$THEME_CURSOR" 24 >/dev/null 2>&1
+  hyprctl reload >/dev/null 2>&1
+  if pgrep -x qs >/dev/null; then :   # the Tenka shell follows ~/.config/tenka/shell-theme.json live
+  else pkill -x waybar; (setsid waybar >/dev/null 2>&1 &); makoctl reload 2>/dev/null; fi
+  pkill -USR1 -x kitty 2>/dev/null
+  tenka-wallpaper first
+fi
+
+# 4. Tenka Lite (XFCE) session
+if [ "${XDG_CURRENT_DESKTOP:-}" = "XFCE" ]; then
+  tenka-lite-apply
+fi
+
+# 5. boot + login (GRUB, Plymouth, SDDM, os-release, installer), applied on next boot
+if [ "$(cat /etc/tenka/theme 2>/dev/null)" != "$T" ]; then
+  pkexec /usr/libexec/tenka/tenka-theme-system "$T" >/dev/null 2>&1 &
+fi
+
+notify-send -a "$THEME_DISPLAY" -i "$D/crest-1024.png" "$THEME_DISPLAY" "$THEME_TAGLINE" 2>/dev/null
+tenka-sound login &
+exit 0

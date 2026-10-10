@@ -1,0 +1,18 @@
+#!/usr/bin/env python3
+"""Clock with the old twelve double-hours (shichen / toki): 'Hour of the Dragon'."""
+import sys, json, datetime, subprocess
+now = datetime.datetime.now()
+animals = ["Rat", "Ox", "Tiger", "Rabbit", "Dragon", "Snake", "Horse", "Goat", "Monkey", "Rooster", "Dog", "Pig"]
+hour = "Hour of the " + animals[((now.hour + 1) // 2) % 12]
+if "--hour" in sys.argv:
+    print(hour)
+elif "--lite" in sys.argv:
+    print(f"<txt>{now:%-I:%M} <span alpha='75%' size='small'>{now:%p}</span></txt>"
+          f"<tool>{now:%A, %d %B %Y}&#10;{hour}</tool><txtclick>tenka-clock --notify</txtclick>")
+elif "--power" in sys.argv:
+    print("<txt> ⏻ </txt><tool>Rest, return or leave</tool><txtclick>xfce4-session-logout</txtclick>")
+elif "--notify" in sys.argv:
+    subprocess.run(["notify-send", now.strftime("%A, %d %B %Y"), hour])
+else:
+    print(json.dumps({"text": f"{now:%H:%M}  <span size='small' alpha='70%'>·  {hour}</span>",
+                      "tooltip": f"{now:%A, %d %B %Y}\n{hour}", "class": "hour"}))

@@ -1,0 +1,458 @@
+#!/usr/bin/env python3
+"""Tenka system-theme generator: boot menu (GRUB), boot splash (Plymouth), login (SDDM),
+installer (Calamares) for both theme packs. Needs Pillow; grub-mkfont for GRUB fonts.
+
+    python3 scripts/gen-system.py
+"""
+import os, sys, shutil, subprocess, json, textwrap, glob
+from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import importlib.util
+spec = importlib.util.spec_from_file_location("gt", os.path.join(os.path.dirname(os.path.abspath(__file__)), "gen-themes.py"))
+gt = importlib.util.module_from_spec(spec); spec.loader.exec_module(gt)
+ROOT = gt.ROOT
+IC = os.path.join(ROOT, "live/config/includes.chroot")
+FONTS = os.path.join(IC, "usr/share/fonts/truetype/tenka")
+VERSION = "0.1"
+
+BG = {"samurai": "02-torii-night.jpg", "xianxia": "01-floating-peaks.jpg"}
+DISPLAY_TTF = {"samurai": os.path.join(FONTS, "CormorantGaramond[wght].ttf"), "xianxia": os.path.join(FONTS, "Cinzel[wght].ttf")}
+WORDS = {
+  "samurai": dict(enter="Enter the dojo", fail="The gate stays closed. Try again.", suspend="Rest", reboot="Return", shutdown="Sheathe",
+                  footer="TENKA  ·  THE WAY OF THE BLADE", italic="false",
+                  slides=[("Tenka", "A desktop forged with intent: every edge, every motion, every colour drawn from sumi ink and vermilion."),
+                          ("Two paths", "Switch to Tianxia at any time with Super + T, or `tenka-theme xianxia`."),
+                          ("The way of the keys", "Super + Space to seek, Super + Return for the terminal, Super + Escape to rest or retreat."),
+                          ("Nearly there", "Your system is being set down on the disk. Breathe.")]),
+  "xianxia": dict(enter="Step onto the path", fail="The formation rejects you. Try again.", suspend="Meditate", reboot="Rebirth", shutdown="Ascend",
+                  footer="TIANXIA  ·  THE PATH TO IMMORTALITY", italic="true",
+                  slides=[("Tianxia", "All under heaven: jade mist, floating peaks and drifting qi, gathered into one desktop."),
+                          ("Two paths", "Return to Tenka at any time with Super + T, or `tenka-theme samurai`."),
+                          ("The heavenly keys", "Super + Space to divine, Super + Return for the terminal, Super + Escape to ascend."),
+                          ("Ascension is near", "Your cave abode is being carved into the disk. Be still.")]),
+}
+
+def W(path, data, mode=0o644):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "wb" if isinstance(data, bytes) else "w") as f: f.write(data)
+    os.chmod(path, mode)
+
+def hexrgb(c): c = c.lstrip("#"); return tuple(int(c[i:i+2], 16) for i in (0, 2, 4))
+
+def wordmark(name, T, size, path, spacing=0.18, glow=True, sub=None):
+    p = T["p"]
+    f = ImageFont.truetype(DISPLAY_TTF[name], size)
+    if name == "xianxia":
+        try: f.set_variation_by_axes([600])
+        except Exception: pass
+    text = T["display"].upper()
+    sp = int(size * spacing)
+    widths = [f.getbbox(ch)[2] - f.getbbox(ch)[0] if ch.strip() else size // 3 for ch in text]
+    tw = sum(widths) + sp * (len(text) - 1)
+    fs = ImageFont.truetype(os.path.join(FONTS, "CormorantGaramond-Italic[wght].ttf"), int(size * 0.36)) if sub else None
+    sw = (fs.getbbox(sub)[2] if sub else 0)
+    w, h = max(tw, sw) + size, int(size * (2.0 if sub else 1.5))
+    im = Image.new("RGBA", (w, h), (0, 0, 0, 0)); d = ImageDraw.Draw(im)
+    x = (w - tw) // 2
+    for ch, cw in zip(text, widths):
+        d.text((x - f.getbbox(ch)[0], int(size * 0.12)), ch, font=f, fill=hexrgb(p["text"]) + (255,)); x += cw + sp
+    if sub:
+        d.text(((w - sw) // 2, int(size * 1.32)), sub, font=fs, fill=hexrgb(p["accent2"]) + (235,))
+    if glow:
+        g = im.split()[3].filter(ImageFilter.GaussianBlur(size * 0.12))
+        gl = Image.new("RGBA", im.size, hexrgb(p["accent"]) + (0,)); gl.putalpha(g.point(lambda v: int(v * 0.55)))
+        im = Image.alpha_composite(gl, im)
+    im.save(path)
+    return im
+
+def crest(name, px):
+    src = os.path.join(ROOT, "themes", name, "crest-1024.png")
+    if os.path.exists(src):
+        return Image.open(src).convert("RGBA").resize((px, px), Image.LANCZOS)
+    im = Image.new("RGBA", (px, px), (0, 0, 0, 0)); d = ImageDraw.Draw(im)
+    c = hexrgb(gt.THEMES[name]["p"]["accent"])
+    d.ellipse((px * .08, px * .08, px * .92, px * .92), outline=c + (255,), width=max(2, px // 18))
+    return im
+
+def divider(name, w, h):
+    src = os.path.join(ROOT, "themes", name, "textures", "divider.svg")
+    out = f"/tmp/tenka-divider-{name}.png"
+    if os.path.exists(src) and shutil.which("rsvg-convert"):
+        subprocess.run(["rsvg-convert", "-w", str(w), "-h", str(h), "-a", src, "-o", out], check=False)
+        if os.path.exists(out): return Image.open(out).convert("RGBA")
+    p = gt.THEMES[name]["p"]
+    im = Image.new("RGBA", (w, h), (0, 0, 0, 0)); d = ImageDraw.Draw(im)
+    for i in range(w):
+        a = int(255 * (1 - abs(i - w / 2) / (w / 2)) ** 1.5)
+        d.line((i, h // 2, i, h // 2 + 1), fill=hexrgb(p["accent2"]) + (a,))
+    return im
+
+def bg_image(name, size, darken=0.55, blur=0):
+    if name == "xianxia": darken *= 0.72
+    im = Image.open(os.path.join(ROOT, "themes", name, "wallpapers", BG[name])).convert("RGB")
+    im = im.resize(size, Image.LANCZOS)
+    if blur: im = im.filter(ImageFilter.GaussianBlur(blur))
+    return ImageEnhance.Brightness(im).enhance(darken)
+
+# ------------------------------------------------------------------ SDDM
+def button(name, T):
+    """The login button: a vermilion dry-brush stroke (Tenka) or a jade glass pill with a gold edge (Tianxia), at 2x."""
+    import importlib.util as _u
+    sp = _u.spec_from_file_location("tenka_art", os.path.join(os.path.dirname(os.path.abspath(__file__)), "tenka_art.py"))
+    ta = _u.module_from_spec(sp); sp.loader.exec_module(ta)
+    w, h = 752, 104
+    if name == "samurai":
+        a = ta.brush_stroke(w - 16, h - 8, seed=41, dry=0.35, head=0.025, tail=0.18, wave=0.03, ink=1.1)
+        m = Image.new("L", (w, h), 0); m.paste(ta.mask_img(a), (8, 4))
+        im = Image.new("RGBA", (w, h), ta.hexc(ta.PAL["samurai"]["acc"])[:3] + (0,)); im.putalpha(m)
+        return im
+    im = Image.new("RGBA", (w, h), (0, 0, 0, 0)); d = ImageDraw.Draw(im)
+    g = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    ImageDraw.Draw(g).rounded_rectangle((10, 10, w - 10, h - 10), radius=(h - 20) // 2, fill=ta.hexc("#5fc9a0", 160))
+    im = Image.alpha_composite(im, g.filter(ImageFilter.GaussianBlur(8)))
+    d = ImageDraw.Draw(im)
+    d.rounded_rectangle((10, 10, w - 10, h - 10), radius=(h - 20) // 2, fill=ta.hexc("#5fc9a0", 235), outline=ta.hexc("#e2bd6b", 230), width=2)
+    return im
+
+
+def sddm(name, T):
+    p, w = T["p"], T["words"]; X = WORDS[name]
+    d = os.path.join(IC, f"usr/share/sddm/themes/tenka-{name}")
+    os.makedirs(d, exist_ok=True)
+    shutil.copy(os.path.join(ROOT, "scripts/sddm/Main.qml"), os.path.join(d, "Main.qml"))
+    # background.png, enso.png and seal.png are the splash's own last frame: scripts/gen-plymouth.py writes them
+    button(name, T).save(os.path.join(d, "button.png"))
+    crest(name, 256).save(os.path.join(d, "crest.png"))
+    divider(name, 600, 40).save(os.path.join(d, "divider.png"))
+    disp = T["font_display"]
+    W(os.path.join(d, "metadata.desktop"), textwrap.dedent(f"""\
+    [SddmGreeterTheme]
+    Name={T['display']}
+    Description={T['display']}: {T['tagline']}
+    Author=Tenka
+    License=MIT
+    Type=sddm-theme
+    Version={VERSION}
+    MainScript=Main.qml
+    ConfigFile=theme.conf
+    Theme-Id=tenka-{name}
+    Theme-API=2.0
+    QtVersion=6
+    """))
+    on_accent = p["base"] if name == "xianxia" else p["text"]
+    W(os.path.join(d, "theme.conf"), textwrap.dedent(f"""\
+    [General]
+    background=background.png
+    enso=enso.png
+    seal=seal.png
+    crest=crest.png
+    button=button.png
+    displayName={T['display'].upper()}
+    tagline={T['tagline']}
+    displayFont=Marcellus
+    brandFont=Cinzel Decorative
+    greet={w['greet']}
+    passwordHint={w['lock_ph']}
+    enterText={X['enter']}
+    failText={X['fail']}
+    suspendText={X['suspend']}
+    rebootText={X['reboot']}
+    shutdownText={X['shutdown']}
+    footer={X['footer']}
+    italicTagline={X['italic']}
+    radius={T['rounding'] + 8}
+    base={p['base']}
+    mantle={p['mantle']}
+    text={p['text']}
+    subtext={p['subtext']}
+    accent={p['accent']}
+    accent2={p['accent2']}
+    onAccent={on_accent}
+    gold={p['accent2']}
+    glow={p['accent'] if name == 'xianxia' else p['accent2']}
+    """))
+
+# ------------------------------------------------------------------ Plymouth
+PLY_SCRIPT = r"""// Tenka boot splash (generated by scripts/gen-system.py)
+Window.SetBackgroundTopColor(@TOP@);
+Window.SetBackgroundBottomColor(@BOT@);
+W = Window.GetWidth(); H = Window.GetHeight();
+
+bg = Image("background.png");
+bgs = Sprite(bg.Scale(W, H)); bgs.SetZ(-10);
+
+for (i = 0; i < 48; i++) {
+  if (i < 10) n = "00" + i; else n = "0" + i;
+  frames[i] = Image("frame-" + n + ".png");
+}
+anim = Sprite(frames[0]);
+anim.SetX(W / 2 - frames[0].GetWidth() / 2);
+anim.SetY(H / 2 - frames[0].GetHeight() / 2 - 70);
+
+wm = Image("wordmark.png");
+wms = Sprite(wm);
+wms.SetX(W / 2 - wm.GetWidth() / 2);
+wms.SetY(H / 2 + frames[0].GetHeight() / 2 - 40);
+wms.SetOpacity(0);
+
+track = Image("progress-track.png"); fillimg = Image("progress-fill.png");
+ts = Sprite(track); ts.SetX(W / 2 - track.GetWidth() / 2); ts.SetY(H * 0.86); ts.SetOpacity(0.6);
+fs = Sprite(); fs.SetX(W / 2 - track.GetWidth() / 2); fs.SetY(H * 0.86);
+
+t = 0;
+fun refresh() {
+  t++;
+  f = Math.Int(t / 2);
+  if (@LOOP@) { f = f % 48; }
+  else { if (f > 47) f = 36 + (f - 36) % 12; }
+  anim.SetImage(frames[f]);
+  o = t / 60; if (o > 1) o = 1; wms.SetOpacity(o);
+}
+Plymouth.SetRefreshFunction(refresh);
+
+fun progress(duration, progress) {
+  w = Math.Int(fillimg.GetWidth() * progress);
+  if (w > 0) fs.SetImage(fillimg.Crop(0, 0, w, fillimg.GetHeight()));
+}
+Plymouth.SetBootProgressFunction(progress);
+
+// password prompt (encrypted disks)
+pmsg = Sprite(); pbul = Sprite();
+fun pw_cb(prompt, bullets) {
+  pmsg.SetImage(Image.Text(prompt, @TR@, @TG@, @TB@, 1, "Inter 14"));
+  pmsg.SetX(W / 2 - pmsg.GetImage().GetWidth() / 2); pmsg.SetY(H * 0.74);
+  s = ""; for (i = 0; i < bullets; i++) s += "•  ";
+  pbul.SetImage(Image.Text(s, @AR@, @AG@, @AB@, 1, "Inter 18"));
+  pbul.SetX(W / 2 - pbul.GetImage().GetWidth() / 2); pbul.SetY(H * 0.78);
+}
+Plymouth.SetDisplayPasswordFunction(pw_cb);
+fun normal_cb() { pmsg.SetOpacity(0); pbul.SetOpacity(0); }
+Plymouth.SetDisplayNormalFunction(normal_cb);
+msg = Sprite();
+fun message_cb(text) { msg.SetImage(Image.Text(text, @TR@, @TG@, @TB@, 0.7, "Inter 11")); msg.SetX(W / 2 - msg.GetImage().GetWidth() / 2); msg.SetY(H * 0.92); }
+Plymouth.SetMessageFunction(message_cb);
+"""
+
+def plymouth(name, T):
+    p = T["p"]
+    d = os.path.join(IC, f"usr/share/plymouth/themes/tenka-{name}")
+    os.makedirs(d, exist_ok=True)
+    src = os.path.join(ROOT, "themes", name, "plymouth")
+    frames = sorted(glob.glob(os.path.join(src, "frame-*.png")))
+    for f in frames: shutil.copy(f, d)
+    for f in ("progress-track.png", "progress-fill.png"):
+        if os.path.exists(os.path.join(src, f)): shutil.copy(os.path.join(src, f), d)
+    wordmark(name, T, 64, os.path.join(d, "wordmark.png"), sub=T["tagline"].lower())
+    # very dark, blurred version of the theme's hero wallpaper
+    bg_image(name, (1280, 720), darken=0.28, blur=18).save(os.path.join(d, "background.png"))
+    f2 = lambda c: ", ".join(f"{v / 255:.3f}" for v in hexrgb(c))
+    tr, tg, tb = (f"{v / 255:.3f}" for v in hexrgb(p["text"])); ar, ag, ab = (f"{v / 255:.3f}" for v in hexrgb(p["accent"]))
+    s = (PLY_SCRIPT.replace("@TOP@", f2(p["base"])).replace("@BOT@", f2(p["mantle"])).replace("@LOOP@", "1" if name == "xianxia" else "0")
+         .replace("@TR@", tr).replace("@TG@", tg).replace("@TB@", tb).replace("@AR@", ar).replace("@AG@", ag).replace("@AB@", ab))
+    W(os.path.join(d, f"tenka-{name}.script"), s)
+    W(os.path.join(d, f"tenka-{name}.plymouth"), textwrap.dedent(f"""\
+    [Plymouth Theme]
+    Name={T['display']}
+    Description={T['display']}: {T['tagline']}
+    ModuleName=script
+
+    [script]
+    ImageDir=/usr/share/plymouth/themes/tenka-{name}
+    ScriptFile=/usr/share/plymouth/themes/tenka-{name}/tenka-{name}.script
+    """))
+
+# ------------------------------------------------------------------ GRUB
+def grub_assets(name, T, d, live=False):
+    p = T["p"]; os.makedirs(d, exist_ok=True)
+    bg = bg_image(name, (1920, 1080), darken=0.62).convert("RGBA")
+    # left-to-centre veil so the menu reads
+    veil = Image.new("RGBA", bg.size, (0, 0, 0, 0)); vd = ImageDraw.Draw(veil)
+    for y in range(1080):
+        a = int(150 * max(0, (y - 380) / 700))
+        vd.line((0, y, 1920, y), fill=(0, 0, 0, a))
+    bg = Image.alpha_composite(bg, veil)
+    c = crest(name, 150); bg.alpha_composite(c, (960 - 75, 150))
+    wm = wordmark(name, T, 84, "/tmp/tenka-wm.png", sub=T["tagline"].lower())
+    bg.alpha_composite(wm, (960 - wm.width // 2, 320))
+    bg.convert("RGB").save(os.path.join(d, "background.png"))
+    # selection pill (9-slice)
+    def pill(fill, border):
+        im = Image.new("RGBA", (40, 30), (0, 0, 0, 0)); dd = ImageDraw.Draw(im)
+        dd.rounded_rectangle((0, 0, 39, 29), radius=10, fill=fill, outline=border, width=2)
+        parts = {"nw": (0, 0, 12, 12), "n": (12, 0, 28, 12), "ne": (28, 0, 40, 12), "w": (0, 12, 12, 18), "c": (12, 12, 28, 18),
+                 "e": (28, 12, 40, 18), "sw": (0, 18, 12, 30), "s": (12, 18, 28, 30), "se": (28, 18, 40, 30)}
+        return {k: im.crop(v) for k, v in parts.items()}
+    for k, im in pill(hexrgb(p["accent"]) + (70,), hexrgb(p["accent2"]) + (210,)).items():
+        im.save(os.path.join(d, f"select_{k}.png"))
+    # fonts
+    if shutil.which("grub-mkfont"):
+        inter = next((f for f in ["/usr/share/fonts/opentype/inter/Inter-Regular.otf", "/usr/share/fonts/truetype/inter/Inter-Regular.ttf", "/usr/share/fonts/opentype/inter/Inter-Regular.ttf",
+                                   os.path.join(ROOT, "build-cache/Inter-Regular.ttf")] if os.path.exists(f)), None)
+        if inter:
+            for sz in (16, 22):
+                subprocess.run(["grub-mkfont", "-s", str(sz), "-n", "Tenka Inter", "-o", os.path.join(d, f"inter-{sz}.pf2"), inter], check=False)
+    a = lambda c: c
+    tt = textwrap.dedent(f"""\
+    # {T['display']} GRUB theme (generated by scripts/gen-system.py)
+    title-text: ""
+    desktop-image: "background.png"
+    desktop-color: "{p['base']}"
+    terminal-font: "Tenka Inter Regular 16"
+    terminal-box: "select_*.png"
+
+    + boot_menu {{
+        left = 50%-330
+        top = 56%
+        width = 660
+        height = 30%
+        item_font = "Tenka Inter Regular 22"
+        selected_item_font = "Tenka Inter Regular 22"
+        item_color = "{p['subtext']}"
+        selected_item_color = "{p['text']}"
+        item_height = 40
+        item_padding = 6
+        item_spacing = 16
+        selected_item_pixmap_style = "select_*.png"
+        icon_width = 0
+        icon_height = 0
+        item_icon_space = 0
+        scrollbar = false
+    }}
+
+    + label {{
+        id = "__timeout__"
+        top = 92%
+        left = 0
+        width = 100%
+        align = "center"
+        font = "Tenka Inter Regular 16"
+        color = "{p['subtext']}"
+        text = "The gate opens in %d"
+    }}
+    """)
+    W(os.path.join(d, "theme.txt"), tt)
+
+def grub_live(name, T):
+    """The ISO's own boot menu (live-build's grub-pc bootloader dir)."""
+    lb = os.path.join(ROOT, "live/config/bootloaders/grub-pc")
+    if not os.path.exists(os.path.join(lb, "grub.cfg")):
+        shutil.copytree("/usr/share/live/build/bootloaders/grub-pc", lb, dirs_exist_ok=True)
+    grub_assets(name, T, os.path.join(lb, "live-theme"), live=True)
+    shutil.copy(os.path.join(lb, "live-theme/background.png"), os.path.join(ROOT, "live/config/bootloaders/splash.png"))
+    W(os.path.join(lb, "theme.cfg"), textwrap.dedent("""\
+    set color_normal=light-gray/black
+    set color_highlight=white/black
+    loadfont /boot/grub/live-theme/inter-16.pf2
+    loadfont /boot/grub/live-theme/inter-22.pf2
+    set theme=/boot/grub/live-theme/theme.txt
+    """))
+    W(os.path.join(lb, "config.cfg"), textwrap.dedent("""\
+    set default=0
+    set timeout=8
+    if loadfont /boot/grub/live-theme/inter-16.pf2 ; then
+        set gfxmode=1920x1080,1280x720,auto
+        set gfxpayload=keep
+        insmod efi_gop
+        insmod efi_uga
+        insmod video_bochs
+        insmod video_cirrus
+        insmod all_video
+    else
+        set gfxmode=auto
+        insmod all_video
+    fi
+    insmod gfxterm
+    insmod png
+    source /boot/grub/theme.cfg
+    terminal_output gfxterm
+    """))
+    W(os.path.join(lb, "grub.cfg"), textwrap.dedent("""\
+    source /boot/grub/config.cfg
+
+    menuentry "Enter Tenka  ·  the way of the blade" --hotkey=t {
+        linux @KERNEL_LIVE@ @APPEND_LIVE@ tenka.theme=samurai
+        initrd @INITRD_LIVE@
+    }
+    menuentry "Enter Tianxia  ·  the path to immortality" --hotkey=x {
+        linux @KERNEL_LIVE@ @APPEND_LIVE@ tenka.theme=xianxia
+        initrd @INITRD_LIVE@
+    }
+    menuentry "Tenka Lite  ·  for older PCs and VMs without 3D" --hotkey=l {
+        linux @KERNEL_LIVE@ @APPEND_LIVE@ tenka.session=lite
+        initrd @INITRD_LIVE@
+    }
+    menuentry "Safe graphics" --hotkey=s {
+        linux @KERNEL_LIVE@ @APPEND_LIVE@ nomodeset tenka.session=lite
+        initrd @INITRD_LIVE@
+    }
+    if [ "${grub_platform}" = "efi" ]; then
+    menuentry "Firmware settings" {
+        fwsetup
+    }
+    fi
+    """))
+
+# ------------------------------------------------------------------ Calamares
+def calamares(name, T):
+    p = T["p"]; X = WORDS[name]
+    d = os.path.join(IC, f"etc/calamares/branding/tenka-{name}")
+    os.makedirs(d, exist_ok=True)
+    crest(name, 256).save(os.path.join(d, "logo.png"))
+    wm = wordmark(name, T, 72, os.path.join(d, "welcome.png"), sub=T["tagline"].lower())
+    for i, (title, body) in enumerate(X["slides"], 1):
+        im = bg_image(name, (800, 440), darken=0.5).convert("RGBA")
+        im.alpha_composite(crest(name, 96), (40, 40))
+        im.convert("RGB").save(os.path.join(d, f"slide{i}.jpg"), quality=90)
+    disp = T["font_display"]
+    slides_qml = "\n".join(textwrap.dedent(f"""\
+        Slide {{
+            Image {{ anchors.fill: parent; source: "slide{i}.jpg"; fillMode: Image.PreserveAspectCrop }}
+            Text {{ x: 48; y: 170; width: parent.width - 96; text: "{title}"; color: "{p['text']}"; font.family: "{disp}"; font.pixelSize: 40 }}
+            Text {{ x: 48; y: 236; width: parent.width - 96; wrapMode: Text.WordWrap; text: "{body.replace('"', "'")}"; color: "{p['subtext']}"; font.family: "Inter"; font.pixelSize: 17 }}
+        }}""") for i, (title, body) in enumerate(X["slides"], 1))
+    W(os.path.join(d, "show.qml"), "import QtQuick\nimport calamares.slideshow 1.0\n\nPresentation {\n    id: presentation\n"
+      "    function nextSlide() { presentation.goToNextSlide() }\n"
+      "    Timer { interval: 9000; running: presentation.activatedInCalamares; repeat: true; onTriggered: nextSlide() }\n"
+      + textwrap.indent(slides_qml, "    ") + "\n    function onActivate() { }\n    function onLeave() { }\n}\n")
+    W(os.path.join(d, "branding.desc"), textwrap.dedent(f"""\
+    ---
+    componentName:  tenka-{name}
+    welcomeStyleCalamares: false
+    welcomeExpandingLogo: true
+    windowExpanding: normal
+    windowSize: 1000px,640px
+    windowPlacement: center
+    sidebar: widget
+    navigation: widget
+    strings:
+        productName:         {T['display']}
+        shortProductName:    {T['display']}
+        version:             {VERSION}
+        shortVersion:        {VERSION}
+        versionedName:       {T['display']} {VERSION}
+        shortVersionedName:  {T['display']} {VERSION}
+        bootloaderEntryName: {T['display']}
+        productUrl:          https://github.com/naman-sharma12345/tenka
+        supportUrl:          https://github.com/naman-sharma12345/tenka/issues
+        knownIssuesUrl:      https://github.com/naman-sharma12345/tenka/issues
+        releaseNotesUrl:     https://github.com/naman-sharma12345/tenka/releases
+    images:
+        productLogo:         "logo.png"
+        productIcon:         "logo.png"
+        productWelcome:      "welcome.png"
+    slideshow:               "show.qml"
+    slideshowAPI: 2
+    style:
+       SidebarBackground:        "{p['mantle']}"
+       SidebarText:              "{p['subtext']}"
+       SidebarTextCurrent:       "{p['text']}"
+       SidebarBackgroundCurrent: "{p['overlay']}"
+    """))
+
+if __name__ == "__main__":
+    for n, T in gt.THEMES.items():
+        sddm(n, T); calamares(n, T)
+        print("system themes (sddm, calamares):", n)
+    # boot menu + splash live in their own generators
+    subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "gen-boot.py")], check=True)
+    subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "gen-plymouth.py")], check=True)

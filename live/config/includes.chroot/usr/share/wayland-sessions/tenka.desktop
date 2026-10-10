@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Tenka
+Comment=The full Tenka desktop (Hyprland): glass, motion, the works
+Exec=/usr/bin/tenka-hyprland-session
+Type=Application
+DesktopNames=Hyprland

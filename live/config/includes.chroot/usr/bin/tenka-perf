@@ -1,0 +1,28 @@
+#!/bin/sh
+# tenka-perf on|off|toggle|status: Performance mode. Motion, blur and shadows off; all the art stays.
+F="$HOME/.config/hypr/perf.lua"; S="$HOME/.config/tenka/perf"
+mkdir -p "$HOME/.config/tenka" "$HOME/.config/hypr"
+state() { [ -e "$S" ] && echo on || echo off; }
+case "${1:-status}" in
+  status) state; exit 0 ;;
+  toggle) [ "$(state)" = on ] && set -- off || set -- on ;;
+esac
+if [ "$1" = on ]; then
+  touch "$S"
+  cat > "$F" <<'EOF'
+-- written by tenka-perf: performance mode
+hl.config({
+    general = { gaps_in = 3, gaps_out = 6 },
+    decoration = { blur = { enabled = false }, shadow = { enabled = false }, inactive_opacity = 1.0 },
+    animations = { enabled = false },
+})
+EOF
+  command -v xfconf-query >/dev/null && { xfconf-query -c xfwm4 -p /general/show_frame_shadow -s false; xfconf-query -c xfwm4 -p /general/show_popup_shadow -s false; xfconf-query -c xfwm4 -p /general/box_move -s true; } 2>/dev/null
+  msg="Performance mode on: motion and blur rest, the art stays."
+else
+  rm -f "$S" "$F"
+  command -v xfconf-query >/dev/null && { xfconf-query -c xfwm4 -p /general/show_frame_shadow -s true; xfconf-query -c xfwm4 -p /general/show_popup_shadow -s true; xfconf-query -c xfwm4 -p /general/box_move -s false; } 2>/dev/null
+  msg="Performance mode off: full motion and glass."
+fi
+[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ] && hyprctl reload >/dev/null 2>&1
+notify-send -a Tenka "Tenka" "$msg" 2>/dev/null

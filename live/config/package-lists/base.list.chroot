@@ -62,6 +62,7 @@ eza
 cava
 unzip
 xz-utils
+zstd
 # --- look
 fonts-inter
 fonts-inter-variable

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-512 -512 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="gg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f1d690"/><stop offset="0.5" stop-color="#e2bd6b"/><stop offset="1" stop-color="#b08a3e"/></linearGradient>
+    <linearGradient id="jc" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#3fa57f"/><stop offset="0.6" stop-color="#5fc9a0"/><stop offset="1" stop-color="#c8f3de"/></linearGradient>
+    <linearGradient id="js" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#2c7c60"/><stop offset="1" stop-color="#7fd9b3"/></linearGradient>
+  </defs>
+  <circle r="478" fill="none" stroke="url(#gg)" stroke-width="28"/>
+  <circle r="436" fill="none" stroke="#5fc9a0" stroke-width="6" opacity="0.8"/>
+  <g fill="url(#gg)"><g transform="rotate(0)"><rect x="-66" y="-403" width="132" height="22" rx="4"/><rect x="-66" y="-369" width="132" height="22" rx="4"/><rect x="-66" y="-335" width="132" height="22" rx="4"/></g><g transform="rotate(45)"><rect x="-66" y="-403" width="54" height="22" rx="4"/><rect x="12" y="-403" width="54" height="22" rx="4"/><rect x="-66" y="-369" width="132" height="22" rx="4"/><rect x="-66" y="-335" width="132" height="22" rx="4"/></g><g transform="rotate(90)"><rect x="-66" y="-403" width="132" height="22" rx="4"/><rect x="-66" y="-369" width="54" height="22" rx="4"/><rect x="12" y="-369" width="54" height="22" rx="4"/><rect x="-66" y="-335" width="132" height="22" rx="4"/></g><g transform="rotate(135)"><rect x="-66" y="-403" width="54" height="22" rx="4"/><rect x="12" y="-403" width="54" height="22" rx="4"/><rect x="-66" y="-369" width="54" height="22" rx="4"/><rect x="12" y="-369" width="54" height="22" rx="4"/><rect x="-66" y="-335" width="132" height="22" rx="4"/></g><g transform="rotate(180)"><rect x="-66" y="-403" width="132" height="22" rx="4"/><rect x="-66" y="-369" width="132" height="22" rx="4"/><rect x="-66" y="-335" width="54" height="22" rx="4"/><rect x="12" y="-335" width="54" height="22" rx="4"/></g><g transform="rotate(225)"><rect x="-66" y="-403" width="54" height="22" rx="4"/><rect x="12" y="-403" width="54" height="22" rx="4"/><rect x="-66" y="-369" width="132" height="22" rx="4"/><rect x="-66" y="-335" width="54" height="22" rx="4"/><rect x="12" y="-335" width="54" height="22" rx="4"/></g><g transform="rotate(270)"><rect x="-66" y="-403" width="132" height="22" rx="4"/><rect x="-66" y="-369" width="54" height="22" rx="4"/><rect x="12" y="-369" width="54" height="22" rx="4"/><rect x="-66" y="-335" width="54" height="22" rx="4"/><rect x="12" y="-335" width="54" height="22" rx="4"/></g><g transform="rotate(315)"><rect x="-66" y="-403" width="54" height="22" rx="4"/><rect x="12" y="-403" width="54" height="22" rx="4"/><rect x="-66" y="-369" width="54" height="22" rx="4"/><rect x="12" y="-369" width="54" height="22" rx="4"/><rect x="-66" y="-335" width="54" height="22" rx="4"/><rect x="12" y="-335" width="54" height="22" rx="4"/></g></g>
+  <circle r="300" fill="none" stroke="#5fc9a0" stroke-width="14"/>
+  <circle r="272" fill="none" stroke="url(#gg)" stroke-width="5"/>
+  <g transform="translate(0,-10)"><g stroke="#0b1513" stroke-width="16" stroke-linejoin="round">
+    <path d="M 0,150 C -70,60 -78,-80 0,-200 C 78,-80 70,60 0,150 Z" transform="rotate(-62 0 150) scale(0.78) translate(0,42)" fill="url(#js)"/>
+    <path d="M 0,150 C -70,60 -78,-80 0,-200 C 78,-80 70,60 0,150 Z" transform="rotate(62 0 150) scale(0.78) translate(0,42)" fill="url(#js)"/>
+    <path d="M 0,150 C -70,60 -78,-80 0,-200 C 78,-80 70,60 0,150 Z" transform="rotate(-31 0 150) scale(0.92) translate(0,13)" fill="url(#js)"/>
+    <path d="M 0,150 C -70,60 -78,-80 0,-200 C 78,-80 70,60 0,150 Z" transform="rotate(31 0 150) scale(0.92) translate(0,13)" fill="url(#js)"/>
+    <path d="M 0,150 C -70,60 -78,-80 0,-200 C 78,-80 70,60 0,150 Z" fill="url(#jc)"/></g></g>
+  <path d="M -190,190 Q -95,150 0,190 Q 95,230 190,190" fill="none" stroke="url(#gg)" stroke-width="22" stroke-linecap="round"/>
+  <circle cx="0" cy="-232" r="16" fill="url(#gg)"/>
+</svg>

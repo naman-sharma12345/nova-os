@@ -1,0 +1,24 @@
+{
+  "hyprland/workspaces": {
+    "format": "{icon}",
+    "on-click": "activate",
+    "sort-by-number": true,
+    "persistent-workspaces": {
+      "*": 5
+    },
+    "format-icons": {
+      "active": "◉",
+      "default": "○",
+      "empty": "·"
+    }
+  },
+  "custom/crest": {
+    "format": "{}",
+    "exec": "echo '<span font=\"Cinzel Decorative 15\" letter_spacing=\"2048\">TENKA</span>'",
+    "interval": "once",
+    "tooltip": true,
+    "tooltip-format": "The way of the blade",
+    "on-click": "tenka-launcher",
+    "on-click-right": "tenka-theme-menu"
+  }
+}

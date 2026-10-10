@@ -1,0 +1,8 @@
+#!/bin/sh
+# Lock the screen with the session's own themed locker: the Tenka shell's title-card lock,
+# hyprlock if the shell is not running, xfce4-screensaver in Tenka Lite.
+if [ -n "$HYPRLAND_INSTANCE_SIGNATURE" ]; then
+  if pgrep -x qs >/dev/null 2>&1; then exec qs -c tenka ipc call lock lock; fi
+  pidof hyprlock >/dev/null || exec hyprlock
+fi
+exec xfce4-screensaver-command --lock

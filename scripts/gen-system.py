@@ -396,6 +396,9 @@ def grub_live(name, T):
     """))
 
 # ------------------------------------------------------------------ Calamares
+# The installer speaks the same title-screen language as GRUB, the login and the launcher:
+# a QML sidebar with the steps as a menu (the current one on the brush stroke), an ink stylesheet
+# for every Qt widget (1px gold rules, Marcellus, no fills, no glow), and ledger slides.
 def calamares(name, T):
     p = T["p"]; X = WORDS[name]
     d = os.path.join(IC, f"etc/calamares/branding/tenka-{name}")
@@ -403,29 +406,136 @@ def calamares(name, T):
     crest(name, 256).save(os.path.join(d, "logo.png"))
     wm = wordmark(name, T, 72, os.path.join(d, "welcome.png"), sub=T["tagline"].lower())
     for i, (title, body) in enumerate(X["slides"], 1):
-        im = bg_image(name, (800, 440), darken=0.5).convert("RGBA")
-        im.alpha_composite(crest(name, 96), (40, 40))
-        im.convert("RGB").save(os.path.join(d, f"slide{i}.jpg"), quality=90)
-    disp = T["font_display"]
+        im = bg_image(name, (800, 440), darken=0.38).convert("RGB")
+        im.save(os.path.join(d, f"slide{i}.jpg"), quality=90)
+    disp = T["font_display"]; n = len(X["slides"])
+    def ga(c, a): c = c.lstrip("#"); return f"#{int(a*255):02x}{c}"
     slides_qml = "\n".join(textwrap.dedent(f"""\
         Slide {{
             Image {{ anchors.fill: parent; source: "slide{i}.jpg"; fillMode: Image.PreserveAspectCrop }}
-            Text {{ x: 48; y: 170; width: parent.width - 96; text: "{title}"; color: "{p['text']}"; font.family: "{disp}"; font.pixelSize: 40 }}
-            Text {{ x: 48; y: 236; width: parent.width - 96; wrapMode: Text.WordWrap; text: "{body.replace('"', "'")}"; color: "{p['subtext']}"; font.family: "Inter"; font.pixelSize: 17 }}
+            Rectangle {{ anchors.fill: parent; gradient: Gradient {{ GradientStop {{ position: 0.35; color: "transparent" }} GradientStop {{ position: 1.0; color: "{ga(p['mantle'], 0.85)}" }} }} }}
+            Item {{   // a ruled box, the label set into a gap in the top rule
+                x: 44; width: parent.width - 88; height: 150; anchors.bottom: parent.bottom; anchors.bottomMargin: 40
+                Rectangle {{ x: 0; y: 8; width: 1; height: parent.height - 8; color: "{ga(p['accent2'], 0.45)}" }}
+                Rectangle {{ x: parent.width - 1; y: 8; width: 1; height: parent.height - 8; color: "{ga(p['accent2'], 0.45)}" }}
+                Rectangle {{ y: parent.height - 1; width: parent.width; height: 1; color: "{ga(p['accent2'], 0.45)}" }}
+                Rectangle {{ y: 8; width: 10; height: 1; color: "{ga(p['accent2'], 0.45)}" }}
+                Rectangle {{ x: lb{i}.x + lb{i}.width + 8; y: 8; width: parent.width - x; height: 1; color: "{ga(p['accent2'], 0.45)}" }}
+                Text {{ id: lb{i}; x: 18; y: 1; text: "0{i}   {title.upper()}"; color: "{p['accent2']}"; font.family: "{disp}"; font.pixelSize: 11; font.letterSpacing: 4 }}
+                Text {{ x: 22; y: 34; width: parent.width - 44; text: "{title}"; color: "{p['text']}"; font.family: "{disp}"; font.pixelSize: 30 }}
+                Text {{ x: 22; y: 80; width: parent.width - 44; wrapMode: Text.WordWrap; text: "{body.replace('"', "'")}"; color: "{p['subtext']}"; font.family: "{disp}"; font.pixelSize: 15; lineHeight: 1.15 }}
+                Text {{ anchors.right: parent.right; anchors.rightMargin: 18; y: 1; text: "0{i} / 0{n}"; color: "{ga(p['text'], 0.5)}"; font.family: "{disp}"; font.pixelSize: 11; font.letterSpacing: 3 }}
+            }}
         }}""") for i, (title, body) in enumerate(X["slides"], 1))
     W(os.path.join(d, "show.qml"), "import QtQuick\nimport calamares.slideshow 1.0\n\nPresentation {\n    id: presentation\n"
       "    function nextSlide() { presentation.goToNextSlide() }\n"
       "    Timer { interval: 9000; running: presentation.activatedInCalamares; repeat: true; onTriggered: nextSlide() }\n"
       + textwrap.indent(slides_qml, "    ") + "\n    function onActivate() { }\n    function onLeave() { }\n}\n")
+
+    # the sidebar: the steps as the title-screen menu
+    W(os.path.join(d, "calamares-sidebar.qml"), textwrap.dedent(f"""\
+    // Tenka installer sidebar: the wordmark, then the steps as a menu, the current one on the
+    // same brush stroke as GRUB, the login and the launcher. No tiles, no glow.
+    import QtQuick
+    import io.calamares.ui 1.0
+    import io.calamares.core 1.0
+
+    Rectangle {{
+        id: side
+        color: "{p['mantle']}"
+        anchors.fill: parent
+        implicitWidth: 260
+        Rectangle {{ anchors.right: parent.right; width: 1; height: parent.height; color: "{ga(p['accent2'], 0.35)}" }}
+        Text {{ id: wm; x: 30; y: 34; text: "{T['display'].upper()}"; color: "{p['text']}"; font.family: "{T['font_brand']}"; font.pixelSize: 26; font.letterSpacing: 3 }}
+        Text {{ x: 31; width: side.width - 50; anchors.top: wm.bottom; anchors.topMargin: 6; text: "{T['tagline'].upper()}"; color: "{p['accent2']}"; font.family: "{disp}"; font.pixelSize: 10; font.letterSpacing: 2
+               fontSizeMode: Text.HorizontalFit; minimumPixelSize: 7 }}
+        Rectangle {{ x: 30; y: 110; width: side.width - 60; height: 1; color: "{ga(p['accent2'], 0.30)}" }}
+        Item {{
+            id: menu
+            x: 0; y: 136; width: side.width; height: steps.count * 46
+            Image {{   // the stroke glides between steps
+                source: "file:///usr/share/sddm/themes/tenka-{name}/select.png"; smooth: true
+                x: 10; width: side.width - 12; height: 40
+                y: ViewManager.currentStepIndex * 46 + 3
+                Behavior on y {{ NumberAnimation {{ duration: 260; easing.type: Easing.OutCubic }} }}
+            }}
+            Repeater {{
+                id: steps
+                model: ViewManager
+                Item {{
+                    required property int index
+                    required property string display
+                    readonly property bool cur: index === ViewManager.currentStepIndex
+                    readonly property bool done: index < ViewManager.currentStepIndex
+                    y: index * 46; width: side.width; height: 46
+                    Text {{ x: 30; anchors.verticalCenter: parent.verticalCenter; text: (index < 9 ? "0" : "") + (index + 1)
+                           color: parent.cur ? "{p['text']}" : "{ga(p['accent2'], 0.75)}"; font.family: "{disp}"; font.pixelSize: 11; font.letterSpacing: 2 }}
+                    Text {{ x: 62; anchors.verticalCenter: parent.verticalCenter; text: parent.display
+                           color: parent.cur ? "{p['text']}" : (parent.done ? "{ga(p['text'], 0.55)}" : "{ga(p['text'], 0.38)}")
+                           font.family: "{disp}"; font.pixelSize: 17; font.letterSpacing: 1 }}
+                }}
+            }}
+        }}
+        Text {{ x: 30; anchors.bottom: parent.bottom; anchors.bottomMargin: 26; text: "{T['display'].upper()}  ·  {VERSION}"
+               color: "{ga(p['text'], 0.35)}"; font.family: "{disp}"; font.pixelSize: 10; font.letterSpacing: 3 }}
+    }}
+    """))
+
+    # every Qt widget in the installer, in ink: the stylesheet Calamares loads from the branding dir
+    acc, gold, txt, sub = p["accent"], p["accent2"], p["text"], p["subtext"]
+    W(os.path.join(d, "stylesheet.qss"), textwrap.dedent(f"""\
+    /* Tenka installer: ink surfaces, 1px gold rules, Marcellus, no fills, no glow. */
+    QWidget {{ background-color: {p['base']}; color: {txt}; font-family: "{disp}"; font-size: 11pt;
+              selection-background-color: {rgba_q(acc, 0.35)}; selection-color: {txt}; }}
+    QLabel {{ background: transparent; }}
+    QFrame, QScrollArea, QStackedWidget {{ border: none; }}
+    #sidebarApp, #sidebarMenuApp {{ background-color: {p['mantle']}; }}
+    QPushButton {{ background: transparent; color: {txt}; border: 1px solid {rgba_q(gold, 0.45)}; border-radius: 3px;
+                  padding: 7px 18px; min-width: 70px; letter-spacing: 2px; }}
+    QPushButton:hover {{ border-color: {gold}; color: {gold}; }}
+    QPushButton:pressed {{ background: {rgba_q(gold, 0.10)}; }}
+    QPushButton:default, QPushButton#view-button-next {{ border-color: {acc}; color: {txt}; }}
+    QPushButton:default:hover, QPushButton#view-button-next:hover {{ background: {rgba_q(acc, 0.12)}; color: {txt}; }}
+    QPushButton:disabled {{ color: {rgba_q(txt, 0.3)}; border-color: {rgba_q(txt, 0.12)}; }}
+    QLineEdit, QSpinBox, QPlainTextEdit, QTextEdit {{ background: {rgba_q(txt, 0.03)}; border: none; border-bottom: 1px solid {rgba_q(gold, 0.5)};
+               padding: 6px 4px; color: {txt}; }}
+    QLineEdit:focus {{ border-bottom: 1px solid {acc}; }}
+    QComboBox {{ background: transparent; border: 1px solid {rgba_q(gold, 0.35)}; border-radius: 3px; padding: 5px 10px; color: {txt}; }}
+    QComboBox:hover {{ border-color: {gold}; }}
+    QComboBox::drop-down {{ border: none; width: 22px; }}
+    QComboBox QAbstractItemView {{ background: {p['surface']}; border: 1px solid {rgba_q(gold, 0.35)}; selection-background-color: {rgba_q(acc, 0.3)}; }}
+    QListView, QTreeView, QTableView, QListWidget, QTreeWidget {{ background: {rgba_q(txt, 0.02)}; border: 1px solid {rgba_q(gold, 0.22)};
+               alternate-background-color: {rgba_q(txt, 0.03)}; outline: 0; }}
+    QListView::item, QTreeView::item {{ padding: 4px 6px; }}
+    QListView::item:selected, QTreeView::item:selected, QListWidget::item:selected {{ background: transparent; color: {txt};
+               border-left: 2px solid {acc}; }}
+    QListView::item:hover, QTreeView::item:hover {{ background: {rgba_q(gold, 0.06)}; }}
+    QHeaderView::section {{ background: transparent; color: {gold}; border: none; border-bottom: 1px solid {rgba_q(gold, 0.3)}; padding: 4px 6px; }}
+    QCheckBox, QRadioButton {{ background: transparent; spacing: 10px; }}
+    QCheckBox::indicator, QRadioButton::indicator {{ width: 11px; height: 11px; border: 1px solid {rgba_q(txt, 0.5)}; background: transparent; }}
+    QRadioButton::indicator {{ border-radius: 6px; }}
+    QCheckBox::indicator:checked, QRadioButton::indicator:checked {{ background: {acc}; border-color: {acc}; }}
+    QProgressBar {{ background: {rgba_q(txt, 0.12)}; border: none; height: 2px; max-height: 2px; text-align: center; color: transparent; }}
+    QProgressBar::chunk {{ background: {acc}; }}
+    QScrollBar:vertical {{ background: transparent; width: 8px; margin: 2px; }}
+    QScrollBar::handle:vertical {{ background: {rgba_q(gold, 0.35)}; border-radius: 3px; min-height: 30px; }}
+    QScrollBar::add-line, QScrollBar::sub-line {{ height: 0; width: 0; }}
+    QScrollBar:horizontal {{ background: transparent; height: 8px; margin: 2px; }}
+    QScrollBar::handle:horizontal {{ background: {rgba_q(gold, 0.35)}; border-radius: 3px; min-width: 30px; }}
+    QToolTip {{ background: {p['surface']}; color: {txt}; border: 1px solid {rgba_q(gold, 0.45)}; padding: 4px 8px; }}
+    QGroupBox {{ border: 1px solid {rgba_q(gold, 0.3)}; border-radius: 3px; margin-top: 14px; padding-top: 10px; }}
+    QGroupBox::title {{ subcontrol-origin: margin; left: 12px; padding: 0 6px; color: {gold}; }}
+    """))
+
     W(os.path.join(d, "branding.desc"), textwrap.dedent(f"""\
     ---
     componentName:  tenka-{name}
     welcomeStyleCalamares: false
     welcomeExpandingLogo: true
     windowExpanding: normal
-    windowSize: 1000px,640px
+    windowSize: 1040px,660px
     windowPlacement: center
-    sidebar: widget
+    sidebar: qml
     navigation: widget
     strings:
         productName:         {T['display']}
@@ -449,8 +559,11 @@ def calamares(name, T):
        SidebarBackground:        "{p['mantle']}"
        SidebarText:              "{p['subtext']}"
        SidebarTextCurrent:       "{p['text']}"
-       SidebarBackgroundCurrent: "{p['overlay']}"
+       SidebarBackgroundCurrent: "{p['mantle']}"
     """))
+
+def rgba_q(c, a):
+    c = c.lstrip("#"); return f"rgba({int(c[0:2],16)}, {int(c[2:4],16)}, {int(c[4:6],16)}, {int(round(a*255))})"
 
 if __name__ == "__main__":
     for n, T in gt.THEMES.items():

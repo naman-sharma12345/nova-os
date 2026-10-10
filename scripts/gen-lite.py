@@ -135,7 +135,8 @@ def gtk_theme(name, T, d):
 
     /* docklike: active window gets the theme's mark */
     .docklike-plugin button {{ border-radius: {r}px; }}
-    .docklike-plugin button.active_group {{ background: linear-gradient(0deg, {A(p['accent'], 0.30)}, transparent 60%); }}
+    .docklike-plugin button.active_group {{ background: none; box-shadow: inset 0 -2px 0 -0px {p['accent']}; }}   /* a short rule, like the flagship dock (was a soft gradient) */
+    .docklike-plugin button:hover {{ background: none; }}
 
     /* ---- Whisker menu ---- */
     #whiskermenu-window {{ background-color: {A(p['base'], 0.97)}; border: 1px solid {A(p['accent2'], 0.35)}; border-radius: {r + 8}px; }}

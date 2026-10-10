@@ -57,20 +57,36 @@ PanelWindow {
                 Timer { running: card.n && card.n.urgency !== NotificationUrgency.Critical; interval: 7000; onTriggered: list.remove(card.index) }
                 readonly property bool crit: !!card.n && card.n.urgency === NotificationUrgency.Critical
 
-                Rectangle { anchors.fill: parent; anchors.topMargin: 8; radius: 6; color: Theme.alpha(Theme.t.base, Theme.selfBlur ? 0.92 : 0.80)
-                            border.width: 1; border.color: card.crit ? Theme.t.accent : Theme.alpha(Theme.t.gold, 0.42) }
-                Rectangle {   // the sender, set into the rule
-                    x: 16; y: 0; height: 16; width: sender.width + 18; color: Theme.alpha(Theme.t.base, 1)
-                    Row {
-                        id: sender; anchors.centerIn: parent; spacing: 7
-                        IconImage { implicitSize: 13; anchors.verticalCenter: parent.verticalCenter; visible: !!(card.n && card.n.appIcon)
-                                    source: card.n && card.n.appIcon ? Quickshell.iconPath(card.n.appIcon, "dialog-information") : "" }
-                        Text { text: (card.n ? card.n.appName || "Tenka" : "").toUpperCase(); color: card.crit ? Theme.t.accent : Theme.t.gold
-                               font.family: Theme.display; font.pixelSize: 11; font.letterSpacing: 4; anchors.verticalCenter: parent.verticalCenter }
+                // the frame: ink fill, then one 1px rule drawn in clipped pieces so the top rule opens
+                // around the sender and the time (nothing painted behind them: no patch on any wallpaper)
+                readonly property color rc: crit ? Theme.alpha(Theme.t.accent, 0.85) : Theme.alpha(Theme.t.gold, 0.42)
+                readonly property int rr: Theme.ledgerR
+                readonly property var cuts: [0, sender.x - 8, sender.x + sender.width + 8, stamp.x - 8, stamp.x + stamp.width + 8, width]
+                Rectangle { anchors.fill: parent; anchors.topMargin: 8; radius: card.rr; color: Theme.alpha(Theme.t.base, Theme.selfBlur ? 0.92 : 0.80) }
+                Item {   // sides and bottom
+                    y: 8 + card.rr; width: card.width; height: card.height - y; clip: true
+                    Rectangle { y: -card.rr; width: card.width; height: card.height - 8; radius: card.rr
+                                color: "transparent"; border.width: 1; border.color: card.rc }
+                }
+                Repeater {   // the top rule, in three pieces around the two gaps
+                    model: 3
+                    Item {
+                        required property int index
+                        x: card.cuts[index * 2]; y: 8; width: Math.max(0, card.cuts[index * 2 + 1] - x); height: card.rr; clip: true
+                        Rectangle { x: -parent.x; width: card.width; height: card.height - 8; radius: card.rr
+                                    color: "transparent"; border.width: 1; border.color: card.rc }
                     }
                 }
-                Text { anchors.right: parent.right; anchors.rightMargin: 18; y: 2; text: Theme.hm(Theme.now)
-                       color: Theme.alpha(Theme.t.text, 0.4); font.family: Theme.display; font.pixelSize: 11; font.letterSpacing: 1 }
+                Row {   // the sender, set into the top rule
+                    id: sender; x: 22; y: 0; height: 16; spacing: 7
+                    IconImage { implicitSize: 13; anchors.verticalCenter: parent.verticalCenter; visible: !!(card.n && card.n.appIcon)
+                                source: card.n && card.n.appIcon ? Quickshell.iconPath(card.n.appIcon, "dialog-information") : "" }
+                    Text { text: (card.n ? card.n.appName || "Tenka" : "").toUpperCase(); color: card.crit ? Theme.t.accent : Theme.t.gold
+                           font.family: Theme.display; font.pixelSize: 11; font.letterSpacing: 4; anchors.verticalCenter: parent.verticalCenter }
+                }
+                Text { id: stamp; anchors.right: parent.right; anchors.rightMargin: 22; y: 1; height: 14; verticalAlignment: Text.AlignVCenter
+                       text: Theme.hm(Theme.now)
+                       color: Theme.alpha(Theme.t.text, 0.45); font.family: Theme.display; font.pixelSize: 11; font.letterSpacing: 2 }
                 Row {
                     id: body
                     x: 20; y: 26; width: parent.width - 40; spacing: 14

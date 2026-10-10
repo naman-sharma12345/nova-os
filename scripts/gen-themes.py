@@ -313,21 +313,28 @@ def gen(name, T):
     window.background:not(.xfce4-panel), .thunar .sidebar, .sidebar {{ background-color: {p['base']}; color: {p['text']}; }}
     headerbar, .titlebar {{ background-color: {p['surface']}; color: {p['text']}; box-shadow: none; }}
     selection {{ background-color: {rgba(p['accent'], 0.35)}; color: {p['text']}; }}
-    /* ---- the file manager: ink chrome, pill path bar, soft selections (Hyprland adds the glass) ---- */
-    .thunar .sidebar, .thunar .sidebar treeview.view, .thunar .shortcuts-pane {{ background-color: {mix(p['base'], p['surface'], 0.45)}; color: {p['subtext']}; }}
-    .thunar .sidebar treeview.view {{ padding: 4px 0; }}
-    .thunar .sidebar treeview.view:selected {{ background-color: {rgba(p['accent'], 0.18)}; color: {p['accent_l']}; border-left: 3px solid {p['accent']}; }}
-    .thunar .sidebar treeview.view:hover {{ background-color: {rgba(p['text'], 0.06)}; }}
-    .thunar .standard-view, .thunar .view, .thunar iconview {{ background-color: {p['mantle']}; color: {p['text']}; }}
-    .thunar iconview:selected, .thunar .view:selected, .thunar treeview.view:selected {{ background-color: {rgba(p['accent'], 0.24)}; color: {p['text']}; border-radius: 10px; }}
-    .thunar iconview {{ padding: 14px; }}
-    .thunar toolbar, .thunar .toolbar {{ background-color: {mix(p['base'], p['surface'], 0.45)}; border-bottom: 1px solid {rgba(p['accent2'], 0.18)}; padding: 6px 10px; }}
-    .thunar toolbar button {{ border-radius: 10px; background: transparent; border: none; box-shadow: none; color: {p['subtext']}; }}
-    .thunar toolbar button:hover {{ background-color: {rgba(p['text'], 0.06)}; color: {p['text']}; }}
-    .thunar entry {{ border-radius: 999px; background-color: {p['mantle']}; border: 1px solid {rgba(p['accent2'], 0.30)}; color: {p['text']}; padding: 4px 14px; box-shadow: none; }}
-    .thunar statusbar, .thunar .statusbar {{ background-color: {mix(p['base'], p['surface'], 0.45)}; color: {p['subtext']}; font-size: 9pt; border-top: 1px solid {rgba(p['accent2'], 0.18)}; }}
-    .thunar paned > separator {{ background-color: {rgba(p['accent2'], 0.18)}; min-width: 1px; }}
-    scrollbar slider {{ background-color: {rgba(p['accent2'], 0.30)}; border-radius: 99px; min-width: 4px; }}
+    /* ---- the file manager, "glass" (Naman: more translucent, in line with the theme): one sheet of ink glass
+       over the art (Hyprland blurs what is behind it), a clear content area, a gold hairline between the panes,
+       a vermilion / jade pill for the chosen place, a pill path bar, Marcellus labels. No glow anywhere. ---- */
+    window.thunar.background, window.thunar.background:not(.xfce4-panel) {{ background-color: {rgba(p['base'], 0.50)}; color: {p['text']}; }}
+    .thunar * {{ font-family: Marcellus; }}
+    .thunar iconview, .thunar iconview.view, .thunar .view, .thunar treeview.view, .thunar scrolledwindow, .thunar viewport,
+    .thunar notebook, .thunar notebook > stack, .thunar notebook > header {{ background-color: transparent; background-image: none; border: none; box-shadow: none; color: {p['text']}; }}
+    .thunar iconview {{ padding: 22px 18px; }}
+    .thunar iconview:selected, .thunar .view:selected:not(treeview) {{ background-color: {rgba(p['accent'], 0.30)}; color: {p['text']}; border-radius: 12px; }}
+    .thunar .sidebar, .thunar .sidebar treeview.view, .thunar .shortcuts-pane {{ background-color: {rgba(p['mantle'], 0.20)}; }}
+    .thunar .sidebar treeview.view {{ padding: 5px 10px; color: {p['subtext']}; }}
+    .thunar .sidebar treeview.view:selected {{ background-color: {rgba(p['accent'], 0.85 if name == 'xianxia' else 0.75)}; color: {p['base'] if name == 'xianxia' else p['text']}; border-radius: 999px; border: none; }}
+    .thunar .sidebar treeview.view:hover {{ background-color: {rgba(p['text'], 0.06)}; border-radius: 999px; }}
+    .thunar toolbar, .thunar .toolbar {{ background-color: transparent; border-bottom: 1px solid {rgba(p['accent2'], 0.22)}; padding: 8px 12px; }}
+    .thunar toolbar button, .thunar button {{ border-radius: 10px; background: transparent; border: none; box-shadow: none; color: {p['subtext']}; -gtk-icon-shadow: none; }}
+    .thunar toolbar button:hover, .thunar button:hover {{ background-color: {rgba(p['text'], 0.07)}; color: {p['text']}; }}
+    .thunar entry {{ border-radius: 999px; background-color: {rgba(p['mantle'], 0.45)}; border: 1px solid {rgba(p['accent2'], 0.35)}; color: {p['text']}; padding: 5px 16px; box-shadow: none; caret-color: {p['accent2']}; }}
+    .thunar statusbar, .thunar .statusbar {{ background-color: transparent; color: {rgba(p['subtext'], 0.8)}; font-size: 9pt; border: none; }}
+    .thunar paned > separator {{ background-color: {rgba(p['accent2'], 0.45)}; background-image: none; min-width: 1px; }}
+    scrollbar, scrollbar trough {{ background: transparent; border: none; }}
+    scrollbar slider {{ background-color: {rgba(p['accent2'], 0.35)}; border-radius: 99px; min-width: 3px; min-height: 3px; border: none; }}
+    scrollbar slider:hover {{ background-color: {rgba(p['accent2'], 0.6)}; }}
     """))
     W(f"{H}/.config/gtk-3.0/settings.ini", textwrap.dedent(f"""\
     [Settings]

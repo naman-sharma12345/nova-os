@@ -7,9 +7,9 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PAL = {
     "samurai": dict(theme="Tenka-Samurai", base="#0f0d0c", body="#2a2320", body2="#3a302a", gold="#c9a35a", accent="#d8412f", paper="#efe6d6", ink="#fff8ec",
                     # the quiet sets: muted stone (flat), raw washi (paper), dark ink (edge)
-                    stone="#6e6259", stone2="#564b44", washi="#d6cbb8", washi2="#b3a591", inkb="#3a312c", inkb2="#4a3f38"),
+                    stone="#6e6259", stone2="#564b44", washi="#d6cbb8", washi2="#b3a591", inkb="#4d413a", inkb2="#5e5048"),
     "xianxia": dict(theme="Tenka-Xianxia", base="#0b1513", body="#1a2e29", body2="#25403a", gold="#e2bd6b", accent="#5fc9a0", paper="#eef3ec", ink="#0b1513",
-                    stone="#4a625b", stone2="#3a4f49", washi="#cfd8cf", washi2="#a9b8ad", inkb="#243934", inkb2="#304a43"),
+                    stone="#4a625b", stone2="#3a4f49", washi="#cfd8cf", washi2="#a9b8ad", inkb="#2f4a43", inkb2="#3c5b53"),
 }
 # glyphs, drawn on the folder's front (24x24 box placed at 12,19)
 G = {
@@ -36,6 +36,27 @@ NAMES = {
 }
 BACK = "M4 12.5a3 3 0 0 1 3-3h10.5l4 4H41a3 3 0 0 1 3 3v21a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z"
 FRONT = "M4 18.5h40v19a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z"
+
+# devices and the bin, for the sidebar: same quiet language (flat ink body, one gold hairline)
+DEV = {
+    "computer": ["computer", "user-computer"],
+    "drive": ["drive-harddisk", "drive-harddisk-system", "drive-removable-media", "drive-harddisk-usb"],
+    "trash": ["user-trash"], "trash-full": ["user-trash-full"],
+}
+
+def dev_svg(kind, p):
+    b, b2, gd = p["inkb"], p["inkb2"], p["gold"]
+    if kind == "computer":
+        return (f'<rect x="5" y="8" width="38" height="26" rx="3.5" fill="{b2}"/><rect x="8" y="11" width="32" height="20" rx="1.5" fill="{b}"/>'
+                f'<path d="M18 40h12M24 34v6" stroke="{b2}" stroke-width="3" stroke-linecap="round"/><path d="M8.6 30.5h30.8" stroke="{gd}" stroke-width="1.1" stroke-opacity=".85"/>')
+    if kind == "drive":
+        return (f'<rect x="5" y="14" width="38" height="20" rx="4" fill="{b}"/><path d="M5.6 24h36.8" stroke="{gd}" stroke-width="1.1" stroke-opacity=".85"/>'
+                f'<circle cx="36" cy="29" r="1.6" fill="{gd}" fill-opacity=".9"/>')
+    full = kind == "trash-full"
+    return ((f'<path d="M15 10h18l-1 4H16z" fill="{p["washi2"]}" fill-opacity=".55"/>' if full else "")
+            + f'<path d="M11 15h26l-2.4 24a3 3 0 0 1-3 2.7H16.4a3 3 0 0 1-3-2.7z" fill="{b}"/>'
+            f'<rect x="8" y="12" width="32" height="4" rx="2" fill="{b2}"/><path d="M19 9h10" stroke="{b2}" stroke-width="3" stroke-linecap="round"/>'
+            f'<path d="M11.6 16.5h24.8" stroke="{gd}" stroke-width="1.1" stroke-opacity=".85"/>')
 
 def svg(kind, p, style):
     g = G[kind]
@@ -80,6 +101,11 @@ def write(style, out_root=None):
             s = doc(svg(kind, p, style))
             for n in names:
                 open(os.path.join(d, n + ".svg"), "w").write(s)
+        if style in ("edge", "flat", "paper"):
+            for kind, names in DEV.items():
+                s = doc(dev_svg(kind, p))
+                for n in names:
+                    open(os.path.join(d, n + ".svg"), "w").write(s)
 
 if __name__ == "__main__":
     style = (sys.argv[1] if len(sys.argv) > 1 else os.environ.get("FOLDER_STYLE", "edge"))

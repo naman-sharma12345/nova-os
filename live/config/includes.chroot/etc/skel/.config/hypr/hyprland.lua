@@ -105,6 +105,7 @@ hl.window_rule({ name = "float-utils",
     match = { class = "^(pavucontrol|org.pulseaudio.pavucontrol|nm-connection-editor|blueman-manager|nwg-look|qt6ct|tenka-welcome|imv|calamares)$" },
     float = true, center = true, size = "1100 720" })
 hl.window_rule({ name = "glass-terminal", match = { class = "^(kitty)$" }, opacity = "0.94 0.88" })
+hl.window_rule({ name = "glass-files", match = { class = "^([Tt]hunar)$" }, opacity = "0.88 0.82" })
 hl.window_rule({ name = "fix-xwayland-drags",
     match = { class = "^$", title = "^$", xwayland = true, float = true, fullscreen = false, pin = false },
     no_focus = true })

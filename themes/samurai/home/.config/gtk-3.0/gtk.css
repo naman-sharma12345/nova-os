@@ -16,6 +16,21 @@
 @define-color theme_bg_color #0f0d0c;
 @define-color theme_base_color #0a0908;
 @define-color theme_fg_color #efe6d6;
-window.background, .thunar .sidebar, .sidebar { background-color: #0f0d0c; color: #efe6d6; }
+window.background:not(.xfce4-panel), .thunar .sidebar, .sidebar { background-color: #0f0d0c; color: #efe6d6; }
 headerbar, .titlebar { background-color: #1b1816; color: #efe6d6; box-shadow: none; }
-selection, *:selected { background-color: rgba(216, 65, 47, 0.85); color: #efe6d6; }
+selection { background-color: rgba(216, 65, 47, 0.35); color: #efe6d6; }
+/* ---- the file manager: ink chrome, pill path bar, soft selections (Hyprland adds the glass) ---- */
+.thunar .sidebar, .thunar .sidebar treeview.view, .thunar .shortcuts-pane { background-color: #141210; color: #b8ab96; }
+.thunar .sidebar treeview.view { padding: 4px 0; }
+.thunar .sidebar treeview.view:selected { background-color: rgba(216, 65, 47, 0.18); color: #e85a45; border-left: 3px solid #d8412f; }
+.thunar .sidebar treeview.view:hover { background-color: rgba(239, 230, 214, 0.06); }
+.thunar .standard-view, .thunar .view, .thunar iconview { background-color: #0a0908; color: #efe6d6; }
+.thunar iconview:selected, .thunar .view:selected, .thunar treeview.view:selected { background-color: rgba(216, 65, 47, 0.24); color: #efe6d6; border-radius: 10px; }
+.thunar iconview { padding: 14px; }
+.thunar toolbar, .thunar .toolbar { background-color: #141210; border-bottom: 1px solid rgba(201, 163, 90, 0.18); padding: 6px 10px; }
+.thunar toolbar button { border-radius: 10px; background: transparent; border: none; box-shadow: none; color: #b8ab96; }
+.thunar toolbar button:hover { background-color: rgba(239, 230, 214, 0.06); color: #efe6d6; }
+.thunar entry { border-radius: 999px; background-color: #0a0908; border: 1px solid rgba(201, 163, 90, 0.3); color: #efe6d6; padding: 4px 14px; box-shadow: none; }
+.thunar statusbar, .thunar .statusbar { background-color: #141210; color: #b8ab96; font-size: 9pt; border-top: 1px solid rgba(201, 163, 90, 0.18); }
+.thunar paned > separator { background-color: rgba(201, 163, 90, 0.18); min-width: 1px; }
+scrollbar slider { background-color: rgba(201, 163, 90, 0.3); border-radius: 99px; min-width: 4px; }

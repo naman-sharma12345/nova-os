@@ -1,5 +1,5 @@
-// The power menu: the whole screen frosts over, the crest, one line, and five seals:
-// lock, rest (suspend), retreat (log out), return (reboot), sheathe (power off). Arrows + Enter, or click.
+// The power menu: the whole screen frosts over, one line, and the five rites as the boot menu's own list
+// (guard, rest, retreat, return, sheathe), the chosen one on the brush stroke. Arrows + Enter, or click.
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
@@ -36,6 +36,8 @@ PanelWindow {
 
         Item {
             id: keys; anchors.fill: parent; focus: true
+            Keys.onUpPressed: pm.sel = (pm.sel + 4) % 5
+            Keys.onDownPressed: pm.sel = (pm.sel + 1) % 5
             Keys.onLeftPressed: pm.sel = (pm.sel + 4) % 5
             Keys.onRightPressed: pm.sel = (pm.sel + 1) % 5
             Keys.onReturnPressed: pm.act(pm.sel)
@@ -46,7 +48,6 @@ PanelWindow {
             anchors.centerIn: parent; spacing: 26
             scale: pm.open ? 1 : 0.96
             Behavior on scale { NumberAnimation { duration: 320; easing.type: Easing.OutCubic } }
-            Image { source: Theme.t.crest; width: 112; height: 112; mipmap: true; anchors.horizontalCenter: parent.horizontalCenter }
             Text { anchors.horizontalCenter: parent.horizontalCenter
                    text: Theme.xia ? "Where does the path lead?" : "Where does the blade go?"
                    color: Theme.t.text; font.family: Theme.display; font.pixelSize: 46; font.letterSpacing: 1 }
@@ -56,36 +57,35 @@ PanelWindow {
                 Rectangle { width: 8; height: 8; rotation: 45; color: Theme.t.gold; anchors.verticalCenter: parent.verticalCenter }
                 Rectangle { width: 120; height: 1; anchors.verticalCenter: parent.verticalCenter; color: Theme.alpha(Theme.t.gold, 0.6) }
             }
-            Item { width: 1; height: 18 }
-            Row {
-                anchors.horizontalCenter: parent.horizontalCenter; spacing: 44
+            Item { width: 1; height: 8 }
+            // the rites as the boot menu's own list: words in Marcellus, the chosen one on the brush stroke
+            Item {
+                id: list
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: 640; height: pm.rites.length * 66
+                Image {
+                    source: Theme.t.stroke; width: 520; height: 62; smooth: true
+                    y: pm.sel * 66
+                    Behavior on y { NumberAnimation { duration: 240; easing.type: Easing.OutCubic } }
+                }
                 Repeater {
                     model: pm.rites
-                    Column {
+                    Item {
                         required property var modelData; required property int index
                         readonly property bool on: pm.sel === index
-                        spacing: 16
-                        Rectangle {
-                            width: 128; height: 128; radius: Theme.xia ? 64 : 34
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            color: parent.on ? Theme.t.accent : Theme.alpha(Theme.t.base, 0.45)
-                            border.width: parent.on ? 2 : 1; border.color: parent.on ? Theme.t.gold : Theme.alpha(Theme.t.gold, 0.3)
-                            scale: parent.on ? 1.06 : 1
-                            Behavior on scale { NumberAnimation { duration: 220; easing.type: Easing.OutBack } }
-                            Behavior on color { ColorAnimation { duration: 180 } }
-                            Text { anchors.centerIn: parent; text: parent.parent.modelData[0]; font.family: Theme.glyphs; font.pixelSize: 40
-                                   color: parent.parent.on ? Theme.t.ink : Theme.t.text }
-                            MouseArea { anchors.fill: parent; hoverEnabled: true; onEntered: pm.sel = parent.parent.index; onClicked: pm.act(parent.parent.index) }
-                        }
-                        Text { anchors.horizontalCenter: parent.horizontalCenter; text: parent.modelData[1].toUpperCase()
-                               color: parent.on ? Theme.t.gold : Theme.alpha(Theme.t.text, 0.85); font.family: Theme.display; font.pixelSize: 19; font.letterSpacing: 5 }
-                        Text { anchors.horizontalCenter: parent.horizontalCenter; text: parent.modelData[2]
-                               color: Theme.alpha(Theme.t.text, 0.5); font.family: Theme.ui; font.pixelSize: 12 }
+                        y: index * 66; width: list.width; height: 62
+                        Text { x: 36; anchors.verticalCenter: parent.verticalCenter; text: parent.modelData[1]
+                               color: parent.on ? "#fff8ec" : "#948a7d"; font.family: Theme.display; font.pixelSize: 34
+                               Behavior on color { ColorAnimation { duration: 180 } } }
+                        Text { anchors.right: parent.right; anchors.rightMargin: 8; anchors.verticalCenter: parent.verticalCenter
+                               text: parent.modelData[2].toUpperCase(); color: Theme.alpha(Theme.t.text, parent.on ? 0.6 : 0.28)
+                               font.family: Theme.display; font.pixelSize: 11; font.letterSpacing: 4 }
+                        MouseArea { anchors.fill: parent; hoverEnabled: true; onEntered: pm.sel = parent.index; onClicked: pm.act(parent.index) }
                     }
                 }
             }
         }
         Text { anchors.bottom: parent.bottom; anchors.bottomMargin: 60; anchors.horizontalCenter: parent.horizontalCenter
-               text: "←  →  choose      ↵  confirm      Esc  stay"; color: Theme.alpha(Theme.t.text, 0.45); font.family: Theme.ui; font.pixelSize: 13; font.letterSpacing: 1 }
+               text: "ENTER  to confirm      ↑ ↓  to choose      ESC  to stay"; color: Theme.alpha(Theme.t.text, 0.5); font.family: Theme.display; font.pixelSize: 13; font.letterSpacing: 2.5 }
     }
 }

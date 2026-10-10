@@ -1,4 +1,5 @@
-// The control center: a frosted column under the bar's right island. Who and how long, the
+// The control center. Two faces (Theme.ccStyle: env TENKA_CC, desk.json "cc"): "ledger" (default) and "glass".
+// "glass": a frosted column under the bar's right island. Who and how long, the
 // six toggles, volume and brightness as fat brush sliders, what is playing, the two paths
 // (switch packs live), and the rites (lock, rest, return, sheathe).
 import Quickshell
@@ -19,6 +20,7 @@ PanelWindow {
     WlrLayershell.namespace: "tenka-control"
     WlrLayershell.keyboardFocus: open ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
+    onOpenChanged: if (Theme.ccStyle === "ledger") Theme.hush = open   // the panel carries the hour; the desk steps back
     IpcHandler {
         target: "control"
         function toggle(): void { cc.open = !cc.open }
@@ -49,6 +51,7 @@ PanelWindow {
 
     Glass {
         id: panel
+        visible: Theme.ccStyle === "glass"
         width: 452; height: col.height + 48; radius: 28; tint: 0.46; line: 0.18; innerLine: 0.2
         y: 44
         x: parent.width - width - 14 + (cc.open ? 0 : 40)
@@ -194,6 +197,153 @@ PanelWindow {
                                     width: 22; height: 22; radius: 11; color: Theme.t.gold
                                     Text { anchors.centerIn: parent; text: "\uf00c"; font.family: Theme.glyphs; font.pixelSize: 11; color: "#1a1410" } }
                         MouseArea { anchors.fill: parent; onClicked: Theme.run("tenka-theme " + parent.modelData[0]) }
+                    }
+                }
+            }
+        }
+    }
+
+    // ======================================================================== face "ledger"
+    // Lamp-style ruled boxes: 1px gold rules, a label set into each box's top edge, numbered
+    // sections (Ryoku's "01 // POWER"), text rows instead of tiles, hairline sliders. No fills, no glow.
+    component Box: Item {
+        id: bx
+        property string num: ""; property string label: ""
+        default property alias content: inner.data
+        width: parent ? parent.width : 0
+        height: inner.childrenRect.height + 34
+        Rectangle { anchors.fill: parent; anchors.topMargin: 8; color: "transparent"; radius: 4
+                    border.width: 1; border.color: Theme.alpha(Theme.t.gold, 0.38) }
+        Rectangle {   // the label, set into the rule
+            x: 14; y: 0; height: 16; width: lbl.implicitWidth + 16; color: ledger.ink
+            Text { id: lbl; anchors.centerIn: parent; text: bx.num + "   " + bx.label
+                   color: Theme.t.gold; font.family: Theme.display; font.pixelSize: 11; font.letterSpacing: 4 }
+        }
+        Column { id: inner; x: 18; y: 26; width: bx.width - 36; spacing: 0 }
+    }
+    component Row2: Item {
+        id: r2
+        property string k: ""; property string v: ""; property bool on: false; property bool toggle: false; property bool last: false
+        signal hit()
+        width: parent ? parent.width : 0; height: 38
+        Text { anchors.verticalCenter: parent.verticalCenter; text: r2.k; color: Theme.t.text; font.family: Theme.display; font.pixelSize: 16 }
+        Row {
+            anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter; spacing: 12
+            Text { anchors.verticalCenter: parent.verticalCenter; text: r2.v; color: Theme.alpha(Theme.t.text, 0.55); font.family: Theme.display; font.pixelSize: 13; font.letterSpacing: 1 }
+            Rectangle {   // the toggle: a small square, outlined when off, filled when on
+                visible: r2.toggle; anchors.verticalCenter: parent.verticalCenter
+                width: 11; height: 11; radius: Theme.xia ? 6 : 1; rotation: Theme.xia ? 0 : 45
+                color: r2.on ? Theme.t.accent : "transparent"; border.width: 1
+                border.color: r2.on ? Theme.t.accent : Theme.alpha(Theme.t.text, 0.45)
+            }
+        }
+        Rectangle { visible: !r2.last; anchors.bottom: parent.bottom; width: parent.width; height: 1; color: Theme.alpha(Theme.t.text, 0.08) }
+        MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: r2.hit() }
+    }
+    component Hair: Item {
+        id: hs
+        property real v: 0.5; property string k: ""
+        signal moved(real v)
+        width: parent ? parent.width : 0; height: 46
+        Text { y: 4; text: hs.k; color: Theme.t.text; font.family: Theme.display; font.pixelSize: 16 }
+        Text { y: 6; anchors.right: parent.right; text: Math.round(hs.v * 100); color: Theme.t.gold; font.family: Theme.display; font.pixelSize: 13; font.letterSpacing: 1 }
+        Item {
+            y: 32; width: parent.width; height: 12
+            Rectangle { anchors.verticalCenter: parent.verticalCenter; width: parent.width; height: 1; color: Theme.alpha(Theme.t.text, 0.2) }
+            Rectangle { anchors.verticalCenter: parent.verticalCenter; width: parent.width * hs.v; height: 2; color: Theme.t.accent
+                        Behavior on width { NumberAnimation { duration: 140 } } }
+            Rectangle { x: parent.width * hs.v - width / 2; anchors.verticalCenter: parent.verticalCenter
+                        width: 9; height: 9; rotation: 45; color: Theme.t.gold }
+            MouseArea { anchors.fill: parent; anchors.margins: -10
+                        onPressed: m => hs.moved(Math.max(0, Math.min(1, (m.x - 10) / (width - 20))))
+                        onPositionChanged: m => hs.moved(Math.max(0, Math.min(1, (m.x - 10) / (width - 20)))) }
+        }
+    }
+
+    Item {
+        id: ledger
+        visible: Theme.ccStyle === "ledger"
+        readonly property color ink: Theme.alpha(Theme.t.base, 1)
+        width: 420; height: lcol.height + 52
+        y: 44
+        x: parent.width - width - 14 + (cc.open ? 0 : 40)
+        opacity: cc.open ? 1 : 0
+        Behavior on x { NumberAnimation { duration: 320; easing.type: Easing.OutCubic } }
+        Behavior on opacity { NumberAnimation { duration: 220 } }
+        MouseArea { anchors.fill: parent }
+        Rectangle { anchors.fill: parent; radius: 18; color: Theme.alpha(Theme.t.base, Theme.selfBlur ? 0.9 : 0.78)
+                    border.width: 1; border.color: Theme.alpha(Theme.t.gold, 0.5) }
+
+        Column {
+            id: lcol
+            x: 26; y: 24; width: parent.width - 52; spacing: 16
+
+            // the hour, large, and who keeps it
+            Item {
+                width: parent.width; height: 92
+                Text { id: bigT; text: Theme.hm(Theme.now); color: Theme.t.text
+                       font.family: Theme.display; font.pixelSize: 64; font.letterSpacing: 2 }
+                Column {
+                    anchors.right: parent.right; anchors.top: parent.top; anchors.topMargin: 12; spacing: 4
+                    Text { anchors.right: parent.right; text: Theme.ap(Theme.now) + "  ·  " + Qt.formatDate(Theme.now, "dddd").toUpperCase(); color: Theme.t.gold
+                           font.family: Theme.display; font.pixelSize: 12; font.letterSpacing: 4 }
+                    Text { anchors.right: parent.right; text: Qt.formatDate(Theme.now, "d MMMM"); color: Theme.alpha(Theme.t.text, 0.7)
+                           font.family: Theme.display; font.pixelSize: 14; font.letterSpacing: 1 }
+                }
+                Text { anchors.bottom: parent.bottom; text: cc.user.charAt(0).toUpperCase() + cc.user.slice(1) + "  ·  " + Theme.t.clan
+                       color: Theme.alpha(Theme.t.text, 0.5); font.family: Theme.display; font.pixelSize: 12; font.letterSpacing: 1 }
+            }
+
+            Box {
+                num: "01"; label: "SIGNAL"
+                Row2 { k: cc.netKind === "wifi" ? "Wi-Fi" : "Network"; v: cc.net; on: cc.net !== "Offline"; toggle: true }
+                Row2 { k: "Bluetooth"; v: "Off"; toggle: true; last: true }
+            }
+            Box {
+                num: "02"; label: "SOUND"
+                Hair { k: "Volume"; v: cc.vol; onMoved: v => { if (cc.sink && cc.sink.audio) cc.sink.audio.volume = v; cc.vol = v } }
+                Hair { k: "Light"; v: cc.bright; visible: cc.hasBacklight; onMoved: v => { cc.bright = v; Theme.run("brightnessctl set " + Math.round(v * 100) + "%") } }
+            }
+            Box {
+                num: "03"; label: "QUIET"
+                Row2 { k: Theme.t.stillWord; v: Theme.stillness ? "silent" : ""; on: Theme.stillness; toggle: true; onHit: Theme.stillness = !Theme.stillness }
+                Row2 { k: "Night ink"; v: Theme.nightInk ? "warm" : ""; on: Theme.nightInk; toggle: true; last: true
+                       onHit: { Theme.nightInk = !Theme.nightInk; Theme.run(Theme.nightInk ? "pkill hyprsunset; setsid hyprsunset -t 4200 >/dev/null 2>&1 &" : "pkill hyprsunset") } }
+            }
+            Box {
+                num: "04"; label: "PATH"
+                Item {
+                    width: parent.width; height: 40
+                    Row {
+                        anchors.verticalCenter: parent.verticalCenter; spacing: 26
+                        Repeater {
+                            model: [["samurai", "Tenka"], ["xianxia", "Tianxia"]]
+                            Row {
+                                required property var modelData
+                                readonly property bool cur: Theme.t.name === modelData[0]
+                                spacing: 9
+                                Rectangle { anchors.verticalCenter: parent.verticalCenter; width: 8; height: 8; rotation: 45
+                                            color: parent.cur ? Theme.t.gold : "transparent"; border.width: 1; border.color: Theme.t.gold }
+                                Text { text: parent.modelData[1]; color: parent.cur ? Theme.t.text : Theme.alpha(Theme.t.text, 0.5)
+                                       font.family: Theme.display; font.pixelSize: 16; font.letterSpacing: 1
+                                       MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: Theme.run("tenka-theme " + parent.parent.modelData[0]) } }
+                            }
+                        }
+                    }
+                }
+            }
+            // the rites, as words on one line
+            Row {
+                anchors.horizontalCenter: parent.horizontalCenter; spacing: 30
+                Repeater {
+                    model: [[Theme.t.lockWord, "loginctl lock-session"], [Theme.t.suspendWord, "systemctl suspend"],
+                            [Theme.t.rebootWord, "systemctl reboot"], [Theme.t.shutdownWord, "systemctl poweroff"]]
+                    Text {
+                        required property var modelData; required property int index
+                        text: modelData[0].toUpperCase(); font.family: Theme.display; font.pixelSize: 12; font.letterSpacing: 4
+                        color: ra.containsMouse ? (index === 3 ? Theme.t.accent : Theme.t.gold) : Theme.alpha(Theme.t.text, 0.62)
+                        MouseArea { id: ra; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                                    onClicked: { cc.open = false; Theme.run(parent.modelData[1]) } }
                     }
                 }
             }

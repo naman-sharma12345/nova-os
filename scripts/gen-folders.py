@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 """Tenka folder icons (places): one drawn set per theme, written into the Tenka-<Theme> icon themes.
-Direction is chosen by FOLDER_STYLE (lacquer | line | washi). Run: python3 scripts/gen-folders.py [style]"""
+Direction is chosen by FOLDER_STYLE (edge [default] | flat | paper | lacquer | line | washi).
+The default is quiet on purpose (Naman, Oct 10: "simple, not neon glow"): flat shapes, no glow, no shadow. Run: python3 scripts/gen-folders.py [style]"""
 import os, sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PAL = {
-    "samurai": dict(theme="Tenka-Samurai", base="#0f0d0c", body="#2a2320", body2="#3a302a", gold="#c9a35a", accent="#d8412f", paper="#efe6d6", ink="#fff8ec"),
-    "xianxia": dict(theme="Tenka-Xianxia", base="#0b1513", body="#1a2e29", body2="#25403a", gold="#e2bd6b", accent="#5fc9a0", paper="#eef3ec", ink="#0b1513"),
+    "samurai": dict(theme="Tenka-Samurai", base="#0f0d0c", body="#2a2320", body2="#3a302a", gold="#c9a35a", accent="#d8412f", paper="#efe6d6", ink="#fff8ec",
+                    # the quiet sets: muted stone (flat), raw washi (paper), dark ink (edge)
+                    stone="#6e6259", stone2="#564b44", washi="#d6cbb8", washi2="#b3a591", inkb="#3a312c", inkb2="#4a3f38"),
+    "xianxia": dict(theme="Tenka-Xianxia", base="#0b1513", body="#1a2e29", body2="#25403a", gold="#e2bd6b", accent="#5fc9a0", paper="#eef3ec", ink="#0b1513",
+                    stone="#4a625b", stone2="#3a4f49", washi="#cfd8cf", washi2="#a9b8ad", inkb="#243934", inkb2="#304a43"),
 }
 # glyphs, drawn on the folder's front (24x24 box placed at 12,19)
 G = {
@@ -52,6 +56,16 @@ def svg(kind, p, style):
                 f'<path d="{FRONT}" fill="{p["paper"]}"/>'
                 f'<path d="M4 18.5h40v3H4z" fill="{p["gold"]}" fill-opacity=".85"/>'
                 + glyph(p["base"], 2))
+    # --- the quiet sets (Naman: "simple, not neon glow"): flat shapes, no glow, no shadow, a tiny glyph at most
+    small = lambda col, op: (f'<g transform="translate(17.5 22.5) scale(.55)" fill="none" stroke="{col}" stroke-opacity="{op}" stroke-width="2.6" '
+                             f'stroke-linecap="round" stroke-linejoin="round"><path d="{g}"/></g>' if g else "")
+    if style == "flat":      # one muted tone, the back a shade deeper; nothing else
+        return f'<path d="{BACK}" fill="{p["stone2"]}"/><path d="{FRONT}" fill="{p["stone"]}"/>' + small(p["base"], .55)
+    if style == "paper":     # raw washi, a deeper paper tab
+        return f'<path d="{BACK}" fill="{p["washi2"]}"/><path d="{FRONT}" fill="{p["washi"]}"/>' + small(p["base"], .45)
+    if style == "edge":      # dark ink body, one gold hairline along the front's top edge
+        return (f'<path d="{BACK}" fill="{p["inkb2"]}"/><path d="{FRONT}" fill="{p["inkb"]}"/>'
+                f'<path d="M4.6 18.5h38.8" stroke="{p["gold"]}" stroke-width="1.1" stroke-opacity=".85"/>' + small(p["gold"], .7))
     raise SystemExit("unknown style " + style)
 
 def doc(inner):
@@ -68,7 +82,7 @@ def write(style, out_root=None):
                 open(os.path.join(d, n + ".svg"), "w").write(s)
 
 if __name__ == "__main__":
-    style = (sys.argv[1] if len(sys.argv) > 1 else os.environ.get("FOLDER_STYLE", "line"))
+    style = (sys.argv[1] if len(sys.argv) > 1 else os.environ.get("FOLDER_STYLE", "edge"))
     out = sys.argv[2] if len(sys.argv) > 2 else None
     write(style, out)
     print("folders:", style)

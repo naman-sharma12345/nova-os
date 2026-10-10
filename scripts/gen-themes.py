@@ -328,21 +328,23 @@ def gen(name, T):
     selection {{ background-color: {rgba(p['accent'], 0.35)}; color: {p['text']}; }}
     /* ---- the file manager, "glass" (Naman: more translucent, in line with the theme): one sheet of ink glass
        over the art (Hyprland blurs what is behind it), a clear content area, a gold hairline between the panes,
-       a vermilion / jade pill for the chosen place, a pill path bar, Marcellus labels. No glow anywhere. ---- */
+       the chosen place marked by a short accent rule (the ledger's mark), a hairline path bar, ledger corners,
+       Marcellus labels. No pills, no glow anywhere. ---- */
     window.thunar.background, window.thunar.background:not(.xfce4-panel) {{ background-color: {rgba(p['base'], 0.50)}; color: {p['text']}; }}
     .thunar * {{ font-family: Marcellus; }}
     .thunar iconview, .thunar iconview.view, .thunar .view, .thunar treeview.view, .thunar scrolledwindow, .thunar viewport,
     .thunar notebook, .thunar notebook > stack, .thunar notebook > header {{ background-color: transparent; background-image: none; border: none; box-shadow: none; color: {p['text']}; }}
     .thunar iconview {{ padding: 22px 18px; }}
-    .thunar iconview:selected, .thunar .view:selected:not(treeview) {{ background-color: {rgba(p['accent'], 0.30)}; color: {p['text']}; border-radius: 12px; }}
+    .thunar iconview:selected, .thunar .view:selected:not(treeview) {{ background-color: {rgba(p['accent'], 0.24)}; color: {p['text']}; border-radius: {12 if name == 'xianxia' else 6}px; }}
     .thunar .sidebar, .thunar .sidebar treeview.view, .thunar .shortcuts-pane {{ background-color: {rgba(p['mantle'], 0.20)}; }}
     .thunar .sidebar treeview.view {{ padding: 5px 10px; color: {p['subtext']}; }}
-    .thunar .sidebar treeview.view:selected {{ background-color: {rgba(p['accent'], 0.85 if name == 'xianxia' else 0.75)}; color: {p['base'] if name == 'xianxia' else p['text']}; border-radius: 999px; border: none; }}
-    .thunar .sidebar treeview.view:hover {{ background-color: {rgba(p['text'], 0.06)}; border-radius: 999px; }}
+    .thunar .sidebar treeview.view:selected {{ background-color: {rgba(p['accent'], 0.12)}; background-image: linear-gradient({p['accent']}, {p['accent']});
+        background-size: 2px 16px; background-position: left center; background-repeat: no-repeat; color: {p['text']}; border-radius: 0; border: none; }}
+    .thunar .sidebar treeview.view:hover {{ background-color: {rgba(p['text'], 0.05)}; border-radius: 0; }}
     .thunar toolbar, .thunar .toolbar {{ background-color: transparent; border-bottom: 1px solid {rgba(p['accent2'], 0.22)}; padding: 8px 12px; }}
-    .thunar toolbar button, .thunar button {{ border-radius: 10px; background: transparent; border: none; box-shadow: none; color: {p['subtext']}; -gtk-icon-shadow: none; }}
+    .thunar toolbar button, .thunar button {{ border-radius: {12 if name == 'xianxia' else 6}px; background: transparent; border: none; box-shadow: none; color: {p['subtext']}; -gtk-icon-shadow: none; }}
     .thunar toolbar button:hover, .thunar button:hover {{ background-color: {rgba(p['text'], 0.07)}; color: {p['text']}; }}
-    .thunar entry {{ border-radius: 999px; background-color: {rgba(p['mantle'], 0.45)}; border: 1px solid {rgba(p['accent2'], 0.35)}; color: {p['text']}; padding: 5px 16px; box-shadow: none; caret-color: {p['accent2']}; }}
+    .thunar entry {{ border-radius: 0; background-color: transparent; border: none; border-bottom: 1px solid {rgba(p['accent2'], 0.40)}; color: {p['text']}; padding: 5px 6px; box-shadow: none; caret-color: {p['accent2']}; }}
     .thunar statusbar, .thunar .statusbar {{ background-color: transparent; color: {rgba(p['subtext'], 0.8)}; font-size: 9pt; border: none; }}
     .thunar paned > separator {{ background-color: {rgba(p['accent2'], 0.45)}; background-image: none; min-width: 1px; }}
     scrollbar, scrollbar trough {{ background: transparent; border: none; }}

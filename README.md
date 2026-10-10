@@ -83,6 +83,17 @@ Or press <kbd>Super</kbd>+<kbd>T</kbd>, or open **Choose your path** from the la
 | <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> | performance mode |
 | <kbd>Print</kbd> / <kbd>Shift</kbd>+<kbd>Print</kbd> | screenshot area / screen |
 
+## Captured in a VM
+
+> Real screenshots of the v0.1.0 ISO booted in QEMU with **no GPU** (software rendering, emulated CPU). Hyprland + the Tenka shell with real compositor blur, and Tenka Lite (XFCE), which Tenka picks by itself at boot on machines without 3D or with little RAM. Tenka Lite idles at about **830 MB** of RAM in the live session.
+
+| | Tenka | Tianxia |
+|---|---|---|
+| Hyprland desktop | <img src="docs/screenshots/vm-hyprland-tenka.jpg" width="100%"> | <img src="docs/screenshots/vm-hyprland-tianxia.jpg" width="100%"> |
+| Launcher | <img src="docs/screenshots/vm-launcher-tenka.jpg" width="100%"> | <img src="docs/screenshots/vm-launcher-tianxia.jpg" width="100%"> |
+| Control center · Lock | <img src="docs/screenshots/vm-control-tenka.jpg" width="100%"> | <img src="docs/screenshots/vm-lock-tianxia.jpg" width="100%"> |
+| Tenka Lite (XFCE) | <img src="docs/screenshots/vm-lite-tenka.jpg" width="100%"> | <img src="docs/screenshots/vm-lite-tianxia.jpg" width="100%"> |
+
 ## System requirements
 
 | | Minimum (Tenka Lite) | Recommended (Tenka, Hyprland) |

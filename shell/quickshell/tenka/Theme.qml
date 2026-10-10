@@ -44,9 +44,12 @@ Singleton {
         path: Quickshell.env("HOME") + "/.config/tenka/desk.json"
         watchChanges: true
         onFileChanged: reload()
-        JsonAdapter { id: deskCfg; property string city: ""; property var events: [] }
+        JsonAdapter { id: deskCfg; property string city: ""; property var events: []; property string style: "" }
     }
     readonly property alias desk: deskCfg
+    // the desk title layout: "blade" (big clock left, seal, proverb), "film" (a cinematic lower band),
+    // "scroll" (a hanging scroll at the left edge). desk.json "style" or TENKA_DESK picks it.
+    readonly property string deskStyle: Quickshell.env("TENKA_DESK") || deskCfg.style || "blade"
 
     FileView {
         path: Quickshell.env("HOME") + "/.config/tenka/shell-theme.json"

@@ -35,7 +35,8 @@ x xfce4-panel /plugins/plugin-1/button-icon string "$D/crest-1024.png"
 # the top bar stays where xfce4-panel.xml puts it: a bare, transparent strip at the very top
 # restart the panel only if it is already up (at login the session starts it with these settings)
 if xfce4-panel --version >/dev/null 2>&1 && pgrep -u "$(id -u)" -x xfce4-panel >/dev/null; then
-  [ "$1" = --login ] || (xfce4-panel -r >/dev/null 2>&1 &)
+  # quit + start, not `xfce4-panel -r`: a restarted panel loses its transparent (ARGB) window and the bare bar turns black
+  [ "$1" = --login ] || { xfce4-panel --quit >/dev/null 2>&1; sleep 1; (setsid xfce4-panel >/dev/null 2>&1 &); }
 fi
 # the desk title card (clock, seal, date, proverb), mirroring the Tenka shell
 if command -v conky >/dev/null; then

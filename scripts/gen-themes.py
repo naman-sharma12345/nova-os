@@ -302,7 +302,7 @@ def gen(name, T):
     """)
     W(f"{H}/.config/gtk-4.0/gtk.css", gtkcss)
     W(f"{H}/.config/gtk-3.0/gtk.css", gtkcss + textwrap.dedent(f"""\
-    window.background, .thunar .sidebar, .sidebar {{ background-color: {p['base']}; color: {p['text']}; }}
+    window.background:not(.xfce4-panel), .thunar .sidebar, .sidebar {{ background-color: {p['base']}; color: {p['text']}; }}
     headerbar, .titlebar {{ background-color: {p['surface']}; color: {p['text']}; box-shadow: none; }}
     selection, *:selected {{ background-color: {rgba(p['accent'], 0.85)}; color: {p['text']}; }}
     """))

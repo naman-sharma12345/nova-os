@@ -117,7 +117,7 @@ def gtk_theme(name, T, d):
     /* ---- Tenka Lite panels, mirroring the Tenka shell: the top bar is bare (its colour comes from
        the panel's own transparent background); the dock's glass is its background-rgba, rounded here ---- */
     .xfce4-panel.background {{
-        background-image: none; border-radius: 22px; border: none;
+        background-image: none; background-color: transparent; border-radius: 22px; border: none;
         color: {p['text']};
     }}
     .xfce4-panel button {{ color: {p['text']}; border-radius: {r}px; padding: 2px 8px; background: transparent; border: none; box-shadow: none; }}

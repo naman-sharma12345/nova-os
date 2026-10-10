@@ -32,10 +32,7 @@ x xfce4-screensaver /screensavers/xfce-personal-slideshow/location string "$HOME
 x xfce4-panel /plugins/plugin-1/button-title string "$THEME_DISPLAY"
 x xfce4-panel /plugins/plugin-1/show-button-title bool false
 x xfce4-panel /plugins/plugin-1/button-icon string "$D/crest-1024.png"
-# floating panel: centred, 12 px below the top edge
-w=$(xrandr 2>/dev/null | awk '/\*/ {split($1,a,"x"); print a[1]; exit}'); w=${w:-1920}
-x xfce4-panel /panels/panel-1/position string "p=0;x=$((w/2));y=31"
-x xfce4-panel /panels/panel-1/length double 97
+# the top bar stays where xfce4-panel.xml puts it: a bare, transparent strip at the very top
 # restart the panel only if it is already up (at login the session starts it with these settings)
 if xfce4-panel --version >/dev/null 2>&1 && pgrep -u "$(id -u)" -x xfce4-panel >/dev/null; then
   [ "$1" = --login ] || (xfce4-panel -r >/dev/null 2>&1 &)

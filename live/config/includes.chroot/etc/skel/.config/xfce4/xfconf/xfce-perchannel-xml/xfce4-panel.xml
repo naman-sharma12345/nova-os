@@ -13,7 +13,7 @@
       <property name="position-locked" type="bool" value="true"/>
       <property name="size" type="uint" value="30"/>
       <property name="icon-size" type="uint" value="14"/>
-      <property name="background-style" type="uint" value="1"/>
+      <property name="background-style" type="uint" value="0"/>
       <property name="background-rgba" type="array">
         <value type="double" value="0"/><value type="double" value="0"/><value type="double" value="0"/><value type="double" value="0"/>
       </property>

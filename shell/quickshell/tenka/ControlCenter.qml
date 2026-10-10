@@ -29,6 +29,7 @@ PanelWindow {
     readonly property var sink: Pipewire.defaultAudioSink
     property real vol: sink && sink.audio ? sink.audio.volume : 0.64
     property real bright: 0.8
+    property bool hasBacklight: false
     property string user: Quickshell.env("USER") || "you"
     property string up: ""
     property string net: "Offline"
@@ -37,8 +38,8 @@ PanelWindow {
               stdout: StdioCollector { onStreamFinished: { const p = text.trim().split(":"); if (p.length > 2) { cc.netKind = p[0]; cc.net = p[2] } else cc.net = "Offline" } } }
     Process { id: upP; running: cc.open; command: ["sh", "-c", "uptime -p | sed 's/^up //'"]
               stdout: StdioCollector { onStreamFinished: cc.up = text.trim() } }
-    Process { id: brP; running: cc.open; command: ["sh", "-c", "brightnessctl -m 2>/dev/null | cut -d, -f4 | tr -d %"]
-              stdout: StdioCollector { onStreamFinished: if (text.trim() !== "") cc.bright = Number(text.trim()) / 100 } }
+    Process { id: brP; running: cc.open; command: ["sh", "-c", "brightnessctl -m -c backlight 2>/dev/null | head -1 | cut -d, -f4 | tr -d %"]
+              stdout: StdioCollector { onStreamFinished: { cc.hasBacklight = text.trim() !== ""; if (cc.hasBacklight) cc.bright = Number(text.trim()) / 100 } } }
 
     MouseArea { anchors.fill: parent; onClicked: cc.open = false }
     Rectangle { anchors.fill: parent; opacity: panel.opacity
@@ -154,7 +155,7 @@ PanelWindow {
             }
             Slider { label: "VOLUME"; g: "\uf028"; v: cc.vol
                      onMoved: v => { if (cc.sink && cc.sink.audio) cc.sink.audio.volume = v; cc.vol = v } }
-            Slider { label: "BRIGHTNESS"; g: "\uf185"; v: cc.bright
+            Slider { label: "BRIGHTNESS"; g: "\uf185"; v: cc.bright; visible: cc.hasBacklight
                      onMoved: v => { cc.bright = v; Theme.run("brightnessctl set " + Math.round(v * 100) + "%") } }
 
             // ---- playing

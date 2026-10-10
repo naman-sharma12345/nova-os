@@ -27,6 +27,9 @@ PanelWindow {
         shown = true; hide.restart()
     }
     Timer { id: hide; interval: 1400; onTriggered: osd.shown = false }
+    // PipeWire reports the sink volume once at login; only real changes after that pop the OSD
+    property bool armed: false
+    Timer { interval: 5000; running: true; onTriggered: osd.armed = true }
     IpcHandler {
         target: "osd"
         function brightness(p: int): void { osd.pop("brightness", p / 100) }
@@ -35,7 +38,7 @@ PanelWindow {
     PwObjectTracker { objects: Pipewire.defaultAudioSink ? [Pipewire.defaultAudioSink] : [] }
     Connections {
         target: Pipewire.defaultAudioSink ? Pipewire.defaultAudioSink.audio : null
-        function onVolumeChanged() { osd.pop("volume", Pipewire.defaultAudioSink.audio.volume) }
+        function onVolumeChanged() { if (osd.armed) osd.pop("volume", Pipewire.defaultAudioSink.audio.volume) }
         ignoreUnknownSignals: true
     }
 

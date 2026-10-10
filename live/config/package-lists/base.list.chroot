@@ -82,3 +82,5 @@ qt6-style-kvantum
 firefox-esr
 xdg-user-dirs
 xdg-utils
+# SVG loader for GTK: without it every SVG icon (the gold Tenka set, Papirus) falls back to stock PNGs
+librsvg2-common

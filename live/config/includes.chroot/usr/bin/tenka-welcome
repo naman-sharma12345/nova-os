@@ -1,12 +1,19 @@
 #!/bin/sh
 # First-login welcome and theme picker.
 mkdir -p "$HOME/.config/tenka"
-args=""
+set --
 if [ "$(cat /run/tenka/mode 2>/dev/null)" = lite ] || [ "${XDG_CURRENT_DESKTOP:-}" = XFCE ]; then
-  args="--lite --reason $(sed -n 's/^reason: //p' /run/tenka-hwdetect.reason 2>/dev/null | tr ' ' '_' )"
+  r=$(sed -n 's/^reason: //p' /run/tenka-hwdetect.reason 2>/dev/null)
+  case "$r" in
+    *3D*|*3d*|*llvmpipe*|*software*) r="no 3D graphics" ;;
+    *RAM*|*memory*|*Memory*) r="under 4 GB of memory" ;;
+    ""|*chosen*) r="light hardware" ;;
+  esac
+  set -- --lite --reason "$r"
+  [ "${XDG_CURRENT_DESKTOP:-}" = Hyprland ] && set -- "$@" --hypr
 fi
 QML=$(command -v qml6 || echo /usr/lib/qt6/bin/qml)
-QT_QPA_PLATFORMTHEME= "$QML" /usr/share/tenka/welcome/Welcome.qml -- $args 2>/dev/null
+QT_QPA_PLATFORMTHEME= "$QML" /usr/share/tenka/welcome/Welcome.qml -- "$@" 2>/dev/null
 rc=$?
 touch "$HOME/.config/tenka/welcomed"
 case $rc in

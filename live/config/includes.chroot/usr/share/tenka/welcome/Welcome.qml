@@ -13,6 +13,7 @@ Window {
     property bool lite: Qt.application.arguments.indexOf("--lite") >= 0
     property string reason: { var a = Qt.application.arguments; var i = a.indexOf("--reason"); return i >= 0 && i + 1 < a.length ? a[i + 1] : "" }
     property bool perf: lite
+    property bool hypr: Qt.application.arguments.indexOf("--hypr") >= 0
     property int hovered: -1
 
     function choose(i) { Qt.exit((i === 0 ? 10 : 11) + (perf ? 10 : 0)) }
@@ -67,7 +68,8 @@ Window {
         Text {
             visible: win.lite
             width: 900; horizontalAlignment: Text.AlignHCenter; wrapMode: Text.WordWrap
-            text: "This machine is running Tenka Lite (" + (win.reason !== "" ? win.reason : "light hardware") + "): the same art on a lighter engine. Pick “Tenka” at the login screen for the full Hyprland desktop on a machine with 3D graphics."
+            text: win.hypr ? "This machine has " + win.reason + ", so performance mode is on: the glass frosts itself and motion is calmer. For the lightest feel, pick “Tenka Lite” at the login screen."
+                          : "This machine is running Tenka Lite (" + win.reason + "): the same art on a lighter engine. Pick “Tenka” at the login screen for the full Hyprland desktop on a machine with 3D graphics."
             color: "#c9a35a"; font.family: "Inter"; font.pixelSize: 14
         }
         Row {

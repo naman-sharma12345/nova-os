@@ -186,6 +186,36 @@ def gtk_theme(name, T, d):
                            background-color: {A(p['text'], 0.06)}; border-bottom: 1px solid {p['accent']}; box-shadow: none; }}
     #xfwm-tabwin label {{ font-family: "{disp}"; font-weight: normal; font-size: 13px; color: {p['subtext']}; letter-spacing: 0.4px; }}
     """)
+    css += textwrap.dedent(f"""\
+    /* Lock screen (xfce4-screensaver-dialog; its widget names come from the lightdm-gtk-greeter layout): the key art
+       stays the picture, and on it one small ledger card: ink, a gold top rule, square corners, the name in Marcellus,
+       the password on a single hairline, quiet text actions with the accent rule only under Unlock. No glow. */
+    #panel_window {{ background-color: {A(p['base'], 0.78)}; background-image: none; border: none;
+                     border-bottom: 1px solid {A(p['accent2'], 0.30)}; box-shadow: none; padding: 2px 10px; }}
+    #panel_window label {{ font-family: "{disp}"; font-weight: normal; font-size: 13px; color: {p['subtext']}; letter-spacing: 0.6px; }}
+    #panel_window image {{ color: {A(p['accent2'], 0.8)}; }}
+    #login_window {{ background-color: {A(p['base'], 0.95)}; background-image: none; border: 1px solid {A(p['accent2'], 0.22)};
+                     border-top: 1px solid {A(p['accent2'], 0.75)}; border-radius: 3px; box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45); }}
+    #login_window frame, #login_window frame > border, #content_frame, #buttonbox_frame {{ background: none; border: none; box-shadow: none; }}
+    #content_frame {{ padding: 26px 30px 6px 30px; }}
+    #login_window label {{ font-family: "{disp}"; font-weight: normal; color: {p['text']}; }}
+    #user_image_border {{ border: none; border-radius: 0; padding: 0; }}
+    #user_image {{ opacity: 0.85; }}
+    #prompt_entry {{ background-color: transparent; background-image: none; border: none; border-bottom: 1px solid {A(p['accent2'], 0.45)};
+                     border-radius: 0; box-shadow: none; outline: none; padding: 6px 2px; min-width: 240px; min-height: 26px;
+                     font-family: "{disp}"; color: {p['text']}; caret-color: {p['accent2']}; }}
+    #prompt_entry:focus {{ border-bottom: 1px solid {p['accent']}; box-shadow: none; }}
+    #prompt_entry image {{ color: {p['subtext']}; }}
+    #greeter_infobar, #greeter_infobar > revealer > box {{ background: none; border: none; box-shadow: none; }}
+    #greeter_infobar label {{ color: {p['accent']}; font-size: 12px; }}
+    #buttonbox_frame button {{ background: none; border: none; border-radius: 0; box-shadow: none; outline: none; min-height: 0;
+                               padding: 4px 8px; margin: 0 2px; border-bottom: 1px solid transparent; }}
+    #buttonbox_frame button label {{ font-family: "{disp}"; font-weight: normal; font-size: 13px; color: {p['subtext']}; letter-spacing: 1.2px; }}
+    #buttonbox_frame button:hover label, #buttonbox_frame button:focus label {{ color: {p['text']}; }}
+    #buttonbox_frame button#login_button label {{ color: {p['accent2']}; }}
+    #buttonbox_frame button#login_button {{ border-bottom: 1px solid {A(p['accent2'], 0.55)}; }}
+    #buttonbox_frame button#login_button:hover, #buttonbox_frame button#login_button:focus {{ border-bottom-color: {p['accent']}; }}
+    """)
     W(os.path.join(d, "gtk-3.0/gtk.css"), css)
     W(os.path.join(d, "gtk-3.0/gtk-dark.css"), css)
     W(os.path.join(d, "index.theme"), textwrap.dedent(f"""\

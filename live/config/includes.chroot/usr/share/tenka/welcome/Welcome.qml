@@ -7,7 +7,11 @@ import QtQuick.Window
 Window {
     id: win
     width: 1180; height: 700
-    visible: true
+    // shown only after the app has its name: X11 reads WM_CLASS when the window is first created,
+    // so docks (XFCE docklike) match it to tenka-theme.desktop (StartupWMClass=tenka-welcome)
+    // instead of grouping it under the qml runtime's generic gear
+    visible: false
+    Component.onCompleted: { Qt.application.name = "tenka-welcome"; visible = true }
     color: "#0a0908"
     title: "Welcome to Tenka"
     flags: Qt.Window

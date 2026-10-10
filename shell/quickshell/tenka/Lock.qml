@@ -10,7 +10,7 @@ import QtQuick.Effects
 
 Scope {
     id: root
-    property string typed: ""
+    property string typed: Quickshell.env("TENKA_LOCK_PREVIEW") === "1" ? (Quickshell.env("TENKA_LOCK_TYPED") || "") : ""   // renders only
     property string status: ""
     property bool busy: false
 

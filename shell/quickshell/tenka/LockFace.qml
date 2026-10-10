@@ -1,6 +1,7 @@
 // The lock screen's face, shared by the real session lock and the preview window (TENKA_LOCK_PREVIEW=1).
-// Three directions: "card" (the title card), "brush" (a giant weekday written behind a centred clock),
-// "still" (almost nothing: the frosted art, the time, a gold rule that takes your password).
+// Four directions: "ledger" (default: the desk's language, a ruled column at the lower left, an
+// underline field, no fills), "card" (the title card), "brush" (a giant weekday written behind a
+// centred clock), "still" (almost nothing: the frosted art, the time, a gold rule that takes your password).
 import Quickshell
 import QtQuick
 import QtQuick.Effects
@@ -9,7 +10,7 @@ Item {
     id: face
     property var lock
     readonly property real s: Math.min(width / 1920, height / 1080)
-    readonly property string style: Quickshell.env("TENKA_LOCK") || Theme.desk.lock || "brush"
+    readonly property string style: Quickshell.env("TENKA_LOCK") || Theme.desk.lock || "ledger"
 
     Image { anchors.fill: parent; source: Theme.wallBlur; fillMode: Image.PreserveAspectCrop; smooth: true }
     Image { anchors.fill: parent; source: Theme.t.wallpaper; fillMode: Image.PreserveAspectCrop; opacity: 0.35; sourceSize.width: 1920 }
@@ -93,7 +94,7 @@ Item {
                color: face.lock.status !== "" ? Theme.t.accent : Theme.alpha(Theme.t.text, 0.5); font.family: Theme.ui; font.pixelSize: 12 * face.s }
     }
     Row {
-        visible: face.style !== "still"
+        visible: face.style !== "still" && face.style !== "ledger"
         anchors.right: parent.right; anchors.bottom: parent.bottom; anchors.margins: 40 * face.s; spacing: 12 * face.s
         Text { text: (Quickshell.env("USER") || ""); color: Theme.alpha(Theme.t.text, 0.6); font.family: Theme.display; font.pixelSize: 14 * face.s; font.letterSpacing: 3 }
         Image { source: Theme.t.crest; width: 22 * face.s; height: 22 * face.s; mipmap: true; anchors.verticalCenter: parent.verticalCenter }
@@ -176,6 +177,71 @@ Item {
                 Text { anchors.centerIn: parent; visible: face.lock.typed.length === 0; text: face.hint
                        color: face.lock.status !== "" ? Theme.t.accent : Theme.alpha(Theme.t.text, 0.45)
                        font.family: Theme.display; font.pixelSize: 13 * face.s; font.letterSpacing: 5 * face.s }
+            }
+        }
+    }
+
+    // ---- "ledger": a ruled column at the lower left, in the desk's language. No fills, no glow.
+    Item {
+        visible: face.style === "ledger"
+        anchors.fill: parent
+        readonly property color bad: Theme.t.accent
+        Column {
+            x: 140 * face.s; anchors.bottom: parent.bottom; anchors.bottomMargin: 150 * face.s
+            spacing: 0
+            // 01 · the day, in small caps
+            Row {
+                spacing: 14 * face.s
+                Text { text: "01"; color: Theme.alpha(Theme.t.gold, 0.7); font.family: Theme.display
+                       font.pixelSize: 13 * face.s; font.letterSpacing: 3 * face.s; anchors.verticalCenter: parent.verticalCenter }
+                Rectangle { width: 28 * face.s; height: 1; color: Theme.alpha(Theme.t.gold, 0.6); anchors.verticalCenter: parent.verticalCenter }
+                Text { text: Qt.formatDate(Theme.now, "dddd  ·  d MMMM").toUpperCase(); color: Theme.t.gold
+                       font.family: Theme.display; font.pixelSize: 15 * face.s; font.letterSpacing: 6 * face.s }
+            }
+            // the time
+            Row {
+                spacing: 18 * face.s
+                Text { id: lt; text: Theme.hm(Theme.now); color: Theme.t.text; font.family: Theme.display
+                       font.pixelSize: 176 * face.s; font.letterSpacing: -1 * face.s }
+                Text { text: Theme.ap(Theme.now); color: Theme.alpha(Theme.t.text, 0.6); font.family: Theme.display
+                       font.pixelSize: 20 * face.s; font.letterSpacing: 5 * face.s
+                       anchors.baseline: lt.baseline }
+            }
+            // the rule: one hairline with a short accent at its head
+            Item {
+                width: 470 * face.s; height: 2 * face.s
+                Rectangle { anchors.verticalCenter: parent.verticalCenter; width: parent.width; height: 1; color: Theme.alpha(Theme.t.gold, 0.55) }
+                Rectangle { width: 56 * face.s; height: 2 * face.s; color: Theme.t.accent }
+            }
+            Item { width: 1; height: 22 * face.s }
+            Text { text: face.motto; color: Theme.alpha(Theme.t.text, 0.9); font.family: Theme.display
+                   font.pixelSize: 24 * face.s; font.letterSpacing: 1 }
+            Item { width: 1; height: 44 * face.s }
+            // 02 · the field: a label, the marks, one underline
+            Row {
+                spacing: 14 * face.s
+                Text { text: "02"; color: Theme.alpha(Theme.t.gold, 0.7); font.family: Theme.display
+                       font.pixelSize: 13 * face.s; font.letterSpacing: 3 * face.s; anchors.verticalCenter: parent.verticalCenter }
+                Rectangle { width: 28 * face.s; height: 1; color: Theme.alpha(Theme.t.gold, 0.6); anchors.verticalCenter: parent.verticalCenter }
+                Text { text: (Theme.xia ? "THE WORD" : "PASSWORD") + "  ·  " + (Quickshell.env("USER") || "").toUpperCase()
+                       color: Theme.alpha(Theme.t.text, 0.65); font.family: Theme.display; font.pixelSize: 13 * face.s; font.letterSpacing: 5 * face.s }
+            }
+            Item { width: 1; height: 10 * face.s }
+            Item {
+                width: 470 * face.s; height: 44 * face.s
+                Row { anchors.verticalCenter: parent.verticalCenter; spacing: 11 * face.s; visible: face.lock.typed.length > 0
+                      Repeater { model: Math.min(face.lock.typed.length, 24)
+                          Rectangle { width: 7 * face.s; height: width; radius: Theme.xia ? width / 2 : 0; rotation: Theme.xia ? 0 : 45; color: Theme.t.gold } } }
+                Text { anchors.verticalCenter: parent.verticalCenter; visible: face.lock.typed.length === 0
+                       text: face.lock.status !== "" ? face.lock.status : (Theme.xia ? "Speak the word" : "Type to unlock")
+                       color: face.lock.status !== "" ? Theme.t.accent : Theme.alpha(Theme.t.text, 0.4)
+                       font.family: Theme.display; font.pixelSize: 18 * face.s; font.letterSpacing: 1 }
+                Text { anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter
+                       text: face.lock.busy ? "· · ·" : "ENTER"; color: Theme.alpha(Theme.t.gold, face.lock.typed.length > 0 ? 0.95 : 0.45)
+                       font.family: Theme.display; font.pixelSize: 12 * face.s; font.letterSpacing: 5 * face.s
+                       MouseArea { anchors.fill: parent; anchors.margins: -10; onClicked: face.lock.submit() } }
+                Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1
+                            color: face.lock.status !== "" ? Theme.t.accent : Theme.alpha(Theme.t.gold, face.lock.typed.length > 0 ? 0.9 : 0.5) }
             }
         }
     }

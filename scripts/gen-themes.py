@@ -271,7 +271,7 @@ def gen(name, T):
             mod("terminal", keys["terminal"], "\uf120"),
             mod("theme", keys["theme"], "\uf1fc", format=f"{T['display']} \u00b7 {T['tagline']}"),
             mod("packages", keys["packages"], "\uf487"),
-            mod("cpu", keys["cpu"], "\uf4bc", format="{name}"),
+            mod("cpu", keys["cpu"], "\uf4bc", format="{cores-logical} cores{?freq-max} \u00b7 {freq-max}{?}"),
             mod("memory", keys["memory"], "\uf2db"),
             mod("uptime", keys["uptime"], "\uf43a"),
             {"type": "custom", "key": " ", "format": f"\u001b[38;2;{rgb_t(p['overlay']).replace(',', ';')}m\u2570" + "\u2500" * 44 + "\u001b[0m"},

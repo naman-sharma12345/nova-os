@@ -72,7 +72,7 @@
       "type": "cpu",
       "key": "\u001b[38;2;29;51;46m│\u001b[0m    Spirit Root",
       "keyColor": "38;2;226;189;107",
-      "format": "{name}"
+      "format": "{cores-logical} cores{?freq-max} · {freq-max}{?}"
     },
     {
       "type": "memory",

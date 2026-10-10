@@ -70,7 +70,7 @@
       "type": "cpu",
       "key": "\u001b[38;2;42;37;34m│\u001b[0m    Spirit",
       "keyColor": "38;2;201;163;90",
-      "format": "{name}"
+      "format": "{cores-logical} cores{?freq-max} · {freq-max}{?}"
     },
     {
       "type": "memory",

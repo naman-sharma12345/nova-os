@@ -44,7 +44,7 @@ Singleton {
         path: Quickshell.env("HOME") + "/.config/tenka/desk.json"
         watchChanges: true
         onFileChanged: reload()
-        JsonAdapter { id: deskCfg; property string city: ""; property var events: []; property string style: ""; property string bar: "" }
+        JsonAdapter { id: deskCfg; property string city: ""; property var events: []; property string style: ""; property string bar: ""; property string lock: "" }
     }
     readonly property alias desk: deskCfg
     // the desk title layout: "blade" (big clock left, seal, proverb), "film" (a cinematic lower band),

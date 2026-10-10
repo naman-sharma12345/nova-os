@@ -13,6 +13,7 @@ PanelWindow {
     exclusiveZone: 30
     color: "transparent"
     WlrLayershell.namespace: "tenka-bar"
+    visible: Theme.barStyle === "line"
 
     Row {
         anchors.left: parent.left; anchors.verticalCenter: parent.verticalCenter

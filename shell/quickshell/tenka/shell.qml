@@ -15,6 +15,8 @@ ShellRoot {
             Wall { screen: perScreen.modelData }
             Desk { screen: perScreen.modelData }
             Bar { screen: perScreen.modelData }
+            Frame { screen: perScreen.modelData }
+            Notch { screen: perScreen.modelData }
             Dock { screen: perScreen.modelData }
             Cards { screen: perScreen.modelData }
         }

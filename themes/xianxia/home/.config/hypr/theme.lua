@@ -3,7 +3,7 @@
 local T = {}
 T.name = "xianxia"
 T.display = "Tianxia"
-T.cursor = "Bibata-Modern-Ice"
+T.cursor = "Tenka-Xianxia-Cursors"
 T.c = {base = "#0b1513", mantle = "#07100e", surface = "#12211e", overlay = "#1d332e", text = "#eef3ec", subtext = "#a9bdb4", accent = "#5fc9a0", accent2 = "#e2bd6b", accent_l = "#9ee6c4", alt = "#8fb3d1", alt_d = "#2c4a5c", soft = "#f0a3b8", green = "#e2553f"}
 
 hl.config({

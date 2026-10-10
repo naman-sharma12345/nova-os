@@ -5,7 +5,7 @@
 -- ╰──────────────────────────────────────────────────────────────╯
 local HOME = os.getenv("HOME")
 local ok, T = pcall(dofile, HOME .. "/.config/hypr/theme.lua")
-if not ok then T = { cursor = "Bibata-Modern-Classic" } end
+if not ok then T = { cursor = "Tenka-Samurai-Cursors" } end
 
 hl.monitor({ output = "", mode = "preferred", position = "auto", scale = 1 })
 

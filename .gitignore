@@ -11,3 +11,4 @@ live/config/includes.chroot/usr/share/grub/themes/tenka-*/
 live/config/includes.chroot/etc/calamares/branding/tenka-*/
 live/config/includes.chroot/usr/share/themes/Tenka-*/
 live/config/includes.chroot/usr/share/tenka/themes/
+live/config/includes.chroot/usr/share/icons/Tenka-*-Cursors/

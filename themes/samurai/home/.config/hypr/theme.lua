@@ -3,7 +3,7 @@
 local T = {}
 T.name = "samurai"
 T.display = "Tenka"
-T.cursor = "Bibata-Modern-Classic"
+T.cursor = "Tenka-Samurai-Cursors"
 T.c = {base = "#0f0d0c", mantle = "#0a0908", surface = "#1b1816", overlay = "#2a2522", text = "#efe6d6", subtext = "#b8ab96", accent = "#d8412f", accent2 = "#c9a35a", accent_l = "#e85a45", alt = "#6f86b8", alt_d = "#2e3f63", soft = "#f2a7b5", green = "#7d8f5a"}
 
 hl.config({

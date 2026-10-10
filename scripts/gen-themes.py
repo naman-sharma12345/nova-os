@@ -17,7 +17,7 @@ THEMES = {
            text="#efe6d6", subtext="#b8ab96", accent="#d8412f", accent2="#c9a35a",
            accent_l="#e85a45", alt="#6f86b8", alt_d="#2e3f63", soft="#f2a7b5", green="#7d8f5a"),
     font_display="Marcellus", font_brand="Cinzel Decorative", font_ui="Inter", font_mono="JetBrains Mono",
-    cursor="Bibata-Modern-Classic", icons="Tenka-Samurai", icon_folder="red",
+    cursor="Tenka-Samurai-Cursors", icons="Tenka-Samurai", icon_folder="red",
     gtk="Tenka-Samurai", gtk_fallback="Orchis-Dark",
     rounding=10, border=2,
     words=dict(
@@ -36,7 +36,7 @@ THEMES = {
            text="#eef3ec", subtext="#a9bdb4", accent="#5fc9a0", accent2="#e2bd6b",
            accent_l="#9ee6c4", alt="#8fb3d1", alt_d="#2c4a5c", soft="#f0a3b8", green="#e2553f"),
     font_display="Marcellus", font_brand="Cinzel Decorative", font_ui="Inter", font_mono="JetBrains Mono",
-    cursor="Bibata-Modern-Ice", icons="Tenka-Xianxia", icon_folder="teal",
+    cursor="Tenka-Xianxia-Cursors", icons="Tenka-Xianxia", icon_folder="teal",
     gtk="Tenka-Xianxia", gtk_fallback="Orchis-Dark",
     rounding=16, border=2,
     words=dict(

@@ -14,7 +14,9 @@ Window {
     Component.onCompleted: { Qt.application.name = "tenka-welcome"; visible = true }
     color: "#0a0908"
     title: "Welcome to Tenka"
-    flags: Qt.Window
+    // frameless: the welcome draws its own ledger frame (no window-manager title bar over its header);
+    // drag anywhere to move, Esc or LATER to close without choosing
+    flags: Qt.Window | Qt.FramelessWindowHint
     property bool lite: Qt.application.arguments.indexOf("--lite") >= 0
     property string reason: { var a = Qt.application.arguments; var i = a.indexOf("--reason"); return i >= 0 && i + 1 < a.length ? a[i + 1] : "" }
     property bool perf: lite
@@ -27,6 +29,17 @@ Window {
 
     function choose(i) { Qt.exit((i === 0 ? 10 : 11) + (perf ? 10 : 0)) }
     function al(c, a) { return Qt.rgba(c.r, c.g, c.b, a) }
+
+    Rectangle { anchors.fill: parent; color: "transparent"; border.width: 1; border.color: win.al(win.gold, 0.45); z: 100 }
+    DragHandler { target: null; onActiveChanged: if (active) win.startSystemMove() }
+    Shortcut { sequence: "Esc"; onActivated: Qt.exit(0) }
+    Text {
+        id: later
+        anchors.right: parent.right; anchors.rightMargin: 40; y: 46
+        text: "LATER"; font.family: win.ui; font.pixelSize: 12; font.letterSpacing: 5
+        color: lm.containsMouse ? win.text : win.al(win.text, 0.45)
+        MouseArea { id: lm; anchors.fill: parent; anchors.margins: -10; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: Qt.exit(0) }
+    }
 
     // header: a numbered small-caps line, the title, one hairline
     Column {

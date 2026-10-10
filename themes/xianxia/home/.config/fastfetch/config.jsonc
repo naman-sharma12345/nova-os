@@ -28,68 +28,71 @@
     },
     {
       "type": "custom",
-      "format": "\u001b[38;2;29;51;46m────────────────────────────────────────\u001b[0m"
+      "key": " ",
+      "format": "\u001b[38;2;29;51;46m╭────────────────────────────────────────────\u001b[0m"
     },
     {
       "type": "os",
-      "key": "  Realm",
+      "key": "\u001b[38;2;29;51;46m│\u001b[0m    Realm",
       "keyColor": "38;2;226;189;107",
       "format": "Tianxia {version-id} ({codename})"
     },
     {
       "type": "kernel",
-      "key": "  Core",
+      "key": "\u001b[38;2;29;51;46m│\u001b[0m    Core",
       "keyColor": "38;2;226;189;107"
     },
     {
       "type": "wm",
-      "key": "  Sect",
+      "key": "\u001b[38;2;29;51;46m│\u001b[0m    Sect",
       "keyColor": "38;2;226;189;107"
     },
     {
       "type": "shell",
-      "key": "  Scripture",
+      "key": "\u001b[38;2;29;51;46m│\u001b[0m    Scripture",
       "keyColor": "38;2;226;189;107"
     },
     {
       "type": "terminal",
-      "key": "  Talisman",
+      "key": "\u001b[38;2;29;51;46m│\u001b[0m    Talisman",
       "keyColor": "38;2;226;189;107"
     },
     {
       "type": "theme",
-      "key": "  Robes",
+      "key": "\u001b[38;2;29;51;46m│\u001b[0m    Robes",
       "keyColor": "38;2;226;189;107",
       "format": "Tianxia · The path to immortality"
     },
     {
       "type": "packages",
-      "key": "  Treasures",
+      "key": "\u001b[38;2;29;51;46m│\u001b[0m    Treasures",
       "keyColor": "38;2;226;189;107"
     },
     {
       "type": "cpu",
-      "key": "  Spirit Root",
-      "keyColor": "38;2;226;189;107"
+      "key": "\u001b[38;2;29;51;46m│\u001b[0m    Spirit Root",
+      "keyColor": "38;2;226;189;107",
+      "format": "{name}"
     },
     {
       "type": "memory",
-      "key": "  Qi",
+      "key": "\u001b[38;2;29;51;46m│\u001b[0m    Qi",
       "keyColor": "38;2;226;189;107"
     },
     {
       "type": "uptime",
-      "key": "  Cultivated",
+      "key": "\u001b[38;2;29;51;46m│\u001b[0m    Cultivated",
       "keyColor": "38;2;226;189;107"
     },
     {
       "type": "custom",
-      "format": ""
+      "key": " ",
+      "format": "\u001b[38;2;29;51;46m╰────────────────────────────────────────────\u001b[0m"
     },
     {
       "type": "colors",
       "symbol": "circle",
-      "paddingLeft": 2
+      "paddingLeft": 3
     }
   ]
 }

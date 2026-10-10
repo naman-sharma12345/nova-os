@@ -28,68 +28,71 @@
     },
     {
       "type": "custom",
-      "format": "\u001b[38;2;42;37;34m────────────────────────────────────────\u001b[0m"
+      "key": " ",
+      "format": "\u001b[38;2;42;37;34m╭────────────────────────────────────────────\u001b[0m"
     },
     {
       "type": "os",
-      "key": "  Clan",
+      "key": "\u001b[38;2;42;37;34m│\u001b[0m    Clan",
       "keyColor": "38;2;201;163;90",
       "format": "Tenka {version-id} ({codename})"
     },
     {
       "type": "kernel",
-      "key": "  Blade",
+      "key": "\u001b[38;2;42;37;34m│\u001b[0m    Blade",
       "keyColor": "38;2;201;163;90"
     },
     {
       "type": "wm",
-      "key": "  Dojo",
+      "key": "\u001b[38;2;42;37;34m│\u001b[0m    Dojo",
       "keyColor": "38;2;201;163;90"
     },
     {
       "type": "shell",
-      "key": "  Scroll",
+      "key": "\u001b[38;2;42;37;34m│\u001b[0m    Scroll",
       "keyColor": "38;2;201;163;90"
     },
     {
       "type": "terminal",
-      "key": "  Brush",
+      "key": "\u001b[38;2;42;37;34m│\u001b[0m    Brush",
       "keyColor": "38;2;201;163;90"
     },
     {
       "type": "theme",
-      "key": "  Armour",
+      "key": "\u001b[38;2;42;37;34m│\u001b[0m    Armour",
       "keyColor": "38;2;201;163;90",
       "format": "Tenka · The way of the blade"
     },
     {
       "type": "packages",
-      "key": "  Arsenal",
+      "key": "\u001b[38;2;42;37;34m│\u001b[0m    Arsenal",
       "keyColor": "38;2;201;163;90"
     },
     {
       "type": "cpu",
-      "key": "  Spirit",
-      "keyColor": "38;2;201;163;90"
+      "key": "\u001b[38;2;42;37;34m│\u001b[0m    Spirit",
+      "keyColor": "38;2;201;163;90",
+      "format": "{name}"
     },
     {
       "type": "memory",
-      "key": "  Ki",
+      "key": "\u001b[38;2;42;37;34m│\u001b[0m    Ki",
       "keyColor": "38;2;201;163;90"
     },
     {
       "type": "uptime",
-      "key": "  Vigil",
+      "key": "\u001b[38;2;42;37;34m│\u001b[0m    Vigil",
       "keyColor": "38;2;201;163;90"
     },
     {
       "type": "custom",
-      "format": ""
+      "key": " ",
+      "format": "\u001b[38;2;42;37;34m╰────────────────────────────────────────────\u001b[0m"
     },
     {
       "type": "colors",
       "symbol": "circle",
-      "paddingLeft": 2
+      "paddingLeft": 3
     }
   ]
 }

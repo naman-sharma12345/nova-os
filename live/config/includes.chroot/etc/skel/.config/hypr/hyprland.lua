@@ -35,16 +35,13 @@ end)
 -- look --------------------------------------------------------------------
 hl.config({
     general = {
-        gaps_in = 6,
-        gaps_out = 14,
-        border_size = 2,
+        -- gaps, border size, colours, rounding and motion come from theme.lua (the per-theme rice)
         resize_on_border = true,
         layout = "dwindle",
     },
     decoration = {
-        rounding_power = 2.6,
         active_opacity = 1.0,
-        inactive_opacity = 0.93,
+        inactive_opacity = 0.97,
         dim_inactive = false,
         shadow = {
             enabled = true,

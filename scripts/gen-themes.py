@@ -252,7 +252,7 @@ def gen(name, T):
     # ---------- fastfetch ----------
     keys = w["ff_keys"]
     def mod(t, key, icon, **kw):
-        d = {"type": t, "key": f"{icon}  {key}", "keyColor": "38;2;" + rgb_t(p['accent2']).replace(",", ";")}
+        d = {"type": t, "key": f"\u001b[38;2;{rgb_t(p['overlay']).replace(',', ';')}m\u2502\u001b[0m  {icon}  {key}", "keyColor": "38;2;" + rgb_t(p['accent2']).replace(",", ";")}
         d.update(kw); return d
     ff = {
         "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
@@ -263,7 +263,7 @@ def gen(name, T):
         "display": {"separator": "  ", "color": {"keys": "38;2;" + rgb_t(p['accent2']).replace(",", ";"), "title": "38;2;" + rgb_t(p['accent']).replace(",", ";")}},
         "modules": [
             {"type": "custom", "format": f"\u001b[38;2;{rgb_t(p['accent']).replace(',', ';')}m{T['display'].upper()}\u001b[0m  \u001b[38;2;{rgb_t(p['subtext']).replace(',', ';')}m\u2014 {w['ff_title']}\u001b[0m"},
-            {"type": "custom", "format": f"\u001b[38;2;{rgb_t(p['overlay']).replace(',', ';')}m" + "\u2500" * 40 + "\u001b[0m"},
+            {"type": "custom", "key": " ", "format": f"\u001b[38;2;{rgb_t(p['overlay']).replace(',', ';')}m\u256d" + "\u2500" * 44 + "\u001b[0m"},
             mod("os", keys["os"], "\uf303", format=f"{T['display']} {{version-id}} ({{codename}})"),
             mod("kernel", keys["kernel"], "\uf489"),
             mod("wm", keys["wm"], "\uf2d2"),
@@ -271,13 +271,21 @@ def gen(name, T):
             mod("terminal", keys["terminal"], "\uf120"),
             mod("theme", keys["theme"], "\uf1fc", format=f"{T['display']} \u00b7 {T['tagline']}"),
             mod("packages", keys["packages"], "\uf487"),
-            mod("cpu", keys["cpu"], "\uf4bc"),
-            mod("memory", keys["memory"], "\uf538"),
+            mod("cpu", keys["cpu"], "\uf4bc", format="{name}"),
+            mod("memory", keys["memory"], "\uf2db"),
             mod("uptime", keys["uptime"], "\uf43a"),
-            {"type": "custom", "format": ""},
-            {"type": "colors", "symbol": "circle", "paddingLeft": 2},
+            {"type": "custom", "key": " ", "format": f"\u001b[38;2;{rgb_t(p['overlay']).replace(',', ';')}m\u2570" + "\u2500" * 44 + "\u001b[0m"},
+            {"type": "colors", "symbol": "circle", "paddingLeft": 3},
         ],
     }
+    ffk = dict(ff)
+    # fastfetch's terminal module asks kitty for its version (XTGETTCAP); the answer can land after it
+    # exits and spill into the prompt, so in kitty the brush line is plain text
+    ffk["modules"] = [m if m.get("type") != "terminal" else {"type": "custom", "format": "kitty", "key": m["key"], "keyColor": m["keyColor"]}
+                      for m in ff["modules"]]
+    ffk["logo"] = {"type": "kitty-direct", "source": f"/usr/share/tenka/themes/{name}/fastfetch/crest.png",
+                                     "width": 22, "height": 11, "padding": {"top": 1, "left": 3, "right": 4}}
+    W(f"{H}/.config/fastfetch/kitty.jsonc", json.dumps(ffk, indent=2, ensure_ascii=False) + "\n")
     W(f"{H}/.config/fastfetch/config.jsonc", json.dumps(ff, indent=2, ensure_ascii=False) + "\n")
     # ---------- GTK ----------
     gtkcss = textwrap.dedent(f"""\
@@ -380,13 +388,42 @@ def gen(name, T):
                  ("fadeLayersIn", 8, "mist", None), ("layersIn", 6, "rise", "popin 92%"), ("layersOut", 5, "mist", "fade"),
                  ("workspaces", 7, "rise", "slidefade 15%"), ("specialWorkspace", 7, "rise", "slidefadevert 20%")]
         note = "Tianxia (Xianxia): floating, weightless motion, like mist and qi."
+    # The window rice (round 3, after end-4 / Caelestia): a 1 px hairline instead of a thick gradient,
+    # a soft squircle, a low long shadow, a whisper of dim on the unfocused, and Material-3 motion
+    # tuned per theme (Tenka decisive, Tianxia drifting). RICE=gradient restores the old 2 px look.
+    rice = os.environ.get("RICE", "hairline")
+    if rice == "hairline":
+        border = f'"{a(p["accent2"], "d9")}"'
+        inactive = a(p["text"], "14")
+        bsize, rnd, rpow = 1, T["rounding"] + 4, 2.5
+        shadow = "0x66000000"
+        curves = [("emphasizedDecel", (0.05, 0.7), (0.1, 1)), ("emphasizedAccel", (0.3, 0), (0.8, 0.15)),
+                  ("standard", (0.2, 0), (0, 1)), ("menuDecel", (0.1, 1), (0, 1)), ("menuAccel", (0.52, 0.03), (0.72, 0.08))]
+        if name == "samurai":
+            anims = [("windowsIn", 4, "emphasizedDecel", "popin 92%"), ("windowsOut", 3, "emphasizedAccel", "popin 95%"),
+                     ("windowsMove", 5, "emphasizedDecel", "slide"), ("border", 8, "standard", None), ("fade", 4, "standard", None),
+                     ("fadeLayersIn", 4, "menuDecel", None), ("fadeLayersOut", 3, "menuAccel", None),
+                     ("layersIn", 4, "emphasizedDecel", "slide"), ("layersOut", 3, "emphasizedAccel", "slide"),
+                     ("workspaces", 5, "emphasizedDecel", "slide"), ("specialWorkspace", 5, "emphasizedDecel", "slidevert")]
+        else:
+            anims = [("windowsIn", 6, "emphasizedDecel", "popin 86%"), ("windowsOut", 5, "emphasizedAccel", "popin 92%"),
+                     ("windowsMove", 6, "emphasizedDecel", "slide"), ("border", 10, "standard", None), ("fade", 6, "standard", None),
+                     ("fadeLayersIn", 6, "menuDecel", None), ("fadeLayersOut", 4, "menuAccel", None),
+                     ("layersIn", 6, "emphasizedDecel", "slide"), ("layersOut", 4, "emphasizedAccel", "slide"),
+                     ("workspaces", 7, "emphasizedDecel", "slidefadevert 15%"), ("specialWorkspace", 7, "emphasizedDecel", "slidefadevert 20%")]
+        extra_general = ["        border_size = 1,", "        gaps_in = 7,", "        gaps_out = 16,", "        gaps_workspaces = 50,"]
+        extra_deco = ["        rounding_power = 2.5,", "        dim_inactive = true,", "        dim_strength = 0.05,"]
+        shadow_extra = ["            range = 28,", "            render_power = 3,", '            offset = "0 6",']
+    else:
+        inactive = a(p["overlay"], "aa"); bsize, rnd = T["border"], T["rounding"]
+        extra_general, extra_deco, shadow_extra = [], [], []
     lua = [f"-- generated by scripts/gen-themes.py\n-- {note}", "local T = {}",
            "T.name = " + json.dumps(name), "T.display = " + json.dumps(T["display"]), "T.cursor = " + json.dumps(T["cursor"]),
            "T.c = {" + ", ".join(f'{k} = "{v}"' for k, v in p.items()) + "}", "",
-           "hl.config({", "    general = {", "        col = {", f"            active_border   = {border},",
-           f'            inactive_border = "{a(p["overlay"], "aa")}",', "        },", "    },",
-           "    decoration = {", f"        rounding = {T['rounding']},", "        shadow = {", f"            color = {shadow},",
-           "            color_inactive = 0x66000000,", "        },", "    },", "})", ""]
+           "hl.config({", "    general = {", *extra_general, "        col = {", f"            active_border   = {border},",
+           f'            inactive_border = "{inactive}",', "        },", "    },",
+           "    decoration = {", f"        rounding = {rnd},", *extra_deco, "        shadow = {", f"            color = {shadow},",
+           *shadow_extra, "            color_inactive = 0x33000000,", "        },", "    },", "})", ""]
     for cn, p1, p2 in curves:
         lua.append(f'hl.curve("{cn}", {{ type = "bezier", points = {{ {{{p1[0]}, {p1[1]}}}, {{{p2[0]}, {p2[1]}}} }} }})')
     for leaf, sp, cv, st in anims:

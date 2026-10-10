@@ -310,7 +310,7 @@ PanelWindow {
                 Text { x: 68; anchors.verticalCenter: parent.verticalCenter; text: launcher.nice(modelData)
                        color: parent.on ? "#fff8ec" : Theme.alpha(Theme.t.text, 0.72); font.family: Theme.display; font.pixelSize: 21 }
                 Text { anchors.right: parent.right; anchors.rightMargin: 14; anchors.verticalCenter: parent.verticalCenter
-                       text: (modelData.genericName || "").toUpperCase(); width: 220; horizontalAlignment: Text.AlignRight; elide: Text.ElideRight
+                       text: (modelData.genericName || "").replace(/\s*\(.*\)\s*/, "").toUpperCase(); width: 220; horizontalAlignment: Text.AlignRight; elide: Text.ElideRight
                        color: Theme.alpha(Theme.t.text, parent.on ? 0.55 : 0.3); font.family: Theme.display; font.pixelSize: 11; font.letterSpacing: 3 }
                 MouseArea { anchors.fill: parent; hoverEnabled: true; onEntered: launcher.sel = index; onClicked: launcher.launch(modelData) }
             }

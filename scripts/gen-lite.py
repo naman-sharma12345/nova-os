@@ -193,12 +193,21 @@ def gtk_theme(name, T, d):
     """))
     # notifications (xfce4-notifyd theme lives inside the GTK theme dir)
     W(os.path.join(d, "xfce-notify-4.0/gtk.css"), textwrap.dedent(f"""\
-    #XfceNotifyWindow {{ background-color: {A(p['base'], 0.94)}; border: 1px solid {A(p['accent2'], 0.45)}; border-radius: {r + 4}px; }}
-    #XfceNotifyWindow:hover {{ border-color: {p['accent']}; }}
-    #XfceNotifyWindow label#summary {{ font-family: "{disp}"; font-size: 15px; color: {p['accent2']}; }}
-    #XfceNotifyWindow label#body {{ font-family: Inter; color: {p['text']}; }}
-    #XfceNotifyWindow progressbar progress {{ background-color: {p['accent']}; }}
-    #XfceNotifyWindow button {{ background-color: {p['surface']}; color: {p['text']}; border-radius: {r}px; }}
+    /* Lite notifications in the ledger language of the flagship cards: ink, a gold top rule,
+       near-square corners, Marcellus title, quiet body, text-only actions. No glow, no pills. */
+    #XfceNotifyWindow {{ background-color: {A(p['base'], 0.97)}; border: 1px solid {A(p['accent2'], 0.22)};
+                         border-top: 1px solid {A(p['accent2'], 0.75)}; border-radius: 3px; padding: 6px 8px 4px 8px; }}
+    #XfceNotifyWindow:hover {{ border-color: {A(p['accent2'], 0.45)}; border-top-color: {p['accent2']}; }}
+    #XfceNotifyWindow > box {{ min-width: 380px; }}
+    #XfceNotifyWindow label#summary {{ font-family: "{disp}"; font-size: 15px; color: {p['text']}; letter-spacing: 0.4px; }}
+    #XfceNotifyWindow label#body {{ font-family: Inter; font-size: 12px; color: {p['subtext']}; }}
+    #XfceNotifyWindow progressbar trough {{ min-height: 2px; background-color: {A(p['text'], 0.10)}; border: none; border-radius: 0; }}
+    #XfceNotifyWindow progressbar progress {{ min-height: 2px; background-color: {p['accent2']}; border: none; border-radius: 0; }}
+    #XfceNotifyWindow button {{ background: none; border: none; border-radius: 0; box-shadow: none; text-shadow: none;
+                                padding: 2px 12px; margin: 0; min-height: 0; }}
+    #XfceNotifyWindow button label {{ font-family: "{disp}"; font-size: 11px; letter-spacing: 3px; color: {p['accent2']}; }}
+    #XfceNotifyWindow button:hover {{ background-color: {A(p['text'], 0.05)}; }}
+    #XfceNotifyWindow button:hover label {{ color: {p['text']}; }}
     """))
 
 def terminal(name, T):

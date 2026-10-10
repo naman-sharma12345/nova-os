@@ -25,6 +25,8 @@ for m in $(xrandr --listmonitors 2>/dev/null | awk 'NR>1 {print $NF}'); do
     x xfce4-desktop "/backdrop/screen0/monitor$m/workspace$ws/image-style" int 5
   done
 done
+# no blur under xfwm4: the file manager's glass gets denser here (gtk.css imports this file; Hyprland removes it)
+mkdir -p "$HOME/.cache/tenka"; cp -f "$D/lite-session.css" "$HOME/.cache/tenka/session.css" 2>/dev/null
 # lock screen art follows the theme (xfce4-screensaver slideshow reads /usr/share/tenka/lock -> per-user link)
 mkdir -p "$HOME/.cache/tenka"; ln -sfn "$D/lock" "$HOME/.cache/tenka/lock"
 x xfce4-screensaver /screensavers/xfce-personal-slideshow/location string "$HOME/.cache/tenka/lock"

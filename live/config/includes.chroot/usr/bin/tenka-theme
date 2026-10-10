@@ -51,8 +51,10 @@ if [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
 fi
 
 # 4. Tenka Lite (XFCE) session
+# (at login, --init leaves this to tenka-lite-session's `tenka-lite-apply --seed`, which writes the settings
+#  before XFCE starts; running the live path here held the first login on a black screen for ~a minute in a VM)
 if [ "${XDG_CURRENT_DESKTOP:-}" = "XFCE" ]; then
-  tenka-lite-apply
+  [ "${INIT}" = 1 ] || tenka-lite-apply
 fi
 
 # 5. boot + login (GRUB, Plymouth, SDDM, os-release, installer), applied on next boot
@@ -60,6 +62,8 @@ if [ "$(cat /etc/tenka/theme 2>/dev/null)" != "$T" ]; then
   pkexec /usr/libexec/tenka/tenka-theme-system "$T" >/dev/null 2>&1 &
 fi
 
+# Lite's login sound comes from `tenka-lite-apply --login`; no toast before the desktop exists
+[ "${INIT}" = 1 ] && [ "${XDG_CURRENT_DESKTOP:-}" = "XFCE" ] && exit 0
 notify-send -a "$THEME_DISPLAY" -i "$D/crest-1024.png" "$THEME_DISPLAY" "$THEME_TAGLINE" 2>/dev/null
 tenka-sound login &
 exit 0

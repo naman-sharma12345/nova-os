@@ -1,5 +1,5 @@
-// Notifications: frosted cards that spring in under the bar's right island, with the app's
-// icon in a seal, a gold line for who sent it, the words, and its actions as pills.
+// Notifications: ruled notes that slide in at the top right: ink, one gold rule, the sender set into the
+// top edge, the words, and its actions as small-caps words (vermilion for the first).
 // A soft koto / guzheng note plays unless Stillness (do-not-disturb) is on.
 import Quickshell
 import Quickshell.Io
@@ -41,56 +41,57 @@ PanelWindow {
         move: Transition { NumberAnimation { properties: "y"; duration: 260; easing.type: Easing.OutCubic } }
         Repeater {
             model: list
-            delegate: Glass {
+            delegate: Item {
+                // a ruled note (the control center's language): ink, one gold rule, the sender set into
+                // the top edge, the words, the actions as small-caps words. No tile, no glow.
                 id: card
                 required property var n
                 required property int index
-                ox: nw.screen ? nw.screen.width - nw.implicitWidth - 14 : 0; oy: 66
-                width: 400; height: body.height + 36; radius: 22; tint: 0.55
-                property real slide: 60
+                width: 400; height: body.height + 44
+                property real slide: 40
                 transform: Translate { x: card.slide }
                 opacity: 0
                 Component.onCompleted: { slide = 0; opacity = 1 }
-                Behavior on slide { NumberAnimation { duration: 420; easing.type: Easing.OutBack; easing.overshoot: 1.2 } }
+                Behavior on slide { NumberAnimation { duration: 360; easing.type: Easing.OutCubic } }
                 Behavior on opacity { NumberAnimation { duration: 220 } }
                 Timer { running: card.n && card.n.urgency !== NotificationUrgency.Critical; interval: 7000; onTriggered: list.remove(card.index) }
+                readonly property bool crit: !!card.n && card.n.urgency === NotificationUrgency.Critical
 
-                Rectangle { x: 0; y: 18; width: 3; height: parent.height - 36; radius: 2; color: Theme.t.accent }
+                Rectangle { anchors.fill: parent; anchors.topMargin: 8; radius: 6; color: Theme.alpha(Theme.t.base, Theme.selfBlur ? 0.92 : 0.80)
+                            border.width: 1; border.color: card.crit ? Theme.t.accent : Theme.alpha(Theme.t.gold, 0.42) }
+                Rectangle {   // the sender, set into the rule
+                    x: 16; y: 0; height: 16; width: sender.width + 18; color: Theme.alpha(Theme.t.base, 1)
+                    Row {
+                        id: sender; anchors.centerIn: parent; spacing: 7
+                        IconImage { implicitSize: 13; anchors.verticalCenter: parent.verticalCenter; visible: !!(card.n && card.n.appIcon)
+                                    source: card.n && card.n.appIcon ? Quickshell.iconPath(card.n.appIcon, "dialog-information") : "" }
+                        Text { text: (card.n ? card.n.appName || "Tenka" : "").toUpperCase(); color: card.crit ? Theme.t.accent : Theme.t.gold
+                               font.family: Theme.display; font.pixelSize: 11; font.letterSpacing: 4; anchors.verticalCenter: parent.verticalCenter }
+                    }
+                }
+                Text { anchors.right: parent.right; anchors.rightMargin: 18; y: 2; text: Theme.hm(Theme.now)
+                       color: Theme.alpha(Theme.t.text, 0.4); font.family: Theme.display; font.pixelSize: 11; font.letterSpacing: 1 }
                 Row {
                     id: body
-                    x: 18; y: 18; width: parent.width - 36; spacing: 14
-                    Rectangle {
-                        width: 46; height: 46; radius: Theme.xia ? 23 : 14
-                        color: Theme.alpha(Theme.t.text, 0.07); border.width: 1; border.color: Theme.alpha(Theme.t.gold, 0.35)
-                        IconImage { anchors.centerIn: parent; implicitSize: 28; visible: !!(card.n && (card.n.image || card.n.appIcon))
-                                    source: card.n ? (card.n.image || Quickshell.iconPath(card.n.appIcon, "dialog-information")) : "" }
-                        Image { anchors.centerIn: parent; width: 30; height: 30; mipmap: true; source: Theme.t.crest
-                                visible: !(card.n && (card.n.image || card.n.appIcon)) }
-                    }
+                    x: 20; y: 26; width: parent.width - 40; spacing: 14
+                    Image { visible: !!(card.n && card.n.image); source: card.n ? card.n.image : ""; width: 44; height: 44
+                            fillMode: Image.PreserveAspectCrop; smooth: true }
                     Column {
-                        width: parent.width - 60; spacing: 5
-                        Row {
-                            width: parent.width
-                            Text { text: (card.n ? card.n.appName || "Tenka" : "").toUpperCase(); color: Theme.t.gold; font.family: Theme.display
-                                   font.pixelSize: 11; font.letterSpacing: 4; width: parent.width - 60; elide: Text.ElideRight }
-                            Text { text: "now"; color: Theme.alpha(Theme.t.text, 0.45); font.family: Theme.ui; font.pixelSize: 11; width: 60; horizontalAlignment: Text.AlignRight }
-                        }
-                        Text { text: card.n ? card.n.summary : ""; color: Theme.t.text; font.family: Theme.display; font.pixelSize: 18
+                        width: parent.width - (card.n && card.n.image ? 58 : 0); spacing: 5
+                        Text { text: card.n ? card.n.summary : ""; color: Theme.t.text; font.family: Theme.display; font.pixelSize: 17
                                width: parent.width; elide: Text.ElideRight }
-                        Text { text: card.n ? card.n.body : ""; visible: text !== ""; color: Theme.alpha(Theme.t.text, 0.72); font.family: Theme.ui; font.pixelSize: 13
+                        Text { text: card.n ? card.n.body : ""; visible: text !== ""; color: Theme.alpha(Theme.t.text, 0.66); font.family: Theme.ui; font.pixelSize: 13
                                width: parent.width; wrapMode: Text.WordWrap; maximumLineCount: 3; elide: Text.ElideRight; lineHeight: 1.1 }
                         Row {
-                            visible: card.n && card.n.actions.length > 0; spacing: 8; topPadding: 6
+                            visible: !!card.n && card.n.actions.length > 0; spacing: 22; topPadding: 6
                             Repeater {
                                 model: card.n ? card.n.actions : []
-                                Rectangle {
+                                Text {
                                     required property var modelData; required property int index
-                                    height: 32; width: at.width + 28; radius: 16
-                                    color: index === 0 ? Theme.t.accent : Theme.alpha(Theme.t.text, 0.08)
-                                    border.width: index === 0 ? 0 : 1; border.color: Theme.alpha(Theme.t.text, 0.16)
-                                    Text { id: at; anchors.centerIn: parent; text: modelData.text; font.family: Theme.display; font.pixelSize: 13
-                                           color: index === 0 ? Theme.t.ink : Theme.t.text }
-                                    MouseArea { anchors.fill: parent; onClicked: { modelData.invoke(); list.remove(card.index) } }
+                                    text: modelData.text.toUpperCase(); font.family: Theme.display; font.pixelSize: 12; font.letterSpacing: 3
+                                    color: am.containsMouse ? Theme.t.text : (index === 0 ? Theme.t.accent : Theme.alpha(Theme.t.text, 0.6))
+                                    MouseArea { id: am; anchors.fill: parent; anchors.margins: -6; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                                                onClicked: { modelData.invoke(); list.remove(card.index) } }
                                 }
                             }
                         }

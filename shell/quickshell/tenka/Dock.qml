@@ -8,6 +8,8 @@ import QtQuick
 
 PanelWindow {
     id: dock
+    // the dock shows by itself on an empty workspace and steps aside while you work (edge hover brings it back)
+    readonly property bool shown: Theme.deskOpen || (!Theme.working && !Theme.hush)
     anchors { bottom: true; left: true; right: true }
     implicitHeight: 120
     exclusiveZone: 0
@@ -16,7 +18,7 @@ PanelWindow {
     WlrLayershell.namespace: "tenka-dock"
     readonly property bool ledgerFace: Theme.dockStyle !== "glass"
     readonly property string peek: Quickshell.env("TENKA_DOCK_PEEK") || ""   // renders: show one name tag
-    mask: Region { item: Theme.deskOpen ? (dock.ledgerFace ? lgroup : group) : edge }
+    mask: Region { item: dock.shown ? (dock.ledgerFace ? lgroup : group) : edge }
     readonly property real oy: screen ? screen.height - implicitHeight : 0
 
     readonly property var apps: [
@@ -44,7 +46,7 @@ PanelWindow {
         anchors.bottom: parent.bottom; anchors.horizontalCenter: parent.horizontalCenter
         width: 260; height: 12
         Rectangle { anchors.centerIn: parent; width: 40; height: 3; radius: 2; color: Theme.alpha(Theme.t.text, 0.35)
-                    opacity: Theme.deskOpen ? 0 : 1; Behavior on opacity { NumberAnimation { duration: 200 } } }
+                    opacity: dock.shown ? 0 : 1; Behavior on opacity { NumberAnimation { duration: 200 } } }
         HoverHandler { onHoveredChanged: if (hovered) Theme.deskOpen = true }
     }
 
@@ -53,8 +55,8 @@ PanelWindow {
         visible: !dock.ledgerFace
         width: launcherBtn.width + 16 + shelf.width; height: 76
         anchors.horizontalCenter: parent.horizontalCenter
-        y: Theme.deskOpen ? dock.height - height - 16 : dock.height + 10
-        opacity: Theme.deskOpen ? 1 : 0
+        y: dock.shown ? dock.height - height - 16 : dock.height + 10
+        opacity: dock.shown ? 1 : 0
         Behavior on y { NumberAnimation { duration: 420; easing.type: Easing.OutCubic } }
         Behavior on opacity { NumberAnimation { duration: 240 } }
         onYChanged: { shelf.place(); launcherBtn.place() }
@@ -117,8 +119,8 @@ PanelWindow {
         visible: dock.ledgerFace
         width: lbar.width; height: 64
         anchors.horizontalCenter: parent.horizontalCenter
-        y: Theme.deskOpen ? dock.height - height - 18 : dock.height + 10
-        opacity: Theme.deskOpen ? 1 : 0
+        y: dock.shown ? dock.height - height - 18 : dock.height + 10
+        opacity: dock.shown ? 1 : 0
         Behavior on y { NumberAnimation { duration: 380; easing.type: Easing.OutCubic } }
         Behavior on opacity { NumberAnimation { duration: 220 } }
         onYChanged: lbar.place()

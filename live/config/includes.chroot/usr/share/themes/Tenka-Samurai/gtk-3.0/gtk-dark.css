@@ -54,13 +54,29 @@ link, *:link { color: #c9a35a; }
     background-position: center bottom; background-repeat: no-repeat; box-shadow: none; }
 #docklike-3 button:hover { background-color: rgba(239, 230, 214, 0.06); }
 
-/* ---- Whisker menu ---- */
-#whiskermenu-window { background-color: rgba(15, 13, 12, 0.97); border: 1px solid rgba(201, 163, 90, 0.35); border-radius: 18px; }
-#whiskermenu-window entry { background-color: #0a0908; border-radius: 10px; padding: 8px 12px; }
-#whiskermenu-window treeview, #whiskermenu-window iconview, #whiskermenu-window scrolledwindow, #whiskermenu-window viewport { background-color: transparent; }
-#whiskermenu-window button { border-radius: 10px; }
-#whiskermenu-window button:checked, #whiskermenu-window .view:selected { background-color: rgba(216, 65, 47, 0.3); color: #efe6d6; }
-#whiskermenu-window label { color: #efe6d6; }
+/* ---- Whisker menu (the Lite launcher), in the ledger language: ink sheet, one gold rule, a hairline
+   search, categories as plain words with a short accent rule on the chosen one. Orchis styles the
+   visible sheet as `window#whiskermenu-window > frame > border`, so these match it selector for selector. ---- */
+window#whiskermenu-window { background-color: transparent; border: none; }
+window#whiskermenu-window > frame > border { background-color: rgba(15, 13, 12, 0.97); border: 1px solid rgba(201, 163, 90, 0.45);
+    border-radius: 10px; box-shadow: none; margin: 6px; padding: 12px 14px; }
+window#whiskermenu-window label { color: #efe6d6; font-family: Marcellus; }
+window#whiskermenu-window entry.search { background-color: transparent; border: none; border-bottom: 1px solid rgba(201, 163, 90, 0.45);
+    border-radius: 0; box-shadow: none; padding: 6px 4px; font-family: Marcellus; }
+window#whiskermenu-window entry.search:focus { background-color: transparent; border-bottom-color: #d8412f; box-shadow: none; }
+window#whiskermenu-window box.categories > button.radio { border-radius: 0; padding: 4px 10px; margin: 1px 0; background: none; box-shadow: none; }
+window#whiskermenu-window box.categories > button.radio:hover { background-color: rgba(239, 230, 214, 0.05); }
+window#whiskermenu-window box.categories > button.radio:checked, window#whiskermenu-window box.categories > button.radio:active {
+    background-color: transparent; background-image: linear-gradient(#d8412f, #d8412f);
+    background-size: 2px 14px; background-position: left center; background-repeat: no-repeat; }
+window#whiskermenu-window box.categories > button.radio:checked label { color: #c9a35a; }
+window#whiskermenu-window scrolledwindow.frame { background-color: transparent; border: none; border-left: 1px solid rgba(201, 163, 90, 0.22);
+    border-radius: 0; padding: 3px 3px 3px 10px; }
+window#whiskermenu-window scrolledwindow.frame treeview.view, window#whiskermenu-window scrolledwindow.frame iconview { border-radius: 0; background: none; }
+window#whiskermenu-window scrolledwindow.frame treeview.view:selected, window#whiskermenu-window scrolledwindow.frame treeview.view:selected:hover {
+    background-color: rgba(216, 65, 47, 0.18); color: #efe6d6; }
+window#whiskermenu-window .title-area > .commands-area > button.flat.command-button { border-radius: 0; }
+window#whiskermenu-window .title-area > .commands-area > button.flat.command-button:hover { background-color: rgba(239, 230, 214, 0.06); }
 
 /* ---- desktop icons ---- */
 XfdesktopIconView.view { background: transparent; color: #efe6d6; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }

@@ -27,6 +27,9 @@ printf 'Tenka 0.1\n' > /etc/issue.net
 mkdir -p /etc/tenka; [ -f /etc/tenka/theme ] || echo samurai > /etc/tenka/theme
 install -Dm644 /usr/share/tenka/themes/samurai/crest-1024.png /usr/share/pixmaps/tenka.png 2>/dev/null || true
 install -Dm644 /usr/share/tenka/themes/samurai/crest-1024.png /usr/share/icons/hicolor/512x512/apps/tenka.png 2>/dev/null || true
+# the Tenka icon themes ship as files (includes.chroot): rebuild their caches so a stale cache never hides
+# a newly drawn icon (GTK trusts icon-theme.cache over the directory listing)
+for t in /usr/share/icons/Tenka-* /usr/share/icons/hicolor; do [ -d "$t" ] && gtk-update-icon-cache -f -q "$t" 2>/dev/null || true; done
 
 # ---------------------------------------------------------------- services
 systemctl enable sddm.service || true

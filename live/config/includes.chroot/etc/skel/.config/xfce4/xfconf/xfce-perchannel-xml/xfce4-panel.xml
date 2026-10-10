@@ -52,6 +52,14 @@
   <property name="plugins" type="empty">
     <property name="plugin-1" type="string" value="whiskermenu">
       <property name="show-button-title" type="bool" value="false"/>
+      <property name="favorites" type="array">
+        <value type="string" value="firefox-esr.desktop"/>
+        <value type="string" value="thunar.desktop"/>
+        <value type="string" value="xfce4-terminal.desktop"/>
+        <value type="string" value="org.xfce.mousepad.desktop"/>
+        <value type="string" value="mpv.desktop"/>
+        <value type="string" value="tenka-theme.desktop"/>
+      </property>
     </property>
     <property name="plugin-2" type="string" value="separator">
       <property name="style" type="uint" value="1"/>

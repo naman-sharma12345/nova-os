@@ -145,13 +145,29 @@ def gtk_theme(name, T, d):
         background-position: center bottom; background-repeat: no-repeat; box-shadow: none; }}
     #docklike-3 button:hover {{ background-color: rgba(239, 230, 214, 0.06); }}
 
-    /* ---- Whisker menu ---- */
-    #whiskermenu-window {{ background-color: {A(p['base'], 0.97)}; border: 1px solid {A(p['accent2'], 0.35)}; border-radius: {r + 8}px; }}
-    #whiskermenu-window entry {{ background-color: {p['mantle']}; border-radius: {r}px; padding: 8px 12px; }}
-    #whiskermenu-window treeview, #whiskermenu-window iconview, #whiskermenu-window scrolledwindow, #whiskermenu-window viewport {{ background-color: transparent; }}
-    #whiskermenu-window button {{ border-radius: {r}px; }}
-    #whiskermenu-window button:checked, #whiskermenu-window .view:selected {{ background-color: {A(p['accent'], 0.30)}; color: {p['text']}; }}
-    #whiskermenu-window label {{ color: {p['text']}; }}
+    /* ---- Whisker menu (the Lite launcher), in the ledger language: ink sheet, one gold rule, a hairline
+       search, categories as plain words with a short accent rule on the chosen one. Orchis styles the
+       visible sheet as `window#whiskermenu-window > frame > border`, so these match it selector for selector. ---- */
+    window#whiskermenu-window {{ background-color: transparent; border: none; }}
+    window#whiskermenu-window > frame > border {{ background-color: {A(p['base'], 0.97)}; border: 1px solid {A(p['accent2'], 0.45)};
+        border-radius: {r}px; box-shadow: none; margin: 6px; padding: 12px 14px; }}
+    window#whiskermenu-window label {{ color: {p['text']}; font-family: Marcellus; }}
+    window#whiskermenu-window entry.search {{ background-color: transparent; border: none; border-bottom: 1px solid {A(p['accent2'], 0.45)};
+        border-radius: 0; box-shadow: none; padding: 6px 4px; font-family: Marcellus; }}
+    window#whiskermenu-window entry.search:focus {{ background-color: transparent; border-bottom-color: {p['accent']}; box-shadow: none; }}
+    window#whiskermenu-window box.categories > button.radio {{ border-radius: 0; padding: 4px 10px; margin: 1px 0; background: none; box-shadow: none; }}
+    window#whiskermenu-window box.categories > button.radio:hover {{ background-color: {A(p['text'], 0.05)}; }}
+    window#whiskermenu-window box.categories > button.radio:checked, window#whiskermenu-window box.categories > button.radio:active {{
+        background-color: transparent; background-image: linear-gradient({p['accent']}, {p['accent']});
+        background-size: 2px 14px; background-position: left center; background-repeat: no-repeat; }}
+    window#whiskermenu-window box.categories > button.radio:checked label {{ color: {p['accent2']}; }}
+    window#whiskermenu-window scrolledwindow.frame {{ background-color: transparent; border: none; border-left: 1px solid {A(p['accent2'], 0.22)};
+        border-radius: 0; padding: 3px 3px 3px 10px; }}
+    window#whiskermenu-window scrolledwindow.frame treeview.view, window#whiskermenu-window scrolledwindow.frame iconview {{ border-radius: 0; background: none; }}
+    window#whiskermenu-window scrolledwindow.frame treeview.view:selected, window#whiskermenu-window scrolledwindow.frame treeview.view:selected:hover {{
+        background-color: {A(p['accent'], 0.18)}; color: {p['text']}; }}
+    window#whiskermenu-window .title-area > .commands-area > button.flat.command-button {{ border-radius: 0; }}
+    window#whiskermenu-window .title-area > .commands-area > button.flat.command-button:hover {{ background-color: {A(p['text'], 0.06)}; }}
 
     /* ---- desktop icons ---- */
     XfdesktopIconView.view {{ background: transparent; color: {p['text']}; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }}

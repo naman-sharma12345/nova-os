@@ -38,7 +38,7 @@ Item {
             Text { id: ct; text: Theme.hm(Theme.now); color: Theme.t.text; font.family: Theme.display
                    font.pixelSize: 250 * face.s; font.letterSpacing: -2 * face.s
                    layer.enabled: true
-                   layer.effect: MultiEffect { shadowEnabled: true; shadowColor: Theme.xia ? Theme.t.accent : "black"; shadowBlur: 1.0; shadowOpacity: 0.45 } }
+                   layer.effect: MultiEffect { shadowEnabled: true; shadowColor: "black"; shadowBlur: 1.0; shadowOpacity: 0.45; shadowVerticalOffset: 4 } }
             Item {
                 anchors.top: ct.top; anchors.topMargin: 70 * face.s; width: 84 * face.s; height: 160 * face.s
                 Text { id: ap; text: Theme.ap(Theme.now); color: Theme.alpha(Theme.t.text, 0.75); anchors.horizontalCenter: parent.horizontalCenter

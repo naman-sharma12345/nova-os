@@ -69,8 +69,8 @@ PanelWindow {
                 font.family: Theme.display; font.pixelSize: 268 * desk.s; font.letterSpacing: -2 * desk.s
                 layer.enabled: true
                 layer.effect: MultiEffect {
-                    shadowEnabled: true; shadowColor: Theme.xia ? Theme.t.accent : "#000000"
-                    shadowBlur: 1.0; shadowOpacity: Theme.xia ? 0.35 : 0.40; shadowVerticalOffset: Theme.xia ? 0 : 6
+                    shadowEnabled: true; shadowColor: "#000000"   // a plain drop shadow for legibility, never a coloured glow
+                    shadowBlur: 1.0; shadowOpacity: 0.40; shadowVerticalOffset: 6
                 }
             }
             // the one accent: a hand-stamped seal with the weekday and the day
@@ -139,7 +139,7 @@ PanelWindow {
             color: Theme.t.text
             font.family: Theme.display; font.pixelSize: 132 * desk.s; font.letterSpacing: 26 * desk.s
             layer.enabled: true
-            layer.effect: MultiEffect { shadowEnabled: true; shadowColor: Theme.xia ? Theme.t.accent : "#000000"; shadowBlur: 1.0; shadowOpacity: 0.45 }
+            layer.effect: MultiEffect { shadowEnabled: true; shadowColor: "#000000"; shadowBlur: 1.0; shadowOpacity: 0.45; shadowVerticalOffset: 4 }
         }
         Row {   // gold hairline · seal · gold hairline
             id: filmRule

@@ -142,8 +142,8 @@ def sddm(name, T):
     on_accent = p["base"] if name == "xianxia" else p["text"]
     W(os.path.join(d, "theme.conf"), textwrap.dedent(f"""\
     [General]
-    # login face: title (the boot menu's title screen, carried on) | brush (the lock's face) | card (v3)
-    style=title
+    # login face: title (the boot menu title screen, carried on), brush (the lock face) or card (v3)
+    face=title
     pack={name}
     background=background.png
     enso=enso.png

@@ -1,6 +1,5 @@
 // Tenka SDDM greeter: one QML, two theme packs (theme.conf carries colours, art and words).
-// Three faces, picked by theme.conf `style` (or /etc/tenka/login-style through the pack's
-// theme.conf.user):
+// Three faces, picked by theme.conf `face` (theme.conf.user can override it):
 //   "title" (default): the boot menu's own title screen carried on into the login, the same art,
 //                      the same baked wordmark and the same brush stroke on the chosen entry.
 //                      A menu you drive with the keyboard: you, your session, rest, sheathe.
@@ -15,7 +14,8 @@ Rectangle {
     id: root
     width: 1920; height: 1080
     color: config.base
-    readonly property string face: (config.style && config.style !== "") ? config.style : "title"
+    // NB: the key is "face", not "style": SDDM hands theme.conf's "style" to Qt as the Controls style (-style)
+    readonly property string face: (config.face && config.face !== "") ? config.face : "title"
     readonly property bool xia: config.pack === "xianxia"
     readonly property real s: Math.min(width / 1920, height / 1080)
     readonly property real ox: (width - 1920 * s) / 2
@@ -107,8 +107,8 @@ Rectangle {
             readonly property var rows: [
                 { t: root.currentReal(), kind: "you", ok: true },
                 { t: root.currentSession(), kind: "session", ok: true },
-                { t: config.suspendText, kind: "suspend", ok: sddm.canSuspend },
-                { t: config.shutdownText, kind: "poweroff", ok: sddm.canPowerOff } ].filter(function (r) { return r.ok })
+                { t: config.suspendText, kind: "suspend", ok: true },
+                { t: config.shutdownText, kind: "poweroff", ok: true } ]   // always four rows: the title screen keeps its shape
             function move(d) { cur = (cur + d + rows.length) % rows.length }
             function activate() {
                 var r = rows[cur].kind
@@ -177,15 +177,15 @@ Rectangle {
             text: root.failed ? config.failText
                 : titleMenu.cur === 0 ? (pw.text.length ? "ENTER  " + config.enterText.toLowerCase() : "type your password")
                 : titleMenu.rows[titleMenu.cur].kind === "session" ? "←  →  choose the session" : "ENTER  to confirm"
-            color: root.failed ? config.accent : root.al(config.text, 0.55)
+            color: root.failed ? config.accent : root.al(config.text, 0.78)
             font.family: config.displayFont; font.pixelSize: 15 * root.k; font.letterSpacing: 3 * root.k
         }
         // the boot menu's key line, same place, same voice
         Text {
             x: root.ix + 116 * root.k; y: root.iy + 1012 * root.k - height
-            opacity: root.intro * 0.9
+            opacity: root.intro
             text: "ENTER  to begin      ↑ ↓  to choose      ← →  session"
-            color: root.al(config.text, 0.47)
+            color: root.al(config.text, 0.66)
             font.family: config.displayFont; font.pixelSize: 15 * root.k; font.letterSpacing: 2.7 * root.k
         }
     }

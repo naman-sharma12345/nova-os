@@ -83,6 +83,21 @@ Or press <kbd>Super</kbd>+<kbd>T</kbd>, or open **Choose your path** from the la
 | <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> | performance mode |
 | <kbd>Print</kbd> / <kbd>Shift</kbd>+<kbd>Print</kbd> | screenshot area / screen |
 
+## Nightly ISO, end to end
+
+> The **[nightly pre-release](https://github.com/naman-sharma12345/tenka/releases/tag/nightly)** is built from `main` by GitHub Actions. These are real captures of it booted in QEMU with **no GPU** and 3 GB of RAM: boot splash → SDDM title screen → Hyprland 0.55 with the Tenka shell → apps → lock → log out, plus Tenka Lite, which the ISO picks by itself on this little memory. No failed services, no Hyprland config errors. The pass found and fixed six real bugs (Lua dispatch for log out and workspaces, the SDDM session label, Lite's see-through terminal and green dock mark, and windows reading through the desk with blur off).
+
+| | |
+|---|---|
+| Boot splash | SDDM: the session cycles with ← → |
+| <img src="docs/screenshots/nightly-splash.jpg" width="100%"> | <img src="docs/screenshots/nightly-login.jpg" width="100%"> |
+| Hyprland: the dock shows on an empty workspace | Working: the desk's type steps back |
+| <img src="docs/screenshots/nightly-desk-tenka.jpg" width="100%"> | <img src="docs/screenshots/nightly-work-tenka.jpg" width="100%"> |
+| Launcher | Tianxia desk |
+| <img src="docs/screenshots/nightly-launcher-tenka.jpg" width="100%"> | <img src="docs/screenshots/nightly-desk-tianxia.jpg" width="100%"> |
+| Lock (Tianxia): the ledger face, real session lock | Tenka Lite: solid terminal, ledger fastfetch |
+| <img src="docs/screenshots/nightly-lock-tianxia.jpg" width="100%"> | <img src="docs/screenshots/nightly-lite-tenka.jpg" width="100%"> |
+
 ## On main, since v0.1.0
 
 > The overnight redesign: one quiet language everywhere. Ink, 1px gold rules, Marcellus, the brush stroke for "where you are", no glow. Captured in QEMU with **no GPU** (the shell from `main` loaded into the v0.1.0 ISO, real Hyprland blur); the installer is Calamares run natively. The next release carries all of it.

@@ -47,7 +47,7 @@ if [ -f "$DR" ]; then
   rgb() { printf 'rgb(%d,%d,%d)' 0x${1:1:2} 0x${1:3:2} 0x${1:5:2}; }
   rgba() { printf 'rgba(%d,%d,%d,%s)' 0x${1:1:2} 0x${1:3:2} 0x${1:5:2} "$2"; }
   sed -i -E '/^(indicator|inactive)/d' "$DR"
-  printf 'indicatorOrientation=0\nindicatorStyle=0\ninactiveIndicatorStyle=0\nindicatorColorFromTheme=false\nindicatorColor=%s\ninactiveColor=%s\n' \
+  printf 'indicatorOrientation=0\nindicatorStyle=5\ninactiveIndicatorStyle=5\nindicatorColorFromTheme=false\nindicatorColor=%s\ninactiveColor=%s\n' \
     "$(rgb "$C_ACCENT")" "$(rgba "$C_ACCENT2" 0.55)" >> "$DR"
 fi
 # whisker menu label + crest (Whisker 2.x keeps its settings in xfconf and follows them live)

@@ -121,7 +121,7 @@ def gtk_theme(name, T, d):
         color: {p['text']};
     }}
     /* the dock's plugins (crest, rule, apps) carry one gold hairline along its top edge: the flagship's ledger bar */
-    #whiskermenu-1, #separator-2, #docklike-3 {{ box-shadow: inset 0 1px 0 0 {A(p['accent2'], 0.55)}; }}
+    .docklike-plugin button, #whiskermenu-button {{ border-top: 1px solid {A(p['accent2'], 0.55)}; border-radius: 0; }}
     .xfce4-panel button {{ color: {p['text']}; border-radius: {r}px; padding: 2px 8px; background: transparent; border: none; box-shadow: none; }}
     .xfce4-panel button:hover {{ background-color: {A(p['text'], 0.08)}; }}
     .xfce4-panel button:checked, .xfce4-panel button:active {{ background-color: {A(p['accent'], 0.22)}; color: {p['accent2']}; }}
@@ -136,8 +136,12 @@ def gtk_theme(name, T, d):
     .xfce4-panel frame > border, .xfce4-panel frame {{ border: none; box-shadow: none; background: transparent; }}
 
     /* docklike: active window gets the theme's mark */
-    .docklike-plugin button {{ border-radius: {r}px; }}
-    .docklike-plugin button.active_group {{ background: none; box-shadow: inset 0 -2px 0 -0px {p['accent']}; }}   /* a short rule, like the flagship dock (was a soft gradient) */
+    /* docklike draws no mark of its own (indicatorStyle None): open apps get a short dim-gold rule,
+       the focused one a short accent rule, exactly the flagship dock's marks */
+    .docklike-plugin button.open_group {{ background-image: linear-gradient({A(p['accent2'], 0.6)}, {A(p['accent2'], 0.6)}); background-size: 10px 2px;
+        background-position: center bottom; background-repeat: no-repeat; box-shadow: none; }}
+    .docklike-plugin button.active_group {{ background-image: linear-gradient({p['accent']}, {p['accent']}); background-size: 18px 2px;
+        background-position: center bottom; background-repeat: no-repeat; box-shadow: none; }}
     .docklike-plugin button:hover {{ background: none; }}
 
     /* ---- Whisker menu ---- */

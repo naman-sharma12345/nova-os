@@ -13,7 +13,8 @@ if [ "$(cat /run/tenka/mode 2>/dev/null)" = lite ] || [ "${XDG_CURRENT_DESKTOP:-
   [ "${XDG_CURRENT_DESKTOP:-}" = Hyprland ] && set -- "$@" --hypr
 fi
 QML=$(command -v qml6 || echo /usr/lib/qt6/bin/qml)
-QT_QPA_PLATFORMTHEME= "$QML" /usr/share/tenka/welcome/Welcome.qml -- "$@" 2>/dev/null
+# RESOURCE_NAME names the window (WM_CLASS) so docks show the theme icon, not a generic one
+QT_QPA_PLATFORMTHEME= RESOURCE_NAME=tenka-welcome "$QML" /usr/share/tenka/welcome/Welcome.qml -- "$@" 2>/dev/null
 rc=$?
 touch "$HOME/.config/tenka/welcomed"
 case $rc in

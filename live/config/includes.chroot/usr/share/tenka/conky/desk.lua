@@ -65,21 +65,17 @@ function conky_tenka_desk()
     -- AM/PM and the seal
     local sx = X + cw + 30
     text(cr, d.hour < 12 and 'AM' or 'PM', sx + 14, Y + 96, 22, tr, tg, tb, 0.75, 5)
-    local seal = '/etc/xdg/quickshell/tenka/assets/' .. t.name .. '/seal.png'
-    local img = cairo_image_surface_create_from_png(seal)
-    if cairo_surface_status(img) == 0 then
-        cairo_save(cr)
-        cairo_translate(cr, sx, Y + 112)
-        cairo_scale(cr, 84 / cairo_image_surface_get_width(img), 104 / cairo_image_surface_get_height(img))
-        cairo_set_source_surface(cr, img, 0, 0); cairo_paint(cr)
-        cairo_restore(cr)
-    end
-    cairo_surface_destroy(img)
-    local ir, ig, ib = hex(t.ink)
+    -- the day: a thin ruled tag in the accent (mirrors Desk.qml; was a filled stamp)
+    local ar, ag, ab = hex(t.accent)
+    local tx, ty, tw, th = sx + 6, Y + 112, 72, 92
+    cairo_rectangle(cr, tx + 0.5, ty + 0.5, tw - 1, th - 1)
+    cairo_set_source_rgba(cr, 0, 0, 0, 0.18); cairo_fill_preserve(cr)
+    cairo_set_source_rgba(cr, ar, ag, ab, 0.85); cairo_set_line_width(cr, 1); cairo_stroke(cr)
     local wd = os.date('%a'):upper()
-    text(cr, wd, sx + 42 - width(cr, wd, 17) / 2 - 3, Y + 156, 17, ir, ig, ib, 1, 3)
+    local ww = width(cr, wd, 14) + 4 * (#wd - 1)
+    text(cr, wd, tx + tw / 2 - ww / 2, ty + 34, 14, ar, ag, ab, 1, 4)
     local dn = tostring(d.day)
-    text(cr, dn, sx + 42 - width(cr, dn, 40) / 2, Y + 198, 40, ir, ig, ib, 1)
+    text(cr, dn, tx + tw / 2 - width(cr, dn, 38) / 2, ty + 74, 38, tr, tg, tb, 1)
     -- the month and the hour's old name
     local hour = 'HOUR OF THE ' .. HOURS[math.floor(((d.hour + 1) % 24) / 2) + 1]:upper()
     text(cr, os.date('%B %Y'):upper() .. '   ·   ' .. hour, X + 8, Y + 268, 19, tr, tg, tb, 0.82, 9)

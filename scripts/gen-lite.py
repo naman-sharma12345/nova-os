@@ -31,7 +31,6 @@ def xfwm4(name, T, d):
         # title strip pieces (1..5 are all the same tile)
         tile = Image.new("RGBA", (8, TITLE_H), top)
         dd = ImageDraw.Draw(tile)
-        dd.line((0, 0, 8, 0), fill=rgb(p["text"], 22 if act else 10))  # top highlight
         dd.line((0, TITLE_H - 1, 8, TITLE_H - 1), fill=line)
         for i in range(1, 6): tile.save(os.path.join(d, f"title-{i}-{state}.png"))
         # rounded top corners, drawn at 4x then downsampled
@@ -45,23 +44,27 @@ def xfwm4(name, T, d):
         # sides + bottom (thin)
         for nm, size in (("left", (2, 8)), ("right", (2, 8)), ("bottom", (8, 2)), ("bottom-left", (2, 2)), ("bottom-right", (2, 2))):
             Image.new("RGBA", size, edge if act else rgb(p["mantle"])).save(os.path.join(d, f"{nm}-{state}.png"))
-    # buttons: themed beads. samurai = ink dots (vermilion close), xianxia = jade beads with a gold rim
-    colours = {"close": p["accent"], "maximize": p["accent2"], "hide": p["alt"] if name == "samurai" else p["accent_l"]}
-    for b, col in colours.items():
+    # buttons: small line glyphs in the ledger language (a rule, a square, a cross), never beads or glow:
+    # quiet text colour, the accent only on the close glyph under the pointer. Drawn opaque on the title
+    # colour (xfwm4 masks button pixels by alpha, so thin translucent strokes would vanish)
+    def mix(c1, c2, a):
+        a1, a2 = rgb(c1), rgb(c2); return tuple(int(a1[i] * a + a2[i] * (1 - a)) for i in range(3)) + (255,)
+    glyph_a = {"active": 0.62, "inactive": 0.28, "prelight": 0.95, "pressed": 0.8}
+    for b in ("hide", "maximize", "close"):
         for st in ("active", "inactive", "prelight", "pressed"):
-            big = Image.new("RGBA", (24 * SS, TITLE_H * SS), (0, 0, 0, 0)); bd = ImageDraw.Draw(big)
-            cx, cy, r = 12 * SS, TITLE_H * SS // 2, 6 * SS
-            c = rgb(col) if st != "inactive" else rgb(p["overlay"])
-            if st == "prelight":
-                glow = Image.new("RGBA", big.size, (0, 0, 0, 0)); gd = ImageDraw.Draw(glow)
-                gd.ellipse((cx - r * 2, cy - r * 2, cx + r * 2, cy + r * 2), fill=rgb(col, 110))
-                big = Image.alpha_composite(big, glow.filter(ImageFilter.GaussianBlur(4 * SS))); bd = ImageDraw.Draw(big)
-            rr = r + (SS if st == "prelight" else 0) - (SS if st == "pressed" else 0)
-            bd.ellipse((cx - rr, cy - rr, cx + rr, cy + rr), fill=c)
-            if name == "xianxia" and st != "inactive":
-                bd.ellipse((cx - rr, cy - rr, cx + rr, cy + rr), outline=rgb(p["accent2"], 200), width=SS)
-                bd.ellipse((cx - rr // 3 - SS, cy - rr // 2 - SS, cx - rr // 3 + SS * 2, cy - rr // 2 + SS * 2), fill=(255, 255, 255, 120))
+            bgc = p["base"] if st == "inactive" else p["surface"]
+            big = Image.new("RGBA", (24 * SS, TITLE_H * SS), rgb(bgc)); bd = ImageDraw.Draw(big)
+            cx, cy, h = 12 * SS, TITLE_H * SS // 2, int(4 * SS)
+            c = rgb(p["accent"]) if (b == "close" and st in ("prelight", "pressed")) else mix(p["text"], bgc, glyph_a[st])
+            w = int(1.3 * SS)
+            if b == "hide":
+                bd.line((cx - h, cy + int(h * 0.6), cx + h, cy + int(h * 0.6)), fill=c, width=w)
+            elif b == "maximize":
+                bd.rectangle((cx - h, cy - h, cx + h, cy + h), outline=c, width=w)
+            else:
+                bd.line((cx - h, cy - h, cx + h, cy + h), fill=c, width=w); bd.line((cx - h, cy + h, cx + h, cy - h), fill=c, width=w)
             im = big.resize((24, TITLE_H), Image.LANCZOS)
+            ImageDraw.Draw(im).line((0, TITLE_H - 1, 24, TITLE_H - 1), fill=rgb(p["accent2"], 120 if st != "inactive" else 40))
             im.save(os.path.join(d, f"{b}-{st}.png"))
             if b == "maximize": im.save(os.path.join(d, f"maximize-toggled-{st}.png"))
     for b in ("menu", "shade", "stick"):

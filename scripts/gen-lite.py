@@ -175,8 +175,6 @@ def gtk_theme(name, T, d):
     /* ---- desktop icons ---- */
     XfdesktopIconView.view {{ background: transparent; color: {p['text']}; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }}
     """)
-    # xfce4-notifyd's own theme file reaches the card and its buttons, but not the summary/body labels
-    # (they keep the GTK theme's font: Inter bold); those two rules have to live in the GTK theme itself
     css += textwrap.dedent(f"""\
     /* Alt+Tab (xfwm4 tabwin): a ledger strip, not a rounded tray: ink, gold hairline frame, flat tiles;
        the chosen window gets a faint tint and a short accent rule beneath it. No glow. */
@@ -187,8 +185,6 @@ def gtk_theme(name, T, d):
     #xfwm-tabwin button:hover, #xfwm-tabwin button:checked, #xfwm-tabwin button:active, #xfwm-tabwin button:focus {{
                            background-color: {A(p['text'], 0.06)}; border-bottom: 1px solid {p['accent']}; box-shadow: none; }}
     #xfwm-tabwin label {{ font-family: "{disp}"; font-weight: normal; font-size: 13px; color: {p['subtext']}; letter-spacing: 0.4px; }}
-    #XfceNotifyWindow label#summary {{ font-family: "{disp}"; font-weight: normal; font-size: 15px; color: {p['text']}; letter-spacing: 0.4px; }}
-    #XfceNotifyWindow label#body {{ font-family: Inter; font-size: 12px; color: {p['subtext']}; }}
     """)
     W(os.path.join(d, "gtk-3.0/gtk.css"), css)
     W(os.path.join(d, "gtk-3.0/gtk-dark.css"), css)
@@ -209,12 +205,14 @@ def gtk_theme(name, T, d):
     # notifications (xfce4-notifyd theme lives inside the GTK theme dir)
     W(os.path.join(d, "xfce-notify-4.0/gtk.css"), textwrap.dedent(f"""\
     /* Lite notifications in the ledger language of the flagship cards: ink, a gold top rule,
-       near-square corners, Marcellus title, quiet body, text-only actions. No glow, no pills. */
+       near-square corners, Marcellus title, quiet body, text-only actions. No glow, no pills.
+       The title must say weight 400: notifyd sets it bold, Marcellus has no bold face, and fontconfig then
+       quietly swaps in a sans (the r28 capture was that sans). */
     #XfceNotifyWindow {{ background-color: {A(p['base'], 0.97)}; border: 1px solid {A(p['accent2'], 0.22)};
                          border-top: 1px solid {A(p['accent2'], 0.75)}; border-radius: 3px; padding: 6px 8px 4px 8px; }}
     #XfceNotifyWindow:hover {{ border-color: {A(p['accent2'], 0.45)}; border-top-color: {p['accent2']}; }}
     #XfceNotifyWindow > box {{ min-width: 380px; }}
-    #XfceNotifyWindow label#summary {{ font-family: "{disp}"; font-size: 15px; color: {p['text']}; letter-spacing: 0.4px; }}
+    #XfceNotifyWindow label#summary {{ font-family: "{disp}"; font-weight: 400; font-size: 16px; color: {p['text']}; letter-spacing: 0.4px; }}
     #XfceNotifyWindow label#body {{ font-family: Inter; font-size: 12px; color: {p['subtext']}; }}
     #XfceNotifyWindow progressbar trough {{ min-height: 2px; background-color: {A(p['text'], 0.10)}; border: none; border-radius: 0; }}
     #XfceNotifyWindow progressbar progress {{ min-height: 2px; background-color: {p['accent2']}; border: none; border-radius: 0; }}

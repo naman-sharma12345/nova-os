@@ -79,17 +79,18 @@ PanelWindow {
                 width: 84 * desk.s; height: 170 * desk.s
                 Text { id: ampm; text: Theme.ap(Theme.now); color: Theme.alpha(Theme.t.text, 0.75); anchors.horizontalCenter: parent.horizontalCenter
                        font.family: Theme.display; font.pixelSize: 22 * desk.s; font.letterSpacing: 5 * desk.s }
-                Image {
+                Item {   // the day: a thin vermilion ruled tag (was a filled stamp; quieter, no fill)
                     id: seal
                     anchors.top: ampm.bottom; anchors.topMargin: 12 * desk.s; anchors.horizontalCenter: parent.horizontalCenter
-                    width: 84 * desk.s; height: 104 * desk.s; source: Theme.asset("seal.png"); fillMode: Image.Stretch; smooth: true
-                    rotation: -2
+                    width: 72 * desk.s; height: 92 * desk.s
+                    Rectangle { anchors.fill: parent; color: Theme.alpha(Theme.t.base, 0.18); radius: Theme.xia ? 8 * desk.s : 2 * desk.s
+                                border.width: Math.max(1, Math.round(desk.s)); border.color: Theme.alpha(Theme.t.accent, 0.85) }
                     Column {
-                        anchors.centerIn: parent; spacing: 0
-                        Text { text: Qt.formatDate(Theme.now, "ddd").toUpperCase(); color: Theme.t.ink; anchors.horizontalCenter: parent.horizontalCenter
-                               font.family: Theme.display; font.pixelSize: 17 * desk.s; font.letterSpacing: 3 * desk.s }
-                        Text { text: Theme.now.getDate(); color: Theme.t.ink; anchors.horizontalCenter: parent.horizontalCenter
-                               font.family: Theme.display; font.pixelSize: 40 * desk.s }
+                        anchors.centerIn: parent; spacing: 2 * desk.s
+                        Text { text: Qt.formatDate(Theme.now, "ddd").toUpperCase(); color: Theme.t.accent; anchors.horizontalCenter: parent.horizontalCenter
+                               font.family: Theme.display; font.pixelSize: 14 * desk.s; font.letterSpacing: 4 * desk.s }
+                        Text { text: Theme.now.getDate(); color: Theme.t.text; anchors.horizontalCenter: parent.horizontalCenter
+                               font.family: Theme.display; font.pixelSize: 38 * desk.s }
                     }
                 }
             }

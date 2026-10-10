@@ -1,6 +1,7 @@
 // The dock, auto-hiding: hidden it is a faint 40 px line at the bottom edge; touch the edge (or open
 // the desk) and a long, low frosted shelf rises with hand-drawn gold line icons, no tiles. A small
 // accent dot marks what is open. The crest stands apart on the left in a gold ring: the launcher.
+// That is the "glass" face; the default "ledger" face is at the end of this file.
 import Quickshell
 import Quickshell.Wayland
 import QtQuick
@@ -13,7 +14,9 @@ PanelWindow {
     color: "transparent"
     WlrLayershell.layer: WlrLayer.Top
     WlrLayershell.namespace: "tenka-dock"
-    mask: Region { item: Theme.deskOpen ? group : edge }
+    readonly property bool ledgerFace: Theme.dockStyle !== "glass"
+    readonly property string peek: Quickshell.env("TENKA_DOCK_PEEK") || ""   // renders: show one name tag
+    mask: Region { item: Theme.deskOpen ? (dock.ledgerFace ? lgroup : group) : edge }
     readonly property real oy: screen ? screen.height - implicitHeight : 0
 
     readonly property var apps: [
@@ -33,6 +36,8 @@ PanelWindow {
         return false;
     }
 
+    Timer { id: closeTimer; interval: 1600; onTriggered: if (!Theme.pinOpen) Theme.deskOpen = false }
+
     // hidden: the handle
     Item {
         id: edge
@@ -45,6 +50,7 @@ PanelWindow {
 
     Item {
         id: group
+        visible: !dock.ledgerFace
         width: launcherBtn.width + 16 + shelf.width; height: 76
         anchors.horizontalCenter: parent.horizontalCenter
         y: Theme.deskOpen ? dock.height - height - 16 : dock.height + 10
@@ -53,7 +59,6 @@ PanelWindow {
         Behavior on opacity { NumberAnimation { duration: 240 } }
         onYChanged: { shelf.place(); launcherBtn.place() }
         HoverHandler { onHoveredChanged: if (!hovered) closeTimer.restart(); else closeTimer.stop() }
-        Timer { id: closeTimer; interval: 1600; onTriggered: if (!Theme.pinOpen) Theme.deskOpen = false }
 
         Glass {   // the crest, apart, in a gold ring
             id: launcherBtn
@@ -97,6 +102,70 @@ PanelWindow {
                             Text { id: nm; anchors.centerIn: parent; text: it.modelData.n || ""; color: Theme.t.text; font.family: Theme.display; font.pixelSize: 12 }
                         }
                         MouseArea { id: ma; anchors.fill: parent; enabled: !it.modelData.sep; hoverEnabled: true; onClicked: Theme.run(it.modelData.run) }
+                    }
+                }
+            }
+        }
+    }
+
+    // ======================================================== face "ledger" (Theme.dockStyle, default)
+    // One low ink bar with a 1px gold rule. The crest sits inside it, plain (no ring), then a
+    // hairline, then the apps as small line icons. Open apps get a short vermilion rule beneath;
+    // the hovered one brightens and names itself in a small ruled tag. No bounce, no glow.
+    Item {
+        id: lgroup
+        visible: dock.ledgerFace
+        width: lbar.width; height: 64
+        anchors.horizontalCenter: parent.horizontalCenter
+        y: Theme.deskOpen ? dock.height - height - 18 : dock.height + 10
+        opacity: Theme.deskOpen ? 1 : 0
+        Behavior on y { NumberAnimation { duration: 380; easing.type: Easing.OutCubic } }
+        Behavior on opacity { NumberAnimation { duration: 220 } }
+        onYChanged: lbar.place()
+        HoverHandler { onHoveredChanged: if (!hovered) closeTimer.restart(); else closeTimer.stop() }
+
+        Glass {
+            id: lbar
+            ox: 0; oy: dock.oy
+            y: 4; height: 56; radius: 16; tint: Theme.selfBlur ? 0.66 : 0.56; line: 0.42; sheen: false
+            width: lrow.width + 44
+            Row {
+                id: lrow; anchors.centerIn: parent; spacing: 24
+                Item {   // the crest: the launcher
+                    width: 30; height: 40
+                    Image { anchors.centerIn: parent; source: Theme.t.crest; width: 28; height: 28; mipmap: true
+                            opacity: lcm.containsMouse ? 1 : 0.82 }
+                    MouseArea { id: lcm; anchors.fill: parent; hoverEnabled: true; onClicked: Theme.ipc("launcher", "toggle") }
+                }
+                Rectangle { width: 1; height: 26; anchors.verticalCenter: parent.verticalCenter; color: Theme.alpha(Theme.t.gold, 0.35) }
+                Repeater {
+                    model: dock.apps
+                    Item {
+                        id: li
+                        required property var modelData
+                        readonly property bool open: !modelData.sep && dock.running(modelData.id)
+                        width: modelData.sep ? 1 : 32; height: 40
+                        anchors.verticalCenter: parent ? parent.verticalCenter : undefined
+                        Rectangle { visible: !!li.modelData.sep; anchors.centerIn: parent; width: 1; height: 26; color: Theme.alpha(Theme.t.gold, 0.35) }
+                        Image {
+                            visible: !li.modelData.sep
+                            anchors.centerIn: parent; width: 30; height: 30; smooth: true
+                            sourceSize.width: 64; sourceSize.height: 64
+                            source: li.modelData.sep ? "" : Theme.icon(li.modelData.i)
+                            opacity: lma.containsMouse || li.open ? 1 : 0.72
+                            Behavior on opacity { NumberAnimation { duration: 140 } }
+                        }
+                        Rectangle { visible: li.open; width: 12; height: 2; color: Theme.t.accent
+                                    anchors.horizontalCenter: parent.horizontalCenter; anchors.bottom: parent.bottom; anchors.bottomMargin: -4 }
+                        Item {   // the name: a small ruled tag
+                            visible: lma.containsMouse || (dock.peek !== "" && dock.peek === li.modelData.id)
+                            anchors.horizontalCenter: parent.horizontalCenter; anchors.bottom: parent.top; anchors.bottomMargin: 22
+                            width: lnm.width + 22; height: 24
+                            Rectangle { anchors.fill: parent; radius: 3; color: Theme.alpha(Theme.t.base, 0.9); border.width: 1; border.color: Theme.alpha(Theme.t.gold, 0.45) }
+                            Text { id: lnm; anchors.centerIn: parent; text: (li.modelData.n || "").toUpperCase(); color: Theme.t.text
+                                   font.family: Theme.display; font.pixelSize: 11; font.letterSpacing: 3 }
+                        }
+                        MouseArea { id: lma; anchors.fill: parent; enabled: !li.modelData.sep; hoverEnabled: true; onClicked: Theme.run(li.modelData.run) }
                     }
                 }
             }

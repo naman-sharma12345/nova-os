@@ -103,6 +103,10 @@ hl.window_rule({ name = "suppress-maximize", match = { class = ".*" }, suppress_
 hl.window_rule({ name = "float-utils",
     match = { class = "^(pavucontrol|org.pulseaudio.pavucontrol|nm-connection-editor|blueman-manager|nwg-look|qt6ct|tenka-welcome|imv|calamares)$" },
     float = true, center = true, size = "1100 720" })
+-- the welcome runs on the qml runtime, whose Wayland app_id is org.qt-project.qml (RESOURCE_NAME only
+-- names X11 windows), so it is matched by its title: floated, centred, at the size it was drawn for
+hl.window_rule({ name = "tenka-welcome", match = { title = "^(Welcome to Tenka)$" },
+    float = true, center = true, size = "1180 700" })
 hl.window_rule({ name = "glass-terminal", match = { class = "^(kitty)$" }, opacity = "0.94 0.88" })
 -- the file manager is translucent through its own GTK CSS (glass); the compositor only blurs behind it
 hl.window_rule({ name = "glass-files", match = { class = "^([Tt]hunar)$" }, opacity = "1.0 0.94" })

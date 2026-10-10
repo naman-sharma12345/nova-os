@@ -117,9 +117,11 @@ def gtk_theme(name, T, d):
     /* ---- Tenka Lite panels, mirroring the Tenka shell: the top bar is bare (its colour comes from
        the panel's own transparent background); the dock's glass is its background-rgba, rounded here ---- */
     .xfce4-panel.background {{
-        background-image: none; background-color: transparent; border-radius: 22px; border: none;
+        background-image: none; background-color: transparent; border-radius: 3px; border: none;
         color: {p['text']};
     }}
+    /* the dock's plugins (crest, rule, apps) carry one gold hairline along its top edge: the flagship's ledger bar */
+    #whiskermenu-1, #separator-2, #docklike-3 {{ box-shadow: inset 0 1px 0 0 {A(p['accent2'], 0.55)}; }}
     .xfce4-panel button {{ color: {p['text']}; border-radius: {r}px; padding: 2px 8px; background: transparent; border: none; box-shadow: none; }}
     .xfce4-panel button:hover {{ background-color: {A(p['text'], 0.08)}; }}
     .xfce4-panel button:checked, .xfce4-panel button:active {{ background-color: {A(p['accent'], 0.22)}; color: {p['accent2']}; }}

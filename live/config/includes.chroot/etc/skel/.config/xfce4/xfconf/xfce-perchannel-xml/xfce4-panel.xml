@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Tenka Lite panels, mirroring the Tenka shell: a bar that is almost nothing (workspace dots,
-     tray, sound, the time), and an auto-hiding dock at the bottom with the crest apart on its left. -->
+     tray, sound, the time), and an auto-hiding dock at the bottom with the crest apart on its left: one low ink bar
+     (no blur under xfwm4, so it is denser than the flagship's glass) with a gold hairline on top. -->
 <channel name="xfce4-panel" version="1.0">
   <property name="configver" type="int" value="2"/>
   <property name="panels" type="array">
@@ -34,12 +35,12 @@
       <property name="length" type="double" value="1"/>
       <property name="length-adjust" type="bool" value="true"/>
       <property name="position-locked" type="bool" value="true"/>
-      <property name="size" type="uint" value="64"/>
-      <property name="icon-size" type="uint" value="40"/>
+      <property name="size" type="uint" value="54"/>
+      <property name="icon-size" type="uint" value="30"/>
       <property name="autohide-behavior" type="uint" value="1"/>
       <property name="background-style" type="uint" value="1"/>
       <property name="background-rgba" type="array">
-        <value type="double" value="0.06"/><value type="double" value="0.05"/><value type="double" value="0.05"/><value type="double" value="0.55"/>
+        <value type="double" value="0.04"/><value type="double" value="0.035"/><value type="double" value="0.03"/><value type="double" value="0.86"/>
       </property>
       <property name="plugin-ids" type="array">
         <value type="int" value="1"/>
@@ -49,7 +50,9 @@
     </property>
   </property>
   <property name="plugins" type="empty">
-    <property name="plugin-1" type="string" value="whiskermenu"/>
+    <property name="plugin-1" type="string" value="whiskermenu">
+      <property name="show-button-title" type="bool" value="false"/>
+    </property>
     <property name="plugin-2" type="string" value="separator">
       <property name="style" type="uint" value="1"/>
     </property>

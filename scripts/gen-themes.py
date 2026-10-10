@@ -415,7 +415,9 @@ def gen(name, T):
     if rice == "hairline":
         border = f'"{a(p["accent2"], "d9")}"'
         inactive = a(p["text"], "14")
-        bsize, rnd, rpow = 1, T["rounding"] + 4, 2.5
+        # ledger corners: Tenka's windows are nearly square like the desk sheet and the control center
+        # (a blade edge), Tianxia keeps a little more softness (mist)
+        bsize, rnd, rpow = 1, (6 if name == "samurai" else 12), 2.5
         shadow = "0x66000000"
         curves = [("emphasizedDecel", (0.05, 0.7), (0.1, 1)), ("emphasizedAccel", (0.3, 0), (0.8, 0.15)),
                   ("standard", (0.2, 0), (0, 1)), ("menuDecel", (0.1, 1), (0, 1)), ("menuAccel", (0.52, 0.03), (0.72, 0.08))]

@@ -40,7 +40,9 @@ Rectangle {
     function currentReal() { var it = userRep.itemAt(userIndex); var n = it && it.rname !== "" ? it.rname : currentUser()
         // the live ISO's account is "Live session user": on the title screen it is simply the wanderer
         return (n === "" || /^live/i.test(n)) ? "Wanderer" : n }
-    function currentSession() { var it = sessRep.itemAt(sessionIndex); return it ? it.sname : (xia ? "Tianxia" : "Tenka") }
+    // reads sessRep.count so a binding re-runs once the sessions are known (it used to stick on the
+    // fallback and show "Tenka" while the session that would start was Tenka Lite)
+    function currentSession() { var n = sessRep.count; var it = n > 0 ? sessRep.itemAt(sessionIndex) : null; return it ? it.sname : (xia ? "Tianxia" : "Tenka") }
     function al(c, a) { var q = Qt.darker(c, 1.0); return Qt.rgba(q.r, q.g, q.b, a) }
     function doLogin() { root.failed = false; sddm.login(currentUser(), pw.text, sessionIndex) }
     function nextSession(d) { var n = Math.max(1, sessRep.count); sessionIndex = (sessionIndex + d + n) % n }

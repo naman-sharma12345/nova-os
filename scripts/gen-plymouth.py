@@ -4,7 +4,7 @@
 The same key art as the boot menu and the login screen, lightly darkened; mist banks drift,
 sakura fall (Tenka) or qi motes rise (Tianxia); a big enso paints itself (a jade ring draws
 itself for Tianxia), the seal stamps in, the wordmark fades up, and boot progress is a brush
-line (a jade line with a gold bead) that grows under it. No text ever flashes. The final frame
+line (a jade line with a gold bead) that grows under it. No glow anywhere: lines and ink only. No text ever flashes. The final frame
 is the login screen's own background, so the hand-off to SDDM is seamless.
 
     python3 scripts/gen-plymouth.py
@@ -37,14 +37,12 @@ def enso_frames(d, theme):
         col = ta.hexc(P["text"])[:3]
         glow_col = ta.hexc(P["gold"])[:3]
     else:
-        # a jade ring: a bright core with a soft glow, drawn by a travelling gold bead
+        # a jade ring: one crisp 2 px line (no halo, no glow: the standing rule), drawn by a gold bead
         yy, xx = np.mgrid[0:D, 0:D].astype(np.float32); c = D / 2
         rad = np.hypot(xx - c, yy - c); Rr = D / 2 - 40
         ang = (np.degrees(np.arctan2(yy - c, xx - c)) + 90) % 360
         u = np.where(np.abs(rad - Rr) < 30, ang / 360, 2.0)
-        core = np.exp(-((rad - Rr) / 3.0) ** 2)
-        halo = np.exp(-((rad - Rr) / 16) ** 2) * 0.55
-        a = np.clip(core + halo, 0, 1)
+        a = np.clip(np.exp(-((rad - Rr) / 1.25) ** 2) * 1.15, 0, 1)
         col = ta.hexc(P["acc"])[:3]; glow_col = ta.hexc(P["gold"])[:3]
         # the formation: an inner rune ring of ticks, an outer dashed ring, and a faint jade disc
         ticks = ((np.abs(rad - (Rr - 24)) < 7) & ((ang % 7.5) < 1.1)).astype(np.float32) * 0.9
@@ -58,21 +56,18 @@ def enso_frames(d, theme):
         m = np.clip((p * 1.02 - u) / 0.012, 0, 1) * a
         arr = np.zeros((D, D, 4), np.uint8); arr[..., :3] = col; arr[..., 3] = (m * 255).astype(np.uint8)
         im = Image.fromarray(arr, "RGBA")
-        g = im.filter(ImageFilter.GaussianBlur(10)); ga = np.asarray(g, np.float32)
-        glow = np.zeros((D, D, 4), np.uint8); glow[..., :3] = glow_col; glow[..., 3] = (ga[..., 3] * 0.35).astype(np.uint8)
-        out = Image.alpha_composite(Image.fromarray(glow, "RGBA"), im)
+        out = im   # no gold glow behind the stroke: ink and line only
         if theme == "xianxia":
             rm = rune * np.clip((p - ang_r) / 0.2, 0, 1) * min(1.0, p * 1.5)
             r_arr = np.zeros((D, D, 4), np.uint8); r_arr[..., :3] = ta.hexc(P["gold"])[:3]; r_arr[..., 3] = (rm * 255).astype(np.uint8)
             out = Image.alpha_composite(out, Image.fromarray(r_arr, "RGBA"))
-            disc = np.exp(-(rad / (Rr * 0.9)) ** 4) * 0.16 * p
+            disc = np.exp(-(rad / (Rr * 0.9)) ** 4) * 0.08 * p
             d_arr = np.zeros((D, D, 4), np.uint8); d_arr[..., :3] = col; d_arr[..., 3] = (disc * 255).astype(np.uint8)
             out = Image.alpha_composite(Image.fromarray(d_arr, "RGBA"), out)
             if p < 1.0:   # the gold bead at the drawing head
                 th = np.radians(p * 360 - 90); bx, by = D / 2 + Rr * np.cos(th), D / 2 + Rr * np.sin(th)
-                b = Image.new("RGBA", (D, D), (0, 0, 0, 0)); ImageDraw.Draw(b).ellipse((bx - 6, by - 6, bx + 6, by + 6), fill=ta.hexc(P["gold"]))
-                gb = b.filter(ImageFilter.GaussianBlur(9))
-                out = Image.alpha_composite(Image.alpha_composite(Image.alpha_composite(out, gb), gb), b)
+                b = Image.new("RGBA", (D, D), (0, 0, 0, 0)); ImageDraw.Draw(b).ellipse((bx - 4, by - 4, bx + 4, by + 4), fill=ta.hexc(P["gold"]))
+                out = Image.alpha_composite(out, b)
         out.save(os.path.join(d, f"enso-{i:02d}.png"), optimize=True)
 
 
@@ -119,7 +114,6 @@ def progress(d, theme):
         full = Image.new("RGBA", (PROG_W, H), ta.hexc(P["acc"])[:3] + (0,)); m = Image.new("L", (PROG_W, H), 0); m.paste(ta.mask_img(a), (0, 5)); full.putalpha(m)
     else:
         full = Image.new("RGBA", (PROG_W, H), (0, 0, 0, 0)); ImageDraw.Draw(full).line((0, H // 2, PROG_W, H // 2), fill=ta.hexc(P["acc"]), width=2)
-        full = Image.alpha_composite(full.filter(ImageFilter.GaussianBlur(3)), full)
     track = Image.new("RGBA", (PROG_W, H), (0, 0, 0, 0)); ImageDraw.Draw(track).line((0, H // 2, PROG_W, H // 2), fill=ta.hexc(P["gold"], 60), width=1)
     track.save(os.path.join(d, "progress-track.png"))
     xs = np.arange(PROG_W)[None, :]
@@ -129,7 +123,7 @@ def progress(d, theme):
         if theme == "xianxia" and 0 < p:
             bx = int(p * PROG_W) - 1; b = Image.new("RGBA", (PROG_W, H), (0, 0, 0, 0))
             ImageDraw.Draw(b).ellipse((bx - 4, H / 2 - 4, bx + 4, H / 2 + 4), fill=ta.hexc(P["gold"]))
-            im = Image.alpha_composite(Image.alpha_composite(im, b.filter(ImageFilter.GaussianBlur(5))), b)
+            im = Image.alpha_composite(im, b)
         im.save(os.path.join(d, f"progress-{i:02d}.png"), optimize=True)
 
 

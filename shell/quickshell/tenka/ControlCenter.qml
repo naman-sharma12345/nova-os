@@ -44,7 +44,7 @@ PanelWindow {
               stdout: StdioCollector { onStreamFinished: { cc.hasBacklight = text.trim() !== ""; if (cc.hasBacklight) cc.bright = Number(text.trim()) / 100 } } }
 
     MouseArea { anchors.fill: parent; onClicked: cc.open = false }
-    Rectangle { anchors.fill: parent; opacity: panel.opacity
+    Rectangle { anchors.fill: parent; opacity: panel.opacity; visible: Theme.ccStyle === "glass"   // a scrim only for the glass face (Hyprland would blur it as a full-height strip)
         gradient: Gradient { orientation: Gradient.Horizontal
             GradientStop { position: 0.55; color: "transparent" }
             GradientStop { position: 1.0; color: Theme.alpha(Theme.t.base, 0.45) } } }
@@ -212,13 +212,15 @@ PanelWindow {
         default property alias content: inner.data
         width: parent ? parent.width : 0
         height: inner.childrenRect.height + 34
-        Rectangle { anchors.fill: parent; anchors.topMargin: 8; color: "transparent"; radius: 4
-                    border.width: 1; border.color: Theme.alpha(Theme.t.gold, 0.38) }
-        Rectangle {   // the label, set into the rule
-            x: 14; y: 0; height: 16; width: lbl.implicitWidth + 16; color: ledger.ink
-            Text { id: lbl; anchors.centerIn: parent; text: bx.num + "   " + bx.label
-                   color: Theme.t.gold; font.family: Theme.display; font.pixelSize: 11; font.letterSpacing: 4 }
-        }
+        readonly property color rc: Theme.alpha(Theme.t.gold, 0.38)
+        // 1px rules with a gap where the label sits (nothing painted behind it, so it reads on glass)
+        Rectangle { x: 0; y: 8; width: 1; height: bx.height - 8; color: bx.rc }
+        Rectangle { x: bx.width - 1; y: 8; width: 1; height: bx.height - 8; color: bx.rc }
+        Rectangle { x: 0; y: bx.height - 1; width: bx.width; height: 1; color: bx.rc }
+        Rectangle { x: 0; y: 8; width: 8; height: 1; color: bx.rc }
+        Rectangle { x: lbl.x + lbl.width + 8; y: 8; width: Math.max(0, bx.width - x); height: 1; color: bx.rc }
+        Text { id: lbl; x: 16; y: 1; text: bx.num + "   " + bx.label
+               color: Theme.t.gold; font.family: Theme.display; font.pixelSize: 11; font.letterSpacing: 4 }
         Column { id: inner; x: 18; y: 26; width: bx.width - 36; spacing: 0 }
     }
     component Row2: Item {

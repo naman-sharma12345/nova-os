@@ -30,7 +30,7 @@ PanelWindow {
                 color: active ? Theme.t.accent : Theme.alpha(Theme.t.text, used ? 0.75 : 0.35)
                 Behavior on width { NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
                 Behavior on color { ColorAnimation { duration: 200 } }
-                MouseArea { anchors.fill: parent; anchors.margins: -6; onClicked: Hyprland.dispatch("workspace " + parent.wsId) }
+                MouseArea { anchors.fill: parent; anchors.margins: -6; onClicked: Hyprland.dispatch("hl.dsp.focus({ workspace = " + parent.wsId + " })") }
             }
         }
     }

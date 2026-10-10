@@ -18,10 +18,17 @@ hl.config({
 })
 EOF
   command -v xfconf-query >/dev/null && { xfconf-query -c xfwm4 -p /general/show_frame_shadow -s false; xfconf-query -c xfwm4 -p /general/show_popup_shadow -s false; xfconf-query -c xfwm4 -p /general/box_move -s true; } 2>/dev/null
+  # no blur behind glass: the terminal and the file manager go denser so text never reads through
+  printf '# written by tenka-perf: performance mode\nbackground_opacity 0.96\n' > "$HOME/.config/kitty/perf.conf" 2>/dev/null
+  if [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
+    mkdir -p "$HOME/.cache/tenka"; cp -f "/usr/share/tenka/themes/$(tenka-theme --current)/lite-session.css" "$HOME/.cache/tenka/session.css" 2>/dev/null
+  fi
   msg="Performance mode on: motion and blur rest, the art stays."
 else
   rm -f "$S" "$F"
   command -v xfconf-query >/dev/null && { xfconf-query -c xfwm4 -p /general/show_frame_shadow -s true; xfconf-query -c xfwm4 -p /general/show_popup_shadow -s true; xfconf-query -c xfwm4 -p /general/box_move -s false; } 2>/dev/null
+  printf '# written by tenka-perf (empty = full glass)\n' > "$HOME/.config/kitty/perf.conf" 2>/dev/null
+  [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ] && rm -f "$HOME/.cache/tenka/session.css"
   msg="Performance mode off: full motion and glass."
 fi
 [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ] && hyprctl reload >/dev/null 2>&1

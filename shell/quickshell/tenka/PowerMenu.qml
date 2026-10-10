@@ -21,7 +21,7 @@ PanelWindow {
     readonly property var rites: [
         ["\uf023", Theme.t.lockWord, "Lock the screen", "loginctl lock-session"],
         ["\uf186", Theme.t.suspendWord, "Suspend", "systemctl suspend"],
-        ["\uf2f5", Theme.t.logoutWord, "Log out", "hyprctl dispatch exit || loginctl terminate-session $XDG_SESSION_ID"],
+        ["\uf2f5", Theme.t.logoutWord, "Log out", "hyprctl dispatch 'hl.dsp.exit()' | grep -qx ok || loginctl terminate-session \"$XDG_SESSION_ID\""],
         ["\uf01e", Theme.t.rebootWord, "Restart", "systemctl reboot"],
         ["\uf011", Theme.t.shutdownWord, "Power off", "systemctl poweroff"]]
     onOpenChanged: Theme.hush = open

@@ -229,7 +229,7 @@ def gen(name, T):
     invisible=1
     """))
     # ---------- wlogout ----------
-    acts = [("lock", "l", "tenka-lock"), ("logout", "e", "hyprctl dispatch exit || loginctl terminate-user $USER"),
+    acts = [("lock", "l", "tenka-lock"), ("logout", "e", "hyprctl dispatch 'hl.dsp.exit()' | grep -qx ok || loginctl terminate-user $USER"),
             ("suspend", "u", "systemctl suspend"), ("hibernate", "h", "systemctl hibernate"),
             ("reboot", "r", "systemctl reboot"), ("shutdown", "s", "systemctl poweroff")]
     W(f"{H}/.config/wlogout/layout", "".join(json.dumps({"label": a, "action": c, "text": w[a], "keybind": k}) + "\n" for a, k, c in acts))

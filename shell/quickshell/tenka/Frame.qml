@@ -92,7 +92,7 @@ Scope {
                         width: active ? 18 : 4; height: 4; radius: 2
                         color: active ? Theme.t.accent : Theme.alpha(Theme.t.text, 0.4)
                         Behavior on width { NumberAnimation { duration: 400; easing.type: Easing.BezierSpline; easing.bezierCurve: [0.05, 0.7, 0.1, 1, 1, 1] } }
-                        MouseArea { anchors.fill: parent; anchors.margins: -6; onClicked: Hyprland.dispatch("workspace " + (parent.index + 1)) }
+                        MouseArea { anchors.fill: parent; anchors.margins: -6; onClicked: Hyprland.dispatch("hl.dsp.focus({ workspace = " + (parent.index + 1) + " })") }
                     }
                 }
             }

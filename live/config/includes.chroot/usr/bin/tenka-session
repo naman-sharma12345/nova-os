@@ -1,8 +1,13 @@
 #!/bin/sh
 # Started by Hyprland at login.
 tenka-theme --init
-# Lite's denser file-manager glass is for xfwm4 only: Hyprland blurs, so the CSS goes back to clear glass
-rm -f "$HOME/.cache/tenka/session.css"
+# Lite's denser file-manager glass is for xfwm4 and for performance mode (no blur); with blur on,
+# Hyprland's glass goes back to clear
+if [ -e "$HOME/.config/tenka/perf" ]; then
+  mkdir -p "$HOME/.cache/tenka"; cp -f "/usr/share/tenka/themes/$(tenka-theme --current)/lite-session.css" "$HOME/.cache/tenka/session.css" 2>/dev/null
+else
+  rm -f "$HOME/.cache/tenka/session.css"
+fi
 dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE 2>/dev/null
 if command -v qs >/dev/null 2>&1 && [ -d /etc/xdg/quickshell/tenka ]; then
   # the Tenka shell draws everything: wallpaper, desk, bar, dock, launcher, control center,

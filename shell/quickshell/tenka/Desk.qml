@@ -55,7 +55,7 @@ PanelWindow {
         id: title
         visible: Theme.deskStyle === "blade"
         x: 136 * desk.s; y: 150 * desk.s
-        opacity: Theme.hush ? 0 : 1
+        opacity: Theme.hush || Theme.working ? 0 : 1
         Behavior on opacity { NumberAnimation { duration: 260 } }
         width: 900 * desk.s; height: 600 * desk.s
 
@@ -121,7 +121,7 @@ PanelWindow {
         id: film
         visible: Theme.deskStyle === "film"
         anchors.fill: parent
-        opacity: Theme.hush ? 0 : 1
+        opacity: Theme.hush || Theme.working ? 0 : 1
         Behavior on opacity { NumberAnimation { duration: 260 } }
         Rectangle {   // the lower letterbox: ink that fades up into the art
             anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom
@@ -180,7 +180,7 @@ PanelWindow {
         visible: Theme.deskStyle === "scroll"
         x: 120 * desk.s; y: 0
         width: 156 * desk.s; height: 900 * desk.s
-        opacity: Theme.hush ? 0 : 1
+        opacity: Theme.hush || Theme.working ? 0 : 1
         Behavior on opacity { NumberAnimation { duration: 260 } }
         Rectangle {   // the cord
             anchors.horizontalCenter: parent.horizontalCenter; y: 0; width: 1; height: 64 * desk.s

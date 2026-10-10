@@ -3,6 +3,7 @@ pragma Singleton
 // by `tenka-theme`; the shell follows it live.
 import Quickshell
 import Quickshell.Io
+import Quickshell.Hyprland
 import QtQuick
 
 Singleton {
@@ -27,6 +28,20 @@ Singleton {
     property bool nightInk: false        // hyprsunset
     property bool deskOpen: false        // the card cluster and the dock are showing
     property bool hush: false            // a full overlay (launcher, power) is up: the desk type steps back
+    // windows on the focused workspace: the desk's big type steps back while you work, so it never
+    // reads through a translucent terminal (TENKA_DESK_STAY=1 keeps it). Asked of hyprctl on each
+    // window/workspace event: Quickshell's own toplevel list misses windows opened before it tracked them.
+    property int wsWindows: 0
+    readonly property bool working: Quickshell.env("TENKA_DESK_STAY") !== "1" && wsWindows > 0
+    Process {
+        id: wsQ; command: ["hyprctl", "activeworkspace", "-j"]
+        stdout: StdioCollector { onStreamFinished: { try { root.wsWindows = JSON.parse(text).windows || 0 } catch (e) { root.wsWindows = 0 } } }
+    }
+    Connections {
+        target: Hyprland
+        function onRawEvent(ev) { if (/^(openwindow|closewindow|movewindow|workspace|focusedmon|activespecial)/.test(ev.name)) wsQ.running = true }
+    }
+    Component.onCompleted: if ((Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE") || "") !== "") wsQ.running = true
     property bool pinOpen: false         // keep them up (desk open via IPC / clock)
     function asset(p) { return Qt.resolvedUrl("assets/" + adapter.name + "/" + p) }
     function icon(n) { return asset("icons/" + n + ".svg") }

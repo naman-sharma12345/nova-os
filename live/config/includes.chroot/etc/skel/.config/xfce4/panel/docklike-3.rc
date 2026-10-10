@@ -1,6 +1,10 @@
 [user]
-pinned=/usr/share/applications/kitty.desktop;/usr/share/applications/thunar.desktop;/usr/share/applications/firefox-esr.desktop;/usr/share/applications/org.xfce.mousepad.desktop;/usr/share/applications/mpv.desktop;
+pinned=/usr/share/applications/xfce4-terminal.desktop;/usr/share/applications/thunar.desktop;/usr/share/applications/firefox-esr.desktop;/usr/share/applications/org.xfce.mousepad.desktop;/usr/share/applications/mpv.desktop;
 onlyDisplayVisible=false
 showPreviews=false
-indicatorStyle=4
 indicatorOrientation=0
+indicatorStyle=0
+inactiveIndicatorStyle=0
+indicatorColorFromTheme=false
+indicatorColor=rgb(216,65,47)
+inactiveColor=rgba(201,163,90,0.55)

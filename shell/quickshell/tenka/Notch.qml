@@ -24,7 +24,7 @@ PanelWindow {
     readonly property int wsId: Hyprland.focusedWorkspace ? Hyprland.focusedWorkspace.id : 1
     readonly property var player: Mpris.players.values.length ? Mpris.players.values[0] : null
     readonly property var curve: [0.05, 0.7, 0.1, 1, 1, 1]
-    readonly property var spring: [0.38, 1.21, 0.22, 1, 1, 1]
+    readonly property var spring: [0.05, 0.7, 0.1, 1, 1, 1]   // no overshoot: the ink draws out, it does not bounce
     readonly property color ink: Theme.alpha(Theme.t.base, 0.95)
 
     Item {
@@ -41,7 +41,7 @@ PanelWindow {
             anchors.fill: parent
             color: notch.ink
             topLeftRadius: 0; topRightRadius: 0
-            bottomLeftRadius: notch.open ? 28 : 15; bottomRightRadius: notch.open ? 28 : 15
+            bottomLeftRadius: notch.open ? Theme.ledgerR + 4 : 15; bottomRightRadius: notch.open ? Theme.ledgerR + 4 : 15
             border.width: 0
         }
         Repeater {
@@ -117,8 +117,13 @@ PanelWindow {
             Rectangle { x: 336; y: 8; width: 1; height: parent.height - 16; color: Theme.alpha(Theme.t.gold, 0.25) }
             Column {
                 x: 358; y: 10; width: parent.width - 366; spacing: 6
-                Text { text: notch.player ? "NOW PLAYING" : "THE HOUR'S WORD"; color: Theme.alpha(Theme.t.text, 0.5)
-                       font.family: Theme.display; font.pixelSize: 10; font.letterSpacing: 4 }
+                Row {   // a numbered small-caps label, the ledger's way of naming a box
+                    spacing: 8
+                    Text { text: "02"; color: Theme.alpha(Theme.t.gold, 0.7); font.family: Theme.display; font.pixelSize: 10; font.letterSpacing: 3; anchors.verticalCenter: parent.verticalCenter }
+                    Rectangle { width: 18; height: 1; color: Theme.alpha(Theme.t.gold, 0.55); anchors.verticalCenter: parent.verticalCenter }
+                    Text { text: notch.player ? "NOW PLAYING" : "THE HOUR'S WORD"; color: Theme.alpha(Theme.t.text, 0.55)
+                           font.family: Theme.display; font.pixelSize: 10; font.letterSpacing: 4 }
+                }
                 Text { width: parent.width; wrapMode: Text.WordWrap; maximumLineCount: 2; elide: Text.ElideRight
                        text: notch.player ? (notch.player.trackTitle || "") : Theme.t.proverbs[Theme.now.getHours() % Math.max(1, Theme.t.proverbs.length)]
                        color: Theme.t.text; font.family: Theme.display; font.pixelSize: 17; lineHeight: 1.15 }

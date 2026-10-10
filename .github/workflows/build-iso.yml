@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Release tag to attach the ISO to (e.g. v0.1.0)"
+        description: "Release tag to attach the ISO to (e.g. v0.1.0; 'nightly' = a pre-release of main's head)"
         required: false
         default: ""
 
@@ -62,6 +62,9 @@ jobs:
           tag_name: ${{ github.event.inputs.tag || github.ref_name }}
           name: Tenka ${{ github.event.inputs.tag || github.ref_name }}
           draft: false
+          prerelease: ${{ github.event.inputs.tag == 'nightly' }}
+          make_latest: ${{ github.event.inputs.tag != 'nightly' }}
+          overwrite_files: true
           files: |
             build/live/*.iso
             build/live/*.iso.sha256

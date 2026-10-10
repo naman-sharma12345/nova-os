@@ -139,6 +139,16 @@ def build_theme(theme, d):
     fonts(d)
 
 
+def sddm_assets(theme, d):
+    """The login's 'title' face reuses the boot menu's own art: the graded key art + baked wordmark
+    (no key hints: the greeter draws its own) and the selected-entry stroke, so GRUB hands over to
+    the login without a seam."""
+    c = ta.scene(theme, 1)
+    c, _ = ta.title_block(c, theme, 1)
+    c.convert("RGB").save(os.path.join(d, "title.jpg"), quality=92)
+    (sel_samurai if theme == "samurai" else sel_xianxia)(MENU["width"], MENU["ih"], 1).save(os.path.join(d, "select.png"))
+
+
 LIVE_CFG = """source /boot/grub/config.cfg
 
 menuentry "Tenka" --class tenka --hotkey=t {
@@ -190,4 +200,6 @@ def live():
 if __name__ == "__main__":
     for n in ta.PAL:
         build_theme(n, os.path.join(IC, f"usr/share/grub/themes/tenka-{n}")); print("grub theme:", n)
+        sd = os.path.join(IC, f"usr/share/sddm/themes/tenka-{n}"); os.makedirs(sd, exist_ok=True)
+        sddm_assets(n, sd); print("sddm title art:", n)
     live(); print("live boot menu: samurai")

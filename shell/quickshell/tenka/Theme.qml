@@ -44,7 +44,7 @@ Singleton {
         path: Quickshell.env("HOME") + "/.config/tenka/desk.json"
         watchChanges: true
         onFileChanged: reload()
-        JsonAdapter { id: deskCfg; property string city: ""; property var events: []; property string style: ""; property string bar: ""; property string lock: ""; property string cc: "" }
+        JsonAdapter { id: deskCfg; property string city: ""; property var events: []; property string style: ""; property string bar: ""; property string lock: ""; property string cc: ""; property string launcher: "" }
     }
     readonly property alias desk: deskCfg
     // the desk title layout: "blade" (big clock left, seal, proverb), "film" (a cinematic lower band),
@@ -54,6 +54,7 @@ Singleton {
     readonly property string barStyle: Quickshell.env("TENKA_BAR") || deskCfg.bar || "notch"
     readonly property string deskStyle: Quickshell.env("TENKA_DESK") || deskCfg.style || "blade"
     readonly property string ccStyle: Quickshell.env("TENKA_CC") || deskCfg.cc || "ledger"
+    readonly property string launcherStyle: Quickshell.env("TENKA_LAUNCHER") || deskCfg.launcher || "menu"
 
     FileView {
         path: Quickshell.env("HOME") + "/.config/tenka/shell-theme.json"

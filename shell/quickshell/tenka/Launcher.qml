@@ -13,7 +13,10 @@ PanelWindow {
     id: launcher
     property bool open: false
     property int sel: 0
-    visible: open || card.opacity > 0.01
+    // faces: "menu" (default: a title-screen list on the boot menu's brush stroke) | "grid" (frosted tiles)
+    readonly property string face: Theme.launcherStyle
+    readonly property var field: face === "menu" ? msearch : search
+    visible: open || card.opacity > 0.01 || menu.opacity > 0.01
     anchors { top: true; bottom: true; left: true; right: true }
     color: "transparent"
     exclusionMode: ExclusionMode.Ignore
@@ -24,12 +27,12 @@ PanelWindow {
     IpcHandler {
         target: "launcher"
         function toggle(): void { launcher.open ? launcher.hide() : launcher.show() }
-        function show(): void { search.text = ""; launcher.sel = 0; launcher.open = true; search.forceActiveFocus() }
+        function show(): void { launcher.show() }
         function hide(): void { launcher.open = false }
-        function type(q: string): void { launcher.show(); search.text = q }
+        function type(q: string): void { launcher.show(); launcher.field.text = q }
     }
     onOpenChanged: Theme.hush = open
-    function show() { search.text = ""; sel = 0; open = true; search.forceActiveFocus() }
+    function show() { search.text = ""; msearch.text = ""; sel = 0; open = true; field.forceActiveFocus() }
     function hide() { open = false }
 
     readonly property var hidden: /^(org\.xfce\.mousepad-settings|xfce|panel-|thunar-|xfce4-|kvantum|qt6ct|picom|conky|vim|nm-connection|org\.xfce\.ristretto-settings)/
@@ -39,7 +42,7 @@ PanelWindow {
         .sort((a, b) => a.name.localeCompare(b.name))
     readonly property var pinned: pinnedIds.map(id => all.find(a => a.id === id)).filter(a => !!a)
     readonly property var rest: all.filter(a => pinnedIds.indexOf(a.id) < 0)
-    readonly property string q: search.text.trim().toLowerCase()
+    readonly property string q: field.text.trim().toLowerCase()
     function score(a) {
         const n = a.name.toLowerCase();
         if (n.startsWith(q)) return 0;
@@ -62,7 +65,7 @@ PanelWindow {
 
     // the room dims around the card
     Rectangle {
-        anchors.fill: parent; opacity: card.opacity
+        anchors.fill: parent; opacity: Math.max(card.opacity, menu.opacity)
         gradient: Gradient {
             GradientStop { position: 0; color: Theme.alpha(Theme.t.base, 0.30) }
             GradientStop { position: 1; color: Theme.alpha(Theme.t.base, 0.62) } }
@@ -71,6 +74,7 @@ PanelWindow {
 
     Glass {
         id: card
+        visible: launcher.face === "grid"
         width: 940; height: 690; radius: 30; tint: 0.46; line: 0.18; innerLine: 0.2
         anchors.horizontalCenter: parent.horizontalCenter
         y: (parent.height - height) / 2 - 10 + (launcher.open ? 0 : 26)
@@ -245,6 +249,81 @@ PanelWindow {
             Image { source: Theme.t.crest; width: 20; height: 20; mipmap: true; anchors.verticalCenter: parent.verticalCenter }
             Text { text: Theme.t.word + "  ·  " + Theme.hourName(Theme.now).toUpperCase(); color: Theme.alpha(Theme.t.text, 0.5)
                    font.family: Theme.display; font.pixelSize: 12; font.letterSpacing: 3; anchors.verticalCenter: parent.verticalCenter }
+        }
+    }
+
+    // ======================================================================== face "menu"
+    // The launcher as a title-screen menu: one hairline search, then the paths as a list in Marcellus;
+    // the chosen one sits on the boot menu's own brush stroke (a jade glow in Tianxia). No tiles, no glow.
+    Item {
+        id: menu
+        visible: launcher.face === "menu"
+        readonly property int rows: Math.min(8, Math.max(1, launcher.flat.length))
+        width: 640; height: 112 + rows * 54 + 64
+        anchors.horizontalCenter: parent.horizontalCenter
+        y: parent.height * 0.22 + (launcher.open ? 0 : 20)
+        opacity: launcher.open ? 1 : 0
+        Behavior on y { NumberAnimation { duration: 280; easing.type: Easing.OutCubic } }
+        Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
+        MouseArea { anchors.fill: parent }
+        Rectangle { anchors.fill: parent; radius: 18; color: Theme.alpha(Theme.t.base, Theme.selfBlur ? 0.88 : 0.70)
+                    border.width: 1; border.color: Theme.alpha(Theme.t.gold, 0.45) }
+
+        Text { x: 34; y: 34; text: Theme.t.seekWord.toUpperCase(); color: Theme.t.gold; font.family: Theme.display; font.pixelSize: 12; font.letterSpacing: 5 }
+        TextField {
+            id: msearch
+            x: 110; y: 18; width: parent.width - 140; height: 52
+            background: null
+            placeholderText: "an app, a tool, a path"
+            placeholderTextColor: Theme.alpha(Theme.t.text, 0.38)
+            color: Theme.t.text; font.family: Theme.display; font.pixelSize: 24
+            selectionColor: Theme.alpha(Theme.t.accent, 0.5)
+            onTextChanged: launcher.sel = 0
+            Keys.onEscapePressed: launcher.hide()
+            Keys.onDownPressed: launcher.sel = Math.min(launcher.flat.length - 1, launcher.sel + 1)
+            Keys.onUpPressed: launcher.sel = Math.max(0, launcher.sel - 1)
+            onAccepted: launcher.launch(launcher.flat[launcher.sel])
+        }
+        Rectangle { x: 30; y: 78; width: parent.width - 60; height: 1
+            gradient: Gradient { orientation: Gradient.Horizontal
+                GradientStop { position: 0; color: Theme.alpha(Theme.t.gold, 0.7) }
+                GradientStop { position: 1; color: Theme.alpha(Theme.t.gold, 0.05) } } }
+
+        ListView {
+            id: mlist
+            x: 22; y: 96; width: parent.width - 44; height: menu.rows * 54
+            clip: true; interactive: true
+            model: launcher.flat
+            currentIndex: launcher.sel
+            highlightMoveDuration: 180
+            highlightFollowsCurrentItem: true
+            highlight: Item {
+                width: mlist.width; height: 54
+                Image { source: Theme.t.stroke; width: 430; height: 54; smooth: true; anchors.verticalCenter: parent.verticalCenter; x: -4 }
+            }
+            delegate: Item {
+                required property var modelData
+                required property int index
+                readonly property bool on: index === mlist.currentIndex
+                width: mlist.width; height: 54
+                IconImage { x: 30; anchors.verticalCenter: parent.verticalCenter; implicitSize: 22; source: launcher.iconFor(modelData); opacity: parent.on ? 1 : 0.7 }
+                Text { x: 68; anchors.verticalCenter: parent.verticalCenter; text: launcher.nice(modelData)
+                       color: parent.on ? "#fff8ec" : Theme.alpha(Theme.t.text, 0.72); font.family: Theme.display; font.pixelSize: 21 }
+                Text { anchors.right: parent.right; anchors.rightMargin: 14; anchors.verticalCenter: parent.verticalCenter
+                       text: (modelData.genericName || "").toUpperCase(); width: 220; horizontalAlignment: Text.AlignRight; elide: Text.ElideRight
+                       color: Theme.alpha(Theme.t.text, parent.on ? 0.55 : 0.3); font.family: Theme.display; font.pixelSize: 11; font.letterSpacing: 3 }
+                MouseArea { anchors.fill: parent; hoverEnabled: true; onEntered: launcher.sel = index; onClicked: launcher.launch(modelData) }
+            }
+        }
+        Text {
+            x: 34; anchors.bottom: parent.bottom; anchors.bottomMargin: 24
+            text: "ENTER  to open      ↑ ↓  to choose      ESC  to close"
+            color: Theme.alpha(Theme.t.text, 0.45); font.family: Theme.display; font.pixelSize: 12; font.letterSpacing: 2
+        }
+        Text {
+            anchors.right: parent.right; anchors.rightMargin: 34; anchors.bottom: parent.bottom; anchors.bottomMargin: 24
+            text: launcher.q === "" ? launcher.all.length + " PATHS" : launcher.found.length + " FOUND"
+            color: Theme.alpha(Theme.t.gold, 0.7); font.family: Theme.display; font.pixelSize: 12; font.letterSpacing: 3
         }
     }
 }

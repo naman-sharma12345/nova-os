@@ -266,7 +266,7 @@ PanelWindow {
         Behavior on y { NumberAnimation { duration: 280; easing.type: Easing.OutCubic } }
         Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
         MouseArea { anchors.fill: parent }
-        Rectangle { anchors.fill: parent; radius: 18; color: Theme.alpha(Theme.t.base, Theme.selfBlur ? 0.88 : 0.70)
+        Rectangle { anchors.fill: parent; radius: Theme.ledgerR; color: Theme.alpha(Theme.t.base, Theme.selfBlur ? 0.88 : 0.70)
                     border.width: 1; border.color: Theme.alpha(Theme.t.gold, 0.45) }
 
         Text { x: 34; y: 34; text: Theme.t.seekWord.toUpperCase(); color: Theme.t.gold; font.family: Theme.display; font.pixelSize: 12; font.letterSpacing: 5 }

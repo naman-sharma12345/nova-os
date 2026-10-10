@@ -85,7 +85,7 @@ Or press <kbd>Super</kbd>+<kbd>T</kbd>, or open **Choose your path** from the la
 
 ## Nightly ISO, end to end
 
-> The **[nightly pre-release](https://github.com/naman-sharma12345/tenka/releases/tag/nightly)** is built from `main` by GitHub Actions. These are real captures of it booted in QEMU with **no GPU** and 3 GB of RAM: boot splash → SDDM title screen → Hyprland 0.55 with the Tenka shell → apps → lock → log out, plus Tenka Lite, which the ISO picks by itself on this little memory. No failed services, no Hyprland config errors. The pass found and fixed six real bugs (Lua dispatch for log out and workspaces, the SDDM session label, Lite's see-through terminal and green dock mark, and windows reading through the desk with blur off).
+> The **[nightly pre-release](https://github.com/naman-sharma12345/tenka/releases/tag/nightly)** is built from `main` by GitHub Actions. These are real captures of it booted in QEMU with **no GPU** and 3 GB of RAM: boot splash → SDDM title screen → Hyprland 0.55 with the Tenka shell → apps → lock → log out, plus Tenka Lite, which the ISO picks by itself on this little memory. No failed services, no Hyprland config errors. The pass found and fixed six real bugs (Lua dispatch for log out and workspaces, the SDDM session label, Lite's see-through terminal and green dock mark, and windows reading through the desk with blur off); the captures after a fix show it applied live in the VM, and the next nightly carries it.
 
 | | |
 |---|---|

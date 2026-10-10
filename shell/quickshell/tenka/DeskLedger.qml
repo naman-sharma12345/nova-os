@@ -59,7 +59,7 @@ Item {
         visible: !dl.bare
         anchors.fill: parent
         ox: dl.ox; oy: dl.oy
-        radius: 18; tint: Theme.selfBlur ? 0.66 : 0.56; line: 0.42; innerLine: 0; sheen: false
+        radius: Theme.ledgerR; tint: Theme.selfBlur ? 0.66 : 0.56; line: 0.42; innerLine: 0; sheen: false
     }
 
     readonly property real bh: Math.max(b1.implicitHeight, b2.implicitHeight, b3.implicitHeight)

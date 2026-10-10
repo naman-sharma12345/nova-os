@@ -273,7 +273,7 @@ PanelWindow {
         Behavior on x { NumberAnimation { duration: 320; easing.type: Easing.OutCubic } }
         Behavior on opacity { NumberAnimation { duration: 220 } }
         MouseArea { anchors.fill: parent }
-        Rectangle { anchors.fill: parent; radius: 18; color: Theme.alpha(Theme.t.base, Theme.selfBlur ? 0.9 : 0.78)
+        Rectangle { anchors.fill: parent; radius: Theme.ledgerR; color: Theme.alpha(Theme.t.base, Theme.selfBlur ? 0.9 : 0.78)
                     border.width: 1; border.color: Theme.alpha(Theme.t.gold, 0.5) }
 
         Column {

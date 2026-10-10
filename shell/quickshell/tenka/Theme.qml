@@ -14,6 +14,8 @@ Singleton {
     readonly property string ui: "Inter"
     readonly property string glyphs: "Symbols Nerd Font"
     readonly property bool xia: adapter.name === "xianxia"
+    // the ledger faces share the windows' corners: Tenka nearly square (a blade edge), Tianxia a little softer
+    readonly property int ledgerR: xia ? 12 : 6
     // Off Hyprland (sway, a nested test, Lite) nothing blurs behind layers, so glass frosts itself
     // from a pre-blurred copy of the wallpaper. On Hyprland the compositor's blur does it.
     readonly property bool selfBlur: Quickshell.env("TENKA_SELF_BLUR") === "1" || (Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE") || "") === ""

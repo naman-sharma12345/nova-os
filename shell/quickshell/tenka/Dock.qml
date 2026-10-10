@@ -129,7 +129,7 @@ PanelWindow {
         Glass {
             id: lbar
             ox: 0; oy: dock.oy
-            y: 4; height: 56; radius: 16; tint: Theme.selfBlur ? 0.66 : 0.56; line: 0.42; sheen: false
+            y: 4; height: 56; radius: Theme.ledgerR; tint: Theme.selfBlur ? 0.66 : 0.56; line: 0.42; sheen: false
             width: lrow.width + 44
             Row {
                 id: lrow; anchors.centerIn: parent; spacing: 24

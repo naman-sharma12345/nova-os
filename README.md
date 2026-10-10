@@ -83,7 +83,22 @@ Or press <kbd>Super</kbd>+<kbd>T</kbd>, or open **Choose your path** from the la
 | <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> | performance mode |
 | <kbd>Print</kbd> / <kbd>Shift</kbd>+<kbd>Print</kbd> | screenshot area / screen |
 
-## Captured in a VM
+## On main, since v0.1.0
+
+> The overnight redesign: one quiet language everywhere. Ink, 1px gold rules, Marcellus, the brush stroke for "where you are", no glow. Captured in QEMU with **no GPU** (the shell from `main` loaded into the v0.1.0 ISO, real Hyprland blur); the installer is Calamares run natively. The next release carries all of it.
+
+| | |
+|---|---|
+| Desk: ledger sheet + dock (Tenka) | Desk (Tianxia) |
+| <img src="docs/screenshots/main-desk-tenka.jpg" width="100%"> | <img src="docs/screenshots/main-desk-tianxia.jpg" width="100%"> |
+| Control center: ruled boxes, hairline sliders | Launcher: the boot menu's list |
+| <img src="docs/screenshots/main-control-tenka.jpg" width="100%"> | <img src="docs/screenshots/main-launcher-tenka.jpg" width="100%"> |
+| Login: the GRUB title screen, carried on | Files: ink glass over the art |
+| <img src="docs/screenshots/main-login-tenka.jpg" width="100%"> | <img src="docs/screenshots/main-files-tenka.jpg" width="100%"> |
+| Installer: the steps as a menu | |
+| <img src="docs/screenshots/main-installer-tenka.jpg" width="100%"> | |
+
+## Captured in a VM (v0.1.0)
 
 > Real screenshots of the v0.1.0 ISO booted in QEMU with **no GPU** (software rendering, emulated CPU). Hyprland + the Tenka shell with real compositor blur, and Tenka Lite (XFCE), which Tenka picks by itself at boot on machines without 3D or with little RAM. Tenka Lite idles at about **830 MB** of RAM in the live session.
 

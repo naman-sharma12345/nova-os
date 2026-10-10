@@ -1,0 +1,14 @@
+[Unit]
+Description=Tenka: set the clock's time zone from the network when none was chosen
+# a live session and a fresh install start on UTC; the installer and `timedatectl` choices always win
+After=NetworkManager.service live-config.service
+Before=sddm.service display-manager.service
+ConditionKernelCommandLine=!tenka.tz=keep
+
+[Service]
+Type=oneshot
+TimeoutStartSec=12
+ExecStart=/usr/libexec/tenka/tenka-timezone
+
+[Install]
+WantedBy=graphical.target

@@ -33,6 +33,7 @@ systemctl enable sddm.service || true
 systemctl set-default graphical.target || true
 systemctl enable NetworkManager.service || true
 systemctl enable tenka-session-default.service || true
+systemctl enable tenka-timezone.service || true
 systemctl enable zramswap.service 2>/dev/null || true
 for s in spice-vdagentd qemu-guest-agent open-vm-tools; do systemctl enable "$s" 2>/dev/null || true; done
 # low-end: nothing heavy idling in the background

@@ -31,6 +31,10 @@ Singleton {
     function asset(p) { return Qt.resolvedUrl("assets/" + adapter.name + "/" + p) }
     function icon(n) { return asset("icons/" + n + ".svg") }
     property int unread: 0
+    // the OSD, when the notch carries it: kind ("volume" | "brightness"), value 0..1, and a tick that re-arms it
+    property string osdKind: ""
+    property real osdValue: 0
+    property int osdTick: 0
 
     SystemClock { id: clock; precision: SystemClock.Seconds }
     IpcHandler {

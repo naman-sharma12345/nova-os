@@ -48,18 +48,17 @@ def sel_samurai(w, h, s=1):
 
 
 def sel_xianxia(w, h, s=1):
-    xx = np.linspace(0, 1, w)[None, :]; yy = np.linspace(-1, 1, h)[:, None]
-    band = np.exp(-(yy / 0.42) ** 2) * (np.clip(1 - xx / 0.85, 0, 1) ** 1.4) * 0.55
-    arr = np.zeros((h, w, 4), np.float32); arr[..., :3] = ta.hexc("#5fc9a0")[:3]; arr[..., 3] = np.clip(band, 0, 1) * 255
-    im = Image.fromarray(arr.astype(np.uint8), "RGBA")
-    ul = np.zeros((h, w, 4), np.uint8); ul[..., :3] = (160, 240, 205)
-    al = (np.clip(1 - xx[0] / 0.7, 0, 1) ** 1.2 * 200).astype(np.uint8); al[:int(10 * s)] = 0
-    ul[int(h * 0.86), :, 3] = al; ul = Image.fromarray(ul, "RGBA")
-    im = Image.alpha_composite(im, Image.alpha_composite(ul.filter(ImageFilter.GaussianBlur(2 * s)), ul))
-    bead = Image.new("RGBA", (w, h), (0, 0, 0, 0)); cx, cy, r = int(14 * s), h // 2, int(4.5 * s)
-    ImageDraw.Draw(bead).ellipse((cx - r, cy - r, cx + r, cy + r), fill=ta.hexc("#e2bd6b"))
-    g = bead.filter(ImageFilter.GaussianBlur(7 * s))
-    return Image.alpha_composite(Image.alpha_composite(Image.alpha_composite(im, g), g), bead)
+    """Flat and crisp (Naman: no neon, no glow): a pale jade band with hard edges that fades to the right,
+    a 2px jade rule along its foot and a short jade tick at the left. No blur, no bloom, no bead."""
+    xx = np.linspace(0, 1, w)[None, :].repeat(h, 0)
+    fade = np.clip(1 - xx / 0.82, 0, 1) ** 1.1
+    arr = np.zeros((h, w, 4), np.float32); arr[..., :3] = ta.hexc("#5fc9a0")[:3]
+    top, bot = int(h * 0.10), int(h * 0.88)
+    band = np.zeros((h, w), np.float32); band[top:bot] = 0.20
+    rule = np.zeros((h, w), np.float32); t = max(2, int(2 * s)); rule[bot - t:bot] = 0.95
+    tick = np.zeros((h, w), np.float32); tick[top:bot, :max(3, int(3 * s))] = 1.0
+    arr[..., 3] = np.clip(np.maximum(np.maximum(band, rule) * fade, tick), 0, 1) * 255
+    return Image.fromarray(arr.astype(np.uint8), "RGBA")
 
 
 def countdown(theme, w, h, s=1):
@@ -68,7 +67,7 @@ def countdown(theme, w, h, s=1):
     ImageDraw.Draw(tr).line((0, h // 2, w, h // 2), fill=ta.hexc(P["gold"], 70), width=max(1, int(s)))
     hl = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     ImageDraw.Draw(hl).line((0, h // 2, w, h // 2), fill=ta.hexc(P["acc"], 230), width=max(2, int(2 * s)))
-    return tr, Image.alpha_composite(hl.filter(ImageFilter.GaussianBlur(2.5 * s)), hl)
+    return tr, hl   # crisp, no glow
 
 
 def fonts(d):

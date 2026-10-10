@@ -1,4 +1,5 @@
-// The on-screen display: a small frosted pill low in the middle when the volume or brightness moves.
+// The on-screen display. With the notch (the default bar) the notch itself carries it: it widens into a
+// hairline meter for a moment. With the line or frame bar: a small frosted pill low in the middle.
 // Volume follows PipeWire by itself; brightness keys call `qs -c tenka ipc call osd brightness <0-100>`.
 import Quickshell
 import Quickshell.Io
@@ -22,6 +23,9 @@ PanelWindow {
     property string glyph: "\uf028"
     property string label: "VOLUME"
     function pop(kind, value) {
+        if (Theme.barStyle === "notch") {   // the notch carries it: it widens a little and shows a hairline meter
+            Theme.osdKind = kind; Theme.osdValue = value; Theme.osdTick += 1; return
+        }
         v = value; label = kind === "volume" ? "VOLUME" : "BRIGHTNESS"
         glyph = kind === "volume" ? (value <= 0.001 ? "\uf026" : value < 0.5 ? "\uf027" : "\uf028") : "\uf185"
         shown = true; hide.restart()

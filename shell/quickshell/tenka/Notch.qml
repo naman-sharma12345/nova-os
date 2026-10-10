@@ -31,7 +31,7 @@ PanelWindow {
         id: pill
         anchors.horizontalCenter: parent.horizontalCenter
         y: 0
-        width: notch.open ? 660 : 236
+        width: notch.open ? 660 : (notch.meter ? 400 : 236)
         height: notch.open ? 150 : 30
         Behavior on width { NumberAnimation { duration: 520; easing.type: Easing.BezierSpline; easing.bezierCurve: notch.spring } }
         Behavior on height { NumberAnimation { duration: 460; easing.type: Easing.BezierSpline; easing.bezierCurve: notch.curve } }
@@ -66,11 +66,34 @@ PanelWindow {
                 GradientStop { position: 1; color: "transparent" } }
         }
 
+        // the meter: VOLUME ────◆──── 64, for a breath after a key press
+        Item {
+            anchors.fill: parent; anchors.leftMargin: 26; anchors.rightMargin: 26
+            opacity: notch.meter && !notch.open ? 1 : 0
+            visible: opacity > 0.01
+            Behavior on opacity { NumberAnimation { duration: 160 } }
+            Text { id: mk; anchors.verticalCenter: parent.verticalCenter; anchors.verticalCenterOffset: -1
+                   text: Theme.osdKind === "brightness" ? "LIGHT" : (Theme.osdValue <= 0.001 ? "MUTED" : "VOLUME")
+                   color: Theme.t.gold; font.family: Theme.display; font.pixelSize: 10; font.letterSpacing: 4; width: 74 }
+            Item {
+                x: 82; anchors.verticalCenter: parent.verticalCenter; anchors.verticalCenterOffset: -1
+                width: parent.width - 82 - 44; height: 10
+                Rectangle { anchors.verticalCenter: parent.verticalCenter; width: parent.width; height: 1; color: Theme.alpha(Theme.t.text, 0.22) }
+                Rectangle { anchors.verticalCenter: parent.verticalCenter; width: parent.width * Math.min(1, Theme.osdValue); height: 2; color: Theme.t.accent
+                            Behavior on width { NumberAnimation { duration: 120 } } }
+                Rectangle { x: parent.width * Math.min(1, Theme.osdValue) - 4; anchors.verticalCenter: parent.verticalCenter
+                            width: 8; height: 8; rotation: 45; color: Theme.t.gold
+                            Behavior on x { NumberAnimation { duration: 120 } } }
+            }
+            Text { anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter; anchors.verticalCenterOffset: -1
+                   text: Math.round(Theme.osdValue * 100); color: Theme.t.text; font.family: Theme.display; font.pixelSize: 14 }
+        }
+
         // closed: II  ·  10:41 PM
         Row {
             anchors.horizontalCenter: parent.horizontalCenter
             y: 6; spacing: 12
-            opacity: notch.open ? 0 : 1
+            opacity: notch.open || notch.meter ? 0 : 1
             Behavior on opacity { NumberAnimation { duration: 180 } }
             Text { text: notch.roman[Math.max(0, Math.min(9, notch.wsId - 1))]; color: Theme.t.gold
                    font.family: Theme.display; font.pixelSize: 13; font.letterSpacing: 2; anchors.verticalCenter: parent.verticalCenter }
@@ -111,6 +134,9 @@ PanelWindow {
         }
     }
     property bool pinned: false
+    property bool meter: Quickshell.env("TENKA_NOTCH_METER") === "1"
+    Timer { id: meterT; interval: 1500; onTriggered: notch.meter = false }
+    Connections { target: Theme; function onOsdTickChanged() { notch.meter = true; meterT.restart() } }
     Timer { id: closeT; interval: 900; onTriggered: if (!notch.pinned) notch.open = false }
     IpcHandler { target: "notch"; function toggle(): void { notch.pinned = !notch.open; notch.open = !notch.open } }
 }

@@ -175,6 +175,12 @@ def gtk_theme(name, T, d):
     /* ---- desktop icons ---- */
     XfdesktopIconView.view {{ background: transparent; color: {p['text']}; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }}
     """)
+    # xfce4-notifyd's own theme file reaches the card and its buttons, but not the summary/body labels
+    # (they keep the GTK theme's font: Inter bold); those two rules have to live in the GTK theme itself
+    css += textwrap.dedent(f"""\
+    #XfceNotifyWindow label#summary {{ font-family: "{disp}"; font-weight: normal; font-size: 15px; color: {p['text']}; letter-spacing: 0.4px; }}
+    #XfceNotifyWindow label#body {{ font-family: Inter; font-size: 12px; color: {p['subtext']}; }}
+    """)
     W(os.path.join(d, "gtk-3.0/gtk.css"), css)
     W(os.path.join(d, "gtk-3.0/gtk-dark.css"), css)
     W(os.path.join(d, "index.theme"), textwrap.dedent(f"""\

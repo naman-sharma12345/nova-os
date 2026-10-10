@@ -80,6 +80,8 @@ hl.config({
         touchpad = { natural_scroll = true },
     },
     cursor = { no_hardware_cursors = true },
+    -- no stock update/donation windows over a themed desktop (the update screen also crashed under llvmpipe in the VM)
+    ecosystem = { no_update_news = true, no_donation_nag = true },
 })
 
 hl.gesture({ fingers = 3, direction = "horizontal", action = "workspace" })

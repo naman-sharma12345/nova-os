@@ -1,5 +1,7 @@
 #!/bin/sh
 export XDG_CURRENT_DESKTOP=XFCE QT_QPA_PLATFORMTHEME=qt6ct XCURSOR_SIZE=24
+# pure CPU emulation: 128-bit llvmpipe vectors (see tenka-session-default)
+[ -e /run/tenka/emulated ] && export LP_NATIVE_VECTOR_WIDTH=128
 tenka-theme --init
 # settings go straight into xfconf's files before XFCE starts, so its first frame is the themed desk
 tenka-lite-apply --seed

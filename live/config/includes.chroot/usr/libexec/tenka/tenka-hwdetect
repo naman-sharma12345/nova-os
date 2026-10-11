@@ -2,6 +2,9 @@
 # Prints "full" (Hyprland) or "lite" (XFCE) for this machine, with the reason on stderr.
 # Lite when: forced on the kernel command line, < 3.5 GB RAM, or no hardware 3D (llvmpipe/softpipe).
 cmd=$(cat /proc/cmdline)
+# pure CPU emulation (QEMU without KVM): its AVX2 emulation runs llvmpipe's 256-bit shader code wrong, and the
+# probe, the greeter and Hyprland all crashed in that code (nightly #13-#15); 128-bit vectors run correctly
+[ "$(systemd-detect-virt 2>/dev/null)" = qemu ] && export LP_NATIVE_VECTOR_WIDTH=128
 case "$cmd" in *tenka.session=lite*|*tenka.session=plasma*|*nomodeset*) echo "reason: chosen at boot" >&2; echo lite; exit 0 ;; esac
 renderer() {
   r=$(timeout 10 eglinfo -B -p gbm 2>/dev/null | grep -i -m1 'renderer')

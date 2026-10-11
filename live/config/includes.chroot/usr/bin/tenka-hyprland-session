@@ -2,6 +2,8 @@
 export XDG_CURRENT_DESKTOP=Hyprland XDG_SESSION_DESKTOP=Hyprland XDG_SESSION_TYPE=wayland
 # software GL is allowed (slow) so a VM without 3D still gets a desktop
 export WLR_RENDERER_ALLOW_SOFTWARE=1
+# pure CPU emulation: 128-bit llvmpipe vectors (the emulated AVX2 path crashes; written at boot by tenka-session-default)
+[ -e /run/tenka/emulated ] && export LP_NATIVE_VECTOR_WIDTH=128
 # performance mode on software rendering: when the machine was judged lite, and also when Hyprland was
 # chosen at boot (tenka.session=hyprland skips the probe) on a machine whose only renderer is llvmpipe
 soft=0

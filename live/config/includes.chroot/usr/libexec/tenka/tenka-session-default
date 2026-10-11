@@ -2,6 +2,16 @@
 # Runs before SDDM. Picks Tenka (Hyprland) or Tenka Lite as the default/autologin session.
 mode=$(/usr/libexec/tenka/tenka-hwdetect 2>/run/tenka-hwdetect.reason)
 mkdir -p /run/tenka; echo "$mode" > /run/tenka/mode
+# under pure CPU emulation, every software-rendered program (greeter, compositor, apps) gets 128-bit llvmpipe
+# vectors: the emulated AVX2 path crashes them (see tenka-hwdetect); with KVM or real hardware nothing changes
+if [ "$(systemd-detect-virt 2>/dev/null)" = qemu ]; then
+  touch /run/tenka/emulated
+  mkdir -p /etc/sddm.conf.d /etc/environment.d
+  printf '[General]\nGreeterEnvironment=LP_NATIVE_VECTOR_WIDTH=128\n' > /etc/sddm.conf.d/30-tenka-emulated.conf
+  echo 'LP_NATIVE_VECTOR_WIDTH=128' > /etc/environment.d/95-tenka-emulated.conf
+else
+  rm -f /run/tenka/emulated /etc/sddm.conf.d/30-tenka-emulated.conf /etc/environment.d/95-tenka-emulated.conf
+fi
 if [ "$mode" = lite ]; then sess=tenka-lite.desktop; else sess=tenka.desktop; fi
 # live session autologin (live-config writes /etc/sddm.conf)
 if [ -f /etc/sddm.conf ] && grep -q '^\[Autologin\]' /etc/sddm.conf; then

@@ -16,19 +16,24 @@ FONTS = os.path.join(IC, "usr/share/fonts/truetype/tenka")
 VERSION = "0.1"
 
 BG = {"samurai": "02-torii-night.jpg", "xianxia": "01-floating-peaks.jpg"}
+# one painting per installer slide, darker scenes so the ledger text always reads
+SLIDE_BG = {"samurai": ["00-title-card.jpg", "14-pagoda-moon.jpg", "09-bamboo-moon.jpg", "01-fuji-sumie.jpg"],
+            "xianxia": ["00-desktop.jpg", "13-heaven-gate.jpg", "07-golden-dragon.jpg", "14-cloud-sea-cultivator.jpg"]}
 DISPLAY_TTF = {"samurai": os.path.join(FONTS, "CormorantGaramond[wght].ttf"), "xianxia": os.path.join(FONTS, "Cinzel[wght].ttf")}
 WORDS = {
   "samurai": dict(enter="Enter the dojo", fail="The gate stays closed. Try again.", suspend="Rest", reboot="Return", shutdown="Sheathe",
                   footer="TENKA  ·  THE WAY OF THE BLADE", italic="false",
                   slides=[("Tenka", "A desktop forged with intent: every edge, every motion, every colour drawn from sumi ink and vermilion."),
                           ("Two paths", "Switch to Tianxia at any time with Super + T. The desk, the boot and the login all follow."),
-                          ("The way of the keys", "Super + Space to seek, Super + Return for the terminal, Super + Escape to rest or retreat."),
+                          ("The way of the keys", "Super + Space to seek, Super + Return for the terminal, Super + Escape to rest or retreat.",
+                           [("Super", "Space", "seek"), ("Super", "Return", "the terminal"), ("Super", "Escape", "rest or retreat")]),
                           ("Nearly there", "Your system is being set down on the disk. Breathe.")]),
   "xianxia": dict(enter="Step onto the path", fail="The formation rejects you. Try again.", suspend="Meditate", reboot="Rebirth", shutdown="Ascend",
                   footer="TIANXIA  ·  THE PATH TO IMMORTALITY", italic="true",
                   slides=[("Tianxia", "All under heaven: jade mist, floating peaks and drifting qi, gathered into one desktop."),
                           ("Two paths", "Return to Tenka at any time with Super + T. The desk, the boot and the login all follow."),
-                          ("The heavenly keys", "Super + Space to divine, Super + Return for the terminal, Super + Escape to ascend."),
+                          ("The heavenly keys", "Super + Space to divine, Super + Return for the terminal, Super + Escape to ascend.",
+                           [("Super", "Space", "divine"), ("Super", "Return", "the terminal"), ("Super", "Escape", "ascend")]),
                           ("Ascension is near", "Your cave abode is being carved into the disk. Be still.")]),
 }
 
@@ -87,10 +92,12 @@ def divider(name, w, h):
         d.line((i, h // 2, i, h // 2 + 1), fill=hexrgb(p["accent2"]) + (a,))
     return im
 
-def bg_image(name, size, darken=0.55, blur=0):
+def bg_image(name, size, darken=0.55, blur=0, file=None):
     if name == "xianxia": darken *= 0.72
-    im = Image.open(os.path.join(ROOT, "themes", name, "wallpapers", BG[name])).convert("RGB")
-    im = im.resize(size, Image.LANCZOS)
+    im = Image.open(os.path.join(ROOT, "themes", name, "wallpapers", file or BG[name])).convert("RGB")
+    sw, sh = size; r = max(sw / im.width, sh / im.height)   # cover, centre crop: never squash the painting
+    im = im.resize((round(im.width * r), round(im.height * r)), Image.LANCZOS)
+    l, t = (im.width - sw) // 2, (im.height - sh) // 2; im = im.crop((l, t, l + sw, t + sh))
     if blur: im = im.filter(ImageFilter.GaussianBlur(blur))
     return ImageEnhance.Brightness(im).enhance(darken)
 
@@ -405,30 +412,54 @@ def calamares(name, T):
     os.makedirs(d, exist_ok=True)
     crest(name, 256).save(os.path.join(d, "logo.png"))
     wm = wordmark(name, T, 72, os.path.join(d, "welcome.png"), sub=T["tagline"].lower())
-    for i, (title, body) in enumerate(X["slides"], 1):
-        im = bg_image(name, (800, 440), darken=0.38).convert("RGB")
-        im.save(os.path.join(d, f"slide{i}.jpg"), quality=90)
+    for i, s in enumerate(X["slides"], 1):
+        im = bg_image(name, (1200, 660), darken=1.0, file=SLIDE_BG[name][(i - 1) % len(SLIDE_BG[name])]).convert("RGB")
+        # even exposure across the set: each painting is brought to the same quiet mean, never brightened
+        from PIL import ImageStat
+        mean = ImageStat.Stat(im.convert("L")).mean[0] / 255
+        im = ImageEnhance.Brightness(im).enhance(max(0.3, min(1.0, 0.2 / max(mean, 1e-3))))
+        im.save(os.path.join(d, f"slide{i}.jpg"), quality=88)
     disp = T["font_display"]; n = len(X["slides"])
     def ga(c, a): c = c.lstrip("#"); return f"#{int(a*255):02x}{c}"
+    PT, PS, PA, PA2, PM = p["text"], p["subtext"], p["accent"], p["accent2"], p["mantle"]
+    rule = ga(PA2, 0.45)
+    def body_qml(i, s):
+        if len(s) > 2:   # a key slide: hairline keycaps, then the verb
+            rows = "\n".join(
+                f'Row {{ spacing: 8; Row {{ width: 150; spacing: 8; ' + " ".join(
+                    f'Rectangle {{ width: k{i}_{r}_{c}.width + 18; height: 24; color: "transparent"; border.width: 1; border.color: "{rule}"; '
+                    f'Text {{ id: k{i}_{r}_{c}; anchors.centerIn: parent; text: "{key}"; color: "{PT}"; font.family: "{disp}"; font.pixelSize: 12; font.letterSpacing: 1 }} }}'
+                    + ("" if c == len(keys) - 1 else f' Text {{ anchors.verticalCenter: parent.verticalCenter; text: "+"; color: "{ga(PT, 0.45)}"; font.family: "{disp}"; font.pixelSize: 12 }}')
+                    for c, key in enumerate(keys))
+                + f' }} Text {{ anchors.verticalCenter: parent.verticalCenter; text: "{verb}"; color: "{PS}"; font.family: "{disp}"; font.pixelSize: 15 }} }}'
+                for r, (*keys, verb) in enumerate(s[2]))
+            return f'Column {{ x: 22; y: 78; spacing: 9\n{textwrap.indent(rows, "    ")}\n}}'
+        return (f'Text {{ x: 22; y: 80; width: parent.width - 44; wrapMode: Text.WordWrap; text: "{s[1].replace(chr(34), chr(39))}"; '
+                f'color: "{PS}"; font.family: "{disp}"; font.pixelSize: 15; lineHeight: 1.15 }}')
+    ticks = lambda i: " ".join(f'Rectangle {{ width: {18 if k == i else 10}; height: 1; anchors.verticalCenter: parent.verticalCenter; '
+                               f'color: "{PA if k == i else ga(PT, 0.35)}" }}' for k in range(1, n + 1))
     slides_qml = "\n".join(textwrap.dedent(f"""\
         Slide {{
-            Image {{ anchors.fill: parent; source: "slide{i}.jpg"; fillMode: Image.PreserveAspectCrop }}
-            Rectangle {{ anchors.fill: parent; gradient: Gradient {{ GradientStop {{ position: 0.35; color: "transparent" }} GradientStop {{ position: 1.0; color: "{ga(p['mantle'], 0.85)}" }} }} }}
+            x: 0; y: 0; width: parent.width; height: parent.height   // the art fills the whole pane (the stock slide is an inset box)
+            Image {{ anchors.fill: parent; source: "slide{i}.jpg"; fillMode: Image.PreserveAspectCrop; smooth: true }}
+            Rectangle {{ anchors.fill: parent; gradient: Gradient {{ GradientStop {{ position: 0.30; color: "transparent" }} GradientStop {{ position: 1.0; color: "{ga(PM, 0.88)}" }} }} }}
             Item {{   // a ruled box, the label set into a gap in the top rule
-                x: 44; width: parent.width - 88; height: 150; anchors.bottom: parent.bottom; anchors.bottomMargin: 40
-                Rectangle {{ x: 0; y: 8; width: 1; height: parent.height - 8; color: "{ga(p['accent2'], 0.45)}" }}
-                Rectangle {{ x: parent.width - 1; y: 8; width: 1; height: parent.height - 8; color: "{ga(p['accent2'], 0.45)}" }}
-                Rectangle {{ y: parent.height - 1; width: parent.width; height: 1; color: "{ga(p['accent2'], 0.45)}" }}
-                Rectangle {{ y: 8; width: 10; height: 1; color: "{ga(p['accent2'], 0.45)}" }}
-                Rectangle {{ x: lb{i}.x + lb{i}.width + 8; y: 8; width: parent.width - x; height: 1; color: "{ga(p['accent2'], 0.45)}" }}
-                Text {{ id: lb{i}; x: 18; y: 1; text: "0{i}   {title.upper()}"; color: "{p['accent2']}"; font.family: "{disp}"; font.pixelSize: 11; font.letterSpacing: 4 }}
-                Text {{ x: 22; y: 34; width: parent.width - 44; text: "{title}"; color: "{p['text']}"; font.family: "{disp}"; font.pixelSize: 30 }}
-                Text {{ x: 22; y: 80; width: parent.width - 44; wrapMode: Text.WordWrap; text: "{body.replace('"', "'")}"; color: "{p['subtext']}"; font.family: "{disp}"; font.pixelSize: 15; lineHeight: 1.15 }}
-                Text {{ anchors.right: parent.right; anchors.rightMargin: 18; y: 1; text: "0{i} / 0{n}"; color: "{ga(p['text'], 0.5)}"; font.family: "{disp}"; font.pixelSize: 11; font.letterSpacing: 3 }}
-            }}
-        }}""") for i, (title, body) in enumerate(X["slides"], 1))
+                x: 44; width: parent.width - 88; height: {170 if len(s) > 2 else 150}; anchors.bottom: parent.bottom; anchors.bottomMargin: 40
+                Rectangle {{ x: 0; y: 8; width: 1; height: parent.height - 8; color: "{rule}" }}
+                Rectangle {{ x: parent.width - 1; y: 8; width: 1; height: parent.height - 8; color: "{rule}" }}
+                Rectangle {{ y: parent.height - 1; width: parent.width; height: 1; color: "{rule}" }}
+                Rectangle {{ y: 8; width: 10; height: 1; color: "{rule}" }}
+                Rectangle {{ x: lb{i}.x + lb{i}.width + 8; y: 8; width: tk{i}.x - x - 8; height: 1; color: "{rule}" }}
+                Rectangle {{ x: tk{i}.x + tk{i}.width + 8; y: 8; width: parent.width - x; height: 1; color: "{rule}" }}
+                Text {{ id: lb{i}; x: 18; y: 1; text: "0{i}   {s[0].upper()}"; color: "{PA2}"; font.family: "{disp}"; font.pixelSize: 11; font.letterSpacing: 4 }}
+                Row {{ id: tk{i}; anchors.right: parent.right; anchors.rightMargin: 18; y: 2; height: 12; spacing: 5; {ticks(i)} }}
+                Text {{ x: 22; y: 34; width: parent.width - 44; text: "{s[0]}"; color: "{PT}"; font.family: "{disp}"; font.pixelSize: 30 }}
+        """) + textwrap.indent(body_qml(i, s), " " * 8) + "\n    }\n}" for i, s in enumerate(X["slides"], 1))
     W(os.path.join(d, "show.qml"), "import QtQuick\nimport calamares.slideshow 1.0\n\nPresentation {\n    id: presentation\n"
       "    function nextSlide() { presentation.goToNextSlide() }\n"
+      "    // a slow ink fade between slides instead of a hard cut\n"
+      "    NumberAnimation { id: inkIn; property: \"opacity\"; from: 0; to: 1; duration: 700; easing.type: Easing.OutCubic }\n"
+      "    function switchSlides(from, to, forward) { to.opacity = 0; to.visible = true; from.visible = false; inkIn.target = to; inkIn.restart(); return true }\n"
       "    Timer { interval: 9000; running: presentation.activatedInCalamares; repeat: true; onTriggered: nextSlide() }\n"
       + textwrap.indent(slides_qml, "    ") + "\n    function onActivate() { }\n    function onLeave() { }\n}\n")
 

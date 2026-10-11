@@ -23,6 +23,22 @@ local function load_theme()
     theme, loaded_at = t, now
     return t
 end
+-- the season (tenka-hour writes it to ~/.config/tenka/hour.json; by month otherwise), in its own ink:
+-- the same lean toward the season's colour the flagship desk uses (Theme.seasonInk)
+local SEASON_LIGHT = {
+    samurai = { plum = '#b8577a', lotus = '#e8a0b0', maple = '#c4532d', snow = '#dfe3e6' },
+    xianxia = { plum = '#c97a9b', lotus = '#f0a3b8', maple = '#d9763a', snow = '#d8e2e6' },
+}
+local function season_of(d)
+    local f = io.open(os.getenv('HOME') .. '/.config/tenka/hour.json')
+    local s = f and f:read('*a') or ''
+    if f then f:close() end
+    local v = s:match('"season"%s*:%s*"(%a+)"')
+    if v and v ~= '' then return v end
+    local m = d.month
+    if m >= 3 and m <= 5 then return 'plum' elseif m >= 6 and m <= 8 then return 'lotus'
+    elseif m >= 9 and m <= 11 then return 'maple' else return 'snow' end
+end
 local HOURS = { 'Rat','Ox','Tiger','Rabbit','Dragon','Snake','Horse','Goat','Monkey','Rooster','Dog','Pig' }
 
 local function text(cr, s, x, y, size, r, g, b, a, track)
@@ -78,11 +94,21 @@ function conky_tenka_desk()
     text(cr, dn, tx + tw / 2 - width(cr, dn, 38) / 2, ty + 74, 38, tr, tg, tb, 1)
     -- the month and the hour's old name
     local hour = 'HOUR OF THE ' .. HOURS[math.floor(((d.hour + 1) % 24) / 2) + 1]:upper()
-    text(cr, os.date('%B %Y'):upper() .. '   ·   ' .. hour, X + 8, Y + 268, 19, tr, tg, tb, 0.82, 9)
+    local lw = text(cr, os.date('%B %Y'):upper() .. '   ·   ' .. hour, X + 8, Y + 268, 19, tr, tg, tb, 0.82, 9)
+    local season = season_of(d)
+    local light = (SEASON_LIGHT[t.name] or SEASON_LIGHT.samurai)[season]
+    if light then
+        local lr, lg, lb = hex(light)
+        local sr, sg, sb = gr + (lr - gr) * 0.6, gg + (lg - gg) * 0.6, gb + (lb - gb) * 0.6
+        -- its own short line under the date (the art behind the end of the date line is often bright)
+        local word = (season .. ' season'):upper()
+        text(cr, word, X + 9, Y + 300 + 1.5, 13, 0, 0, 0, 0.5, 6)
+        text(cr, word, X + 8, Y + 300, 13, sr, sg, sb, 1, 6)
+    end
     -- the day's proverb (one a day, the same line the flagship desk and lock show), wrapped at ~560 px
     if #t.proverbs > 0 then
         local p = t.proverbs[(d.yday % #t.proverbs) + 1]
-        local line, yy = '', Y + 330
+        local line, yy = '', Y + 342
         for w in p:gmatch('%S+') do
             local try = (line == '' and w) or (line .. ' ' .. w)
             if width(cr, try, 22) > 560 and line ~= '' then

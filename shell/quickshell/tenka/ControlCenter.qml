@@ -98,11 +98,11 @@ PanelWindow {
                 columns: 2; columnSpacing: 12; rowSpacing: 12
                 Repeater {
                     model: [
-                        { g: cc.netKind === "wifi" ? "\uf1eb" : "\udb80\ude00", n: cc.netKind === "wifi" ? "Wi-Fi" : "Network", s: cc.net, on: cc.net !== "Offline" },
-                        { g: "\uf293", n: "Bluetooth", s: "Off", on: false },
+                        { g: cc.netKind === "wifi" ? "\uf1eb" : "\udb80\ude00", n: cc.netKind === "wifi" ? "Wi-Fi" : "Network", s: cc.net, on: cc.net !== "Offline", act: "net" },
+                        { g: "\uf023", n: Theme.t.lockWord, s: "Lock now", on: false, act: "lock" },
                         { g: Theme.stillness ? "\uf1f6" : "\uf0f3", n: Theme.t.stillWord, s: Theme.stillness ? "On · silent" : "Off", on: Theme.stillness, act: "still" },
                         { g: "\uf186", n: "Night ink", s: Theme.nightInk ? "Warm" : "Off", on: Theme.nightInk, act: "night" },
-                        { g: "\uf0e7", n: "Performance", s: "Balanced", on: false },
+                        { g: "\uf0e7", n: "Performance", s: Theme.perf ? "On · still" : "Off", on: Theme.perf, act: "perf" },
                         { g: "\udb81\ude80", n: "Path", s: Theme.t.display, on: true, gold: true }
                     ]
                     Rectangle {
@@ -126,7 +126,10 @@ PanelWindow {
                         }
                         MouseArea { anchors.fill: parent; onClicked: { const a = parent.modelData.act;
                                     if (a === "still") Theme.stillness = !Theme.stillness;
-                                    if (a === "night") { Theme.nightInk = !Theme.nightInk; Theme.run(Theme.nightInk ? "pkill hyprsunset; setsid hyprsunset -t 4200 >/dev/null 2>&1 &" : "pkill hyprsunset") } } }
+                                    if (a === "night") { Theme.nightInk = !Theme.nightInk; Theme.run(Theme.nightInk ? "pkill hyprsunset; setsid hyprsunset -t 4200 >/dev/null 2>&1 &" : "pkill hyprsunset") }
+                                    if (a === "perf") { Theme.perf = !Theme.perf; Theme.run("tenka-perf " + (Theme.perf ? "on" : "off")) }
+                                    if (a === "net") { cc.open = false; Theme.run("setsid nm-connection-editor >/dev/null 2>&1 &") }
+                                    if (a === "lock") { cc.open = false; Theme.run("loginctl lock-session") } } }
                     }
                 }
             }
@@ -310,8 +313,11 @@ PanelWindow {
             Box {
                 num: "03"; label: "QUIET"
                 Row2 { k: Theme.t.stillWord; v: Theme.stillness ? "silent" : ""; on: Theme.stillness; toggle: true; onHit: Theme.stillness = !Theme.stillness }
-                Row2 { k: "Night ink"; v: Theme.nightInk ? "warm" : ""; on: Theme.nightInk; toggle: true; last: true
+                Row2 { k: "Night ink"; v: Theme.nightInk ? "warm" : ""; on: Theme.nightInk; toggle: true
                        onHit: { Theme.nightInk = !Theme.nightInk; Theme.run(Theme.nightInk ? "pkill hyprsunset; setsid hyprsunset -t 4200 >/dev/null 2>&1 &" : "pkill hyprsunset") } }
+                // Performance mode (tenka-perf): motion, blur and shadows rest; the art stays
+                Row2 { k: "Performance"; v: Theme.perf ? "still" : ""; on: Theme.perf; toggle: true; last: true
+                       onHit: { Theme.perf = !Theme.perf; Theme.run("tenka-perf " + (Theme.perf ? "on" : "off")) } }
             }
             Box {
                 num: "04"; label: "PATH"

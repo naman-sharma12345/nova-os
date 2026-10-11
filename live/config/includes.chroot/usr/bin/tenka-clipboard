@@ -1,2 +1,4 @@
 #!/bin/sh
+# tenka-clipboard: Recall, the clipboard history (cliphist) in the Tenka shell; fuzzel where the shell is not running.
+if pgrep -x qs >/dev/null 2>&1; then exec qs -c tenka ipc call clipboard toggle; fi
 cliphist list | fuzzel --dmenu --prompt 'recall  ' | cliphist decode | wl-copy

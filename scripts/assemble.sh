@@ -4,6 +4,7 @@ set -eu
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 BUILD=${BUILD:-$ROOT/build}
 cd "$ROOT"
+sh scripts/check-session.sh   # login-path checks (session scripts parse; no toast before the shell)
 python3 scripts/gen-themes.py
 python3 scripts/gen-lite.py
 python3 scripts/gen-system.py

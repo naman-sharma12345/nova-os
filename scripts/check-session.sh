@@ -10,6 +10,7 @@
 #  5. tenka-bond-agent carries BlueZ's PIN / passkey / yes-no questions to The Bond and its answers back
 #  6. tenka-lantern reads the battery facts (charge, time, health, devices) and sets the power profile
 #  7. the Inkstone's search puts whole words and word starts ahead of matches inside a word (needs node)
+#  8. tenka-loupe freezes the screen into a private file, copies, and keeps LATELY (colours only, newest first)
 set -u
 ROOT=$(cd "$(dirname "$0")/.." && pwd); BIN="$ROOT/live/config/includes.chroot/usr/bin"
 fail=0; T=$(mktemp -d); trap 'rm -rf "$T"' EXIT
@@ -165,5 +166,17 @@ if (bad.length) { console.log("FAIL: inkstone rank: " + bad.join("; ")); process
 else
   echo "check-session: node not installed, Inkstone rank check skipped"
 fi
+# 8. tenka-loupe: the frozen screen is a private (0600) file; copy reaches the clipboard tool; LATELY keeps colours
+#    only, lower-cased, newest first, without repeats
+mkdir -p "$T/lstub" "$T/lhome"
+printf '#!/bin/sh\ncat > "%s/clip"\n' "$T" > "$T/lstub/wl-copy"; chmod +x "$T/lstub/wl-copy"
+echo picture > "$T/pic.png"
+f=$(HOME="$T/lhome" XDG_CONFIG_HOME= XDG_RUNTIME_DIR="$T" TENKA_LOUPE_SIM_SHOT="$T/pic.png" sh "$BIN/tenka-loupe" shot)
+[ "$f" = "$T/tenka-loupe.png" ] && [ "$(stat -c %a "$f")" = 600 ] || { echo "FAIL: tenka-loupe shot is not a private file ($f)"; fail=1; }
+for c in '#C9A35A' '#112233' 'hello' '#c9a35a'; do
+  HOME="$T/lhome" XDG_CONFIG_HOME= WAYLAND_DISPLAY=x PATH="$T/lstub:$PATH" sh "$BIN/tenka-loupe" copy "$c"
+done
+[ "$(cat "$T/clip")" = "#c9a35a" ] || { echo "FAIL: tenka-loupe copy did not reach the clipboard"; fail=1; }
+[ "$(HOME="$T/lhome" XDG_CONFIG_HOME= sh "$BIN/tenka-loupe" lately)" = '["#c9a35a","#112233"]' ] || { echo "FAIL: tenka-loupe lately: $(HOME="$T/lhome" XDG_CONFIG_HOME= sh "$BIN/tenka-loupe" lately)"; fail=1; }
 [ "$fail" = 0 ] && echo "check-session: ok"
 exit $fail

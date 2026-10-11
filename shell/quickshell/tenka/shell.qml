@@ -33,6 +33,7 @@ ShellRoot {
     Bond {}
     Lantern {}
     Inkstone {}
+    Loupe {}
     ControlCenter {}
     Notifications {}
     Osd {}

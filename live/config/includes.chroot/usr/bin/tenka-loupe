@@ -1,0 +1,36 @@
+#!/bin/sh
+# tenka-loupe: the facts behind The Loupe (Loupe.qml, Tianxia: The Mirror), our own colour picker and screen ruler.
+#   tenka-loupe shot [OUTPUT]   freeze the screen (grim, one output when named) into a private file; prints its path
+#   tenka-loupe copy TEXT       put TEXT on the clipboard (wl-copy, or xclip on X11); a colour also joins LATELY
+#   tenka-loupe lately          the last colours picked, newest first, as a JSON list ("#c9a35a", ...)
+# TENKA_LOUPE_SIM_SHOT names a picture to use instead of the screen (the tests' stand-in).
+set -u
+RT=${XDG_RUNTIME_DIR:-/tmp}
+LATELY=${XDG_CONFIG_HOME:-$HOME/.config}/tenka/loupe-lately.txt
+case "${1:-}" in
+shot)
+    umask 077
+    f="$RT/tenka-loupe.png"; rm -f "$f"
+    if [ -n "${TENKA_LOUPE_SIM_SHOT:-}" ]; then cp "$TENKA_LOUPE_SIM_SHOT" "$f"
+    elif [ -n "${2:-}" ]; then grim -o "$2" "$f" 2>/dev/null || grim "$f"
+    else grim "$f"; fi
+    [ -s "$f" ] && echo "$f" ;;
+copy)
+    t=${2:-}; [ -n "$t" ] || exit 1
+    if [ -n "${WAYLAND_DISPLAY:-}" ]; then printf '%s' "$t" | wl-copy 2>/dev/null
+    else printf '%s' "$t" | xclip -selection clipboard 2>/dev/null; fi
+    case "$t" in
+    \#[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F])
+        c=$(printf '%s' "$t" | tr 'A-F' 'a-f')
+        mkdir -p "$(dirname "$LATELY")"
+        { echo "$c"; grep -vx "$c" "$LATELY" 2>/dev/null | head -n 11; } > "$LATELY.part" && mv "$LATELY.part" "$LATELY" ;;
+    esac
+    exit 0 ;;
+lately)
+    printf '['; s=""
+    if [ -f "$LATELY" ]; then
+        for c in $(grep -x '#[0-9a-f]\{6\}' "$LATELY" | head -n 12); do printf '%s"%s"' "$s" "$c"; s=","; done
+    fi
+    printf ']\n' ;;
+*)  echo "usage: tenka-loupe shot [OUTPUT] | copy TEXT | lately" >&2; exit 2 ;;
+esac

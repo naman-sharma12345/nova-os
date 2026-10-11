@@ -141,7 +141,7 @@ hl.bind("ALT + Alt_L",         hl.dsp.global("tenka:switcher-commit"), { release
 hl.bind("ALT + Alt_R",         hl.dsp.global("tenka:switcher-commit"), { release = true, transparent = true, non_consuming = true })
 hl.bind(M .. " + N",           hl.dsp.global("tenka:slip"))            -- the slip: a note to self on the desk
 hl.bind(M .. " + period",      hl.dsp.global("tenka:glyphs"))          -- the inkstone: find and place a glyph
-hl.bind(M .. " + SHIFT + C",   hl.dsp.exec_cmd("hyprpicker -a"))
+hl.bind(M .. " + SHIFT + C",   hl.dsp.global("tenka:loupe"))           -- the loupe: pick a colour, measure the screen
 hl.bind("Print",               hl.dsp.exec_cmd("tenka-shot area"))
 hl.bind("SHIFT + Print",       hl.dsp.exec_cmd("tenka-shot screen"))
 hl.bind(M .. " + SHIFT + E",   hl.dsp.exec_cmd("tenka-power"))

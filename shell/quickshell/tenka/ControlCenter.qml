@@ -144,9 +144,7 @@ PanelWindow {
                     border.width: 1; border.color: Theme.alpha(Theme.t.text, 0.10)
                     Rectangle {
                         height: parent.height; radius: 17; width: Math.max(height, parent.width * sl.v)
-                        gradient: Gradient { orientation: Gradient.Horizontal
-                            GradientStop { position: 0; color: Theme.alpha(Theme.t.accent, 0.75) }
-                            GradientStop { position: 1; color: Theme.t.accent } }
+                        color: Theme.alpha(Theme.t.gold, 0.85)   // flat: value fills are one colour, no gradient
                         Behavior on width { NumberAnimation { duration: 160 } }
                         Rectangle { anchors.right: parent.right; anchors.rightMargin: 5; anchors.verticalCenter: parent.verticalCenter
                                     width: 24; height: 24; radius: 12; color: Theme.t.ink; border.width: 2; border.color: Theme.t.gold }
@@ -252,7 +250,7 @@ PanelWindow {
         Item {
             y: 32; width: parent.width; height: 12
             Rectangle { anchors.verticalCenter: parent.verticalCenter; width: parent.width; height: 1; color: Theme.alpha(Theme.t.text, 0.2) }
-            Rectangle { anchors.verticalCenter: parent.verticalCenter; width: parent.width * hs.v; height: 2; color: Theme.t.accent
+            Rectangle { anchors.verticalCenter: parent.verticalCenter; width: parent.width * hs.v; height: 2; color: Theme.t.gold   // value fills are one colour (gold), as in Lite
                         Behavior on width { NumberAnimation { duration: 140 } } }
             Rectangle { x: parent.width * hs.v - width / 2; anchors.verticalCenter: parent.verticalCenter
                         width: 9; height: 9; rotation: 45; color: Theme.t.gold }

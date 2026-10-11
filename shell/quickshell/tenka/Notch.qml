@@ -79,7 +79,7 @@ PanelWindow {
                 x: 82; anchors.verticalCenter: parent.verticalCenter; anchors.verticalCenterOffset: -1
                 width: parent.width - 82 - 44; height: 10
                 Rectangle { anchors.verticalCenter: parent.verticalCenter; width: parent.width; height: 1; color: Theme.alpha(Theme.t.text, 0.22) }
-                Rectangle { anchors.verticalCenter: parent.verticalCenter; width: parent.width * Math.min(1, Theme.osdValue); height: 2; color: Theme.t.accent
+                Rectangle { anchors.verticalCenter: parent.verticalCenter; width: parent.width * Math.min(1, Theme.osdValue); height: 2; color: Theme.t.gold
                             Behavior on width { NumberAnimation { duration: 120 } } }
                 Rectangle { x: parent.width * Math.min(1, Theme.osdValue) - 4; anchors.verticalCenter: parent.verticalCenter
                             width: 8; height: 8; rotation: 45; color: Theme.t.gold

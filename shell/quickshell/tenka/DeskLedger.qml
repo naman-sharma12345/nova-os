@@ -170,9 +170,9 @@ Item {
             width: 280; height: dl.bh
             Column {
                 width: parent.width; spacing: 6
-                LedgerMeter { k: "Processor"; v: dl.cpu; c: Theme.t.accent }
-                LedgerMeter { k: "Memory"; v: dl.mem; c: Theme.t.accent }
-                LedgerMeter { k: "Disk"; v: dl.disk; c: Theme.t.accent }
+                LedgerMeter { k: "Processor"; v: dl.cpu }
+                LedgerMeter { k: "Memory"; v: dl.mem }
+                LedgerMeter { k: "Disk"; v: dl.disk }
                 Item { width: 1; height: 4 }
                 Text { text: dl.weather !== "" ? dl.weather : dl.power; color: Theme.alpha(Theme.t.text, 0.5); font.family: Theme.display; font.pixelSize: 12; font.letterSpacing: 1 }
             }

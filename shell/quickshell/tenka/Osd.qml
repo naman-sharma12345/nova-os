@@ -61,7 +61,7 @@ PanelWindow {
             x: 74; anchors.verticalCenter: parent.verticalCenter; spacing: 8; width: parent.width - 74 - 70
             Text { text: osd.label; color: Theme.alpha(Theme.t.text, 0.6); font.family: Theme.display; font.pixelSize: 11; font.letterSpacing: 4 }
             Rectangle { width: parent.width; height: 6; radius: 3; color: Theme.alpha(Theme.t.text, 0.14)
-                Rectangle { height: parent.height; radius: 3; width: parent.width * Math.min(1, osd.v); color: Theme.t.accent
+                Rectangle { height: parent.height; radius: 3; width: parent.width * Math.min(1, osd.v); color: Theme.t.gold
                     Behavior on width { NumberAnimation { duration: 140 } } } }
         }
         Text { anchors.right: parent.right; anchors.rightMargin: 22; anchors.verticalCenter: parent.verticalCenter

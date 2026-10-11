@@ -7,7 +7,7 @@ Item {
     property real v: 0
     property string k: ""
     property string unit: ""
-    property color c: Theme.t.accent
+    property color c: Theme.t.gold   // value fills are one colour across the shell and Lite
     width: parent ? parent.width : 0; height: 40
     Behavior on v { NumberAnimation { duration: 600; easing.type: Easing.OutCubic } }
     Text { y: 2; text: hm.k; color: Theme.alpha(Theme.t.text, 0.86); font.family: Theme.display; font.pixelSize: 15 }

@@ -172,7 +172,6 @@ def sddm(name, T):
     accent2={p['accent2']}
     onAccent={on_accent}
     gold={p['accent2']}
-    glow={p['accent'] if name == 'xianxia' else p['accent2']}
     """))
 
 # ------------------------------------------------------------------ Plymouth

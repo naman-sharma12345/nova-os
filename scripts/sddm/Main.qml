@@ -309,10 +309,7 @@ Rectangle {
             anchors.top: clock.bottom; anchors.topMargin: 4 * root.s
             anchors.horizontalCenter: parent.horizontalCenter
             width: 360 * root.s; height: 1
-            gradient: Gradient { orientation: Gradient.Horizontal
-                GradientStop { position: 0; color: "transparent" }
-                GradientStop { position: 0.5; color: config.gold }
-                GradientStop { position: 1; color: "transparent" } }
+            color: root.al(config.gold, 0.5)   // flat hairline, no fade
             Rectangle { width: 8 * root.s; height: width; rotation: 45; color: config.gold; anchors.centerIn: parent }
         }
         Text {

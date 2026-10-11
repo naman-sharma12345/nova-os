@@ -45,7 +45,8 @@ fi
 if [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
   hyprctl setcursor "$THEME_CURSOR" 24 >/dev/null 2>&1
   hyprctl reload >/dev/null 2>&1
-  if pgrep -x qs >/dev/null; then :   # the Tenka shell follows ~/.config/tenka/shell-theme.json live
+  # at login (--init) tenka-session starts the shell, or its fallback, itself right after this
+  if pgrep -x qs >/dev/null || [ "${INIT}" = 1 ]; then :   # the Tenka shell follows ~/.config/tenka/shell-theme.json live
   else pkill -x waybar; (setsid waybar >/dev/null 2>&1 &); makoctl reload 2>/dev/null; fi
   pkill -USR1 -x kitty 2>/dev/null
   tenka-wallpaper first
@@ -63,8 +64,10 @@ if [ "$(cat /etc/tenka/theme 2>/dev/null)" != "$T" ]; then
   pkexec /usr/libexec/tenka/tenka-theme-system "$T" >/dev/null 2>&1 &
 fi
 
-# Lite's login sound comes from `tenka-lite-apply --login`; no toast before the desktop exists
-[ "${INIT}" = 1 ] && [ "${XDG_CURRENT_DESKTOP:-}" = "XFCE" ] && exit 0
+# no toast at login, in either session: the desktop doesn't exist yet. Under Hyprland a notify-send here,
+# before the Tenka shell is up, D-Bus-activates mako, which then holds the notification name ahead of the
+# shell (toasts came out in mako's style). tenka-session and tenka-lite-apply --login play the login sound.
+[ "${INIT}" = 1 ] && exit 0
 notify-send -a "$THEME_DISPLAY" -i "$D/crest-1024.png" "$THEME_DISPLAY" "$THEME_TAGLINE" 2>/dev/null
 tenka-sound login &
 exit 0

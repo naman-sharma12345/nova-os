@@ -1,7 +1,7 @@
 #!/bin/sh
 # tenka-perf on|off|toggle|status: Performance mode. Motion, blur and shadows off; all the art stays.
 F="$HOME/.config/hypr/perf.lua"; S="$HOME/.config/tenka/perf"
-mkdir -p "$HOME/.config/tenka" "$HOME/.config/hypr"
+mkdir -p "$HOME/.config/tenka" "$HOME/.config/hypr" "$HOME/.config/kitty"
 state() { [ -e "$S" ] && echo on || echo off; }
 case "${1:-status}" in
   status) state; exit 0 ;;
@@ -32,4 +32,7 @@ else
   msg="Performance mode off: full motion and glass."
 fi
 [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ] && hyprctl reload >/dev/null 2>&1
-notify-send -a Tenka "Tenka" "$msg" 2>/dev/null
+# only with a desktop up: tenka-hyprland-session runs this before Hyprland exists, and a notify-send there
+# would D-Bus-activate mako (and can block the session start while that activation times out)
+[ -n "${WAYLAND_DISPLAY:-}${DISPLAY:-}" ] && notify-send -a Tenka "Tenka" "$msg" 2>/dev/null
+exit 0

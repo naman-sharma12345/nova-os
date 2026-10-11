@@ -127,7 +127,6 @@ def gtk_theme(name, T, d):
     entry:focus {{ border-color: {p['accent']}; box-shadow: inset 0 0 0 1px {p['accent']}; }}
     button.suggested-action {{ background-color: {p['accent']}; color: {p['text']}; }}
     scale highlight, progressbar progress, switch:checked {{ background-color: {p['accent']}; }}
-    check:checked, radio:checked {{ background-color: {p['accent']}; color: {p['text']}; }}
     menu, .menu, .context-menu, popover, popover.background {{ background-color: {p['surface']}; color: {p['text']}; border: 1px solid {A(p['accent2'], 0.25)}; border-radius: {r}px; }}
     menuitem:hover, menu menuitem:hover {{ background-color: {A(p['accent'], 0.30)}; }}
     /* context menus (desktop, panel, files) in the ledger language: an ink sheet with one gold rule on top, square
@@ -182,6 +181,20 @@ def gtk_theme(name, T, d):
     dialog entry.search:focus {{ border-bottom: 1px solid {p['accent']}; }}
     dialog entry.search image {{ color: {A(p['text'], 0.5)}; }}
     menu menuitem image, menu menuitem check, menu menuitem radio {{ color: {p['accent2']}; }}
+    /* ticks and choices (menus, dialogs, settings): a quiet outline, the chosen one marked in gold; no filled
+       discs from the base theme */
+    check, radio, menu menuitem check, menu menuitem radio {{ min-width: 14px; min-height: 14px; margin: 0 6px 0 0; padding: 0;
+        background-color: transparent; background-image: none; border: 1px solid {A(p['text'], 0.32)}; box-shadow: none;
+        color: {p['accent2']}; -gtk-icon-source: none; -gtk-icon-shadow: none; transition: none; }}
+    check, menu menuitem check {{ border-radius: 2px; }}
+    radio, menu menuitem radio {{ border-radius: 99px; }}
+    check:hover, radio:hover, menu menuitem:hover check, menu menuitem:hover radio {{ border-color: {A(p['accent2'], 0.7)}; }}
+    check:checked, check:indeterminate, radio:checked, radio:indeterminate, menu menuitem check:checked, menu menuitem radio:checked {{
+        background-color: transparent; background-image: none; border-color: {p['accent2']}; color: {p['accent2']}; }}
+    check:checked, menu menuitem check:checked {{ -gtk-icon-source: -gtk-icontheme("object-select-symbolic"); }}
+    check:indeterminate {{ -gtk-icon-source: -gtk-icontheme("list-remove-symbolic"); }}
+    radio:checked, menu menuitem radio:checked {{ background-color: {p['accent2']}; box-shadow: inset 0 0 0 3px {p['base']}; }}
+    check:disabled, radio:disabled {{ border-color: {A(p['text'], 0.14)}; color: {A(p['accent2'], 0.4)}; }}
     tooltip, tooltip.background, tooltip.background.csd {{ background-color: {A(p['base'], 0.97)}; color: {p['text']}; border: 1px solid {A(p['accent2'], 0.22)};
         border-top: 1px solid {A(p['accent2'], 0.6)}; border-radius: 2px; box-shadow: none; }}
     tooltip decoration {{ border-radius: 2px; box-shadow: none; }}

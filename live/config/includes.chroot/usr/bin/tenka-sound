@@ -1,4 +1,12 @@
 #!/bin/sh
-# tenka-sound login|notify: the theme's chime (koto for Tenka, guzheng for Tianxia)
-f="/usr/share/tenka/themes/$(tenka-theme --current)/sounds/$1.ogg"
-[ -f "$f" ] && [ ! -e "$HOME/.config/tenka/mute" ] && exec pw-play --volume 0.7 "$f" 2>/dev/null
+# tenka-sound EVENT: the theme's own sound (koto for Tenka, guzheng for Tianxia), played softly.
+#   login | notify            the chimes in /usr/share/tenka/themes/<theme>/sounds
+#   any freedesktop event     message-new-instant, complete, dialog-warning, screen-capture, device-added, ...
+#                             from the theme's sound theme, /usr/share/sounds/Tenka-<Theme>/stereo (gen-sounds.py)
+# ~/.config/tenka/mute silences them all.
+[ -e "$HOME/.config/tenka/mute" ] && exit 0
+t=$(tenka-theme --current 2>/dev/null); [ -n "$t" ] || t=samurai
+f="/usr/share/tenka/themes/$t/sounds/$1.ogg"
+[ -f "$f" ] || f="/usr/share/sounds/Tenka-$(printf %s "$t" | sed 's/./\U&/')/stereo/$1.oga"
+[ -f "$f" ] && exec pw-play --volume 0.7 "$f" 2>/dev/null
+exit 0

@@ -5,6 +5,7 @@
 #                              so XFCE's very first frame is already themed (no black first login)
 #   tenka-lite-apply --login   session autostart: only the per-login bits when --seed already ran
 T=$(tenka-theme --current); D=/usr/share/tenka/themes/$T; . "$D/theme.env"
+SOUNDS="Tenka-${T^}"   # the theme's sound theme (/usr/share/sounds, scripts/gen-sounds.py)
 mkdir -p "$HOME/.cache/tenka"
 STAMP="$HOME/.cache/tenka/lite-seeded"
 XD="$HOME/.config/xfce4/xfconf/xfce-perchannel-xml"
@@ -31,7 +32,8 @@ seed() {   # xfconfd is not running yet: write its XML, XFCE reads it on start
   mkdir -p "$XD"
   p() { printf '    <property name="%s" type="%s" value="%s"/>\n' "$1" "$2" "$3"; }
   { echo '<?xml version="1.0" encoding="UTF-8"?>'; echo '<channel name="xsettings" version="1.0">'
-    echo '  <property name="Net" type="empty">'; p ThemeName string "$THEME_GTK"; p IconThemeName string "$THEME_ICONS"; echo '  </property>'
+    echo '  <property name="Net" type="empty">'; p ThemeName string "$THEME_GTK"; p IconThemeName string "$THEME_ICONS"
+    p SoundThemeName string "$SOUNDS"; p EnableEventSounds bool true; p EnableInputFeedbackSounds bool false; echo '  </property>'
     echo '  <property name="Gtk" type="empty">'; p CursorThemeName string "$THEME_CURSOR"; p CursorThemeSize int 24
     p FontName string "Inter 10"; p MonospaceFontName string "JetBrains Mono 10"; p MenuImages bool false; echo '  </property>'
     echo '  <property name="Xft" type="empty">'; p Antialias int 1; p HintStyle string hintslight; p RGBA string rgb; echo '  </property>'
@@ -69,6 +71,9 @@ seed() {   # xfconfd is not running yet: write its XML, XFCE reads it on start
 live() {   # a running session: through xfconfd
   x xsettings /Net/ThemeName string "$THEME_GTK"
   x xsettings /Net/IconThemeName string "$THEME_ICONS"
+  x xsettings /Net/SoundThemeName string "$SOUNDS"      # koto or guzheng: XFCE's own event sounds speak the theme
+  x xsettings /Net/EnableEventSounds bool true
+  x xsettings /Net/EnableInputFeedbackSounds bool false
   x xsettings /Gtk/CursorThemeName string "$THEME_CURSOR"
   x xsettings /Gtk/CursorThemeSize int 24
   x xsettings /Gtk/FontName string "Inter 10"

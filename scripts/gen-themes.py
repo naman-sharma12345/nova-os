@@ -376,6 +376,9 @@ def gen(name, T):
     gtk-application-prefer-dark-theme=1
     gtk-decoration-layout=:
     gtk-menu-images=0
+    gtk-sound-theme-name=Tenka-{name.capitalize()}
+    gtk-enable-event-sounds=1
+    gtk-enable-input-feedback-sounds=0
     """))
     W(f"{H}/.config/gtk-4.0/settings.ini", textwrap.dedent(f"""\
     [Settings]
@@ -385,6 +388,9 @@ def gen(name, T):
     gtk-font-name=Inter 11
     gtk-application-prefer-dark-theme=1
     gtk-decoration-layout=:
+    gtk-sound-theme-name=Tenka-{name.capitalize()}
+    gtk-enable-event-sounds=1
+    gtk-enable-input-feedback-sounds=0
     """))
     # ---------- Qt (qt6ct palette, Fusion) ----------
     # order: WindowText Button Light Midlight Dark Mid Text BrightText ButtonText Base Window Shadow Highlight HighlightedText

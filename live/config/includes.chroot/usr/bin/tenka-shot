@@ -15,6 +15,7 @@ else
   if [ "$mode" = area ]; then xfce4-screenshooter -r -s "$f"; else xfce4-screenshooter -f -s "$f"; fi
   [ -s "$f" ] || exit 1
 fi
+( tenka-sound screen-capture & ) 2>/dev/null   # the theme's shutter: one muted pluck
 out="$f"
 if [ $raw = 0 ]; then
   fr="$d/$stamp-framed.png"

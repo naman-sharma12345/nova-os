@@ -8,6 +8,8 @@ saying (Tianxia), the moon's phase and how far off the next term is. Computed he
   tenka-almanac            the facts as JSON (the desk reads this)
   tenka-almanac text       a few lines for a terminal
   tenka-almanac line       one short line ("Cold Dew  ·  Wild geese return  ·  Waxing crescent")
+  tenka-almanac wheel      the JSON plus the year's 24 term dates and this month's four moons (for the card)
+  tenka-almanac open       the card: the wheel of the year and the moon (the desk's MONTH row opens it too)
   tenka-almanac DATE ...   any of the above for a date (YYYY-MM-DD), e.g. tenka-almanac text 2027-03-21
 """
 import json, math, os, sys, time, datetime as dt
@@ -98,7 +100,7 @@ def moon_elongation(j):
     M = r(357.529 + 0.98560028 * n)
     D = r(297.850 + 12.190749 * n)
     F = r(93.272 + 13.229350 * n)
-    lam = (Lp + 6.289 * math.sin(Mp) - 1.274 * math.sin(2 * D - Mp) + 0.658 * math.sin(2 * D)
+    lam = (Lp + 6.289 * math.sin(Mp) + 1.274 * math.sin(2 * D - Mp) + 0.658 * math.sin(2 * D)
            + 0.214 * math.sin(2 * Mp) - 0.186 * math.sin(M) - 0.114 * math.sin(2 * F))
     return (lam - sun_longitude(j)) % 360
 
@@ -145,17 +147,84 @@ def almanac(t=None, theme=None):
                  "fraction": round(frac, 4), "elongation": round(e, 1), "waxing": e < 180},
     }
 
+def _root(f, target, j, speed):
+    """Julian day near j where the angle f reaches `target` (Newton steps at the mean speed, deg/day)."""
+    for _ in range(12):
+        step = (((target - f(j)) + 180) % 360 - 180) / speed
+        j += step
+        if abs(step) < 1e-5: break
+    return j
+
+def to_unix(j):
+    return (j - 2440587.5) * 86400.0
+
+def wheel(t=None, theme=None):
+    """The year around now: the 24 terms (start instants, from the Spring Equinox) and this lunation's four
+    moons, as unix seconds, for the Almanac card."""
+    t = time.time() if t is None else t
+    a = almanac(t, theme)
+    j = jd(t)
+    lam = sun_longitude(j)
+    terms = []
+    j_eq = j - (lam % 360) / 0.9856          # roughly the last Spring Equinox
+    for i in range(24):
+        g = j_eq + i * 15 / 0.9856
+        terms.append({"name": TERMS[i], "start": round(to_unix(_root(sun_longitude, i * 15, g, 0.9856)))})
+    a0, a1 = lunation(j)
+    moons = []
+    for i, nm in enumerate(["New moon", "First quarter", "Full moon", "Last quarter"]):
+        g = a0 + (a1 - a0) * i / 4
+        jj = a0 if i == 0 else _root(moon_elongation, i * 90, g, 12.19)
+        moons.append({"name": nm, "at": round(to_unix(jj))})
+    moons.append({"name": "New moon", "at": round(to_unix(a1))})
+    a["terms"] = terms
+    a["moons"] = moons
+    a["now"] = round(t)
+    return a
+
+def open_card():
+    """The card: qs ipc on the flagship, a small Qt window on Tenka Lite."""
+    import subprocess
+    if os.environ.get("WAYLAND_DISPLAY") and subprocess.run(["pgrep", "-x", "qs"], capture_output=True).returncode == 0:
+        subprocess.run(["qs", "-c", "tenka", "ipc", "call", "almanac", "toggle"], capture_output=True)
+        return 0
+    if not os.environ.get("DISPLAY"):
+        main(["text"]); return 0
+    rt = os.environ.get("XDG_RUNTIME_DIR") or "/tmp"
+    lock = os.path.join(rt, "tenka-almanac-card.pid")
+    try:                                                # asked again while open: close it
+        pid = int(open(lock).read().strip())
+        if b"LiteAlmanac.qml" not in open("/proc/%d/cmdline" % pid, "rb").read():
+            raise ValueError
+        os.kill(pid, 15); os.remove(lock); return 0
+    except (OSError, ValueError):
+        pass
+    facts = os.path.join(rt, "tenka-almanac.json")
+    with open(facts, "w") as f:
+        json.dump(wheel(), f, ensure_ascii=False)
+    env = dict(os.environ, QML_XHR_ALLOW_FILE_READ="1", QT_QPA_PLATFORM="xcb")
+    p = subprocess.Popen(["/usr/lib/qt6/bin/qml", "/usr/share/tenka/almanac/LiteAlmanac.qml", "--", facts,
+                          os.path.expanduser("~/.config/tenka/shell-theme.json")],
+                         stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=env)
+    with open(lock, "w") as f:
+        f.write(str(p.pid))
+    p.wait()
+    try: os.remove(lock); os.remove(facts)
+    except OSError: pass
+    return 0
+
 def main(argv):
     mode, when = "json", None
     for a in argv:
-        if a in ("json", "text", "line"): mode = a
+        if a in ("json", "text", "line", "wheel"): mode = a
+        elif a == "open": return open_card()
         elif a in ("-h", "--help", "help"): print(__doc__.strip()); return 0
         else:
             try: when = dt.datetime.strptime(a, "%Y-%m-%d").replace(hour=12).timestamp()
             except ValueError: print("tenka-almanac: not a date (YYYY-MM-DD): " + a, file=sys.stderr); return 2
-    a = almanac(when)
+    a = wheel(when) if mode == "wheel" else almanac(when)
     m = a["moon"]
-    if mode == "json":
+    if mode in ("json", "wheel"):
         print(json.dumps(a, ensure_ascii=False))
     elif mode == "line":
         print("  ·  ".join([a["term"], a["detail"].rstrip("."), m["phase"]]))

@@ -91,7 +91,7 @@
   function moonElong(n) {
     var r = Math.PI / 180, Mp = (134.963 + 13.064993 * n) * r, M = (357.529 + 0.98560028 * n) * r,
         D = (297.850 + 12.190749 * n) * r, F = (93.272 + 13.229350 * n) * r;
-    var lam = 218.316 + 13.176396 * n + 6.289 * Math.sin(Mp) - 1.274 * Math.sin(2 * D - Mp) + 0.658 * Math.sin(2 * D)
+    var lam = 218.316 + 13.176396 * n + 6.289 * Math.sin(Mp) + 1.274 * Math.sin(2 * D - Mp) + 0.658 * Math.sin(2 * D)
               + 0.214 * Math.sin(2 * Mp) - 0.186 * Math.sin(M) - 0.114 * Math.sin(2 * F);
     return (((lam - sunLon(n)) % 360) + 360) % 360;
   }

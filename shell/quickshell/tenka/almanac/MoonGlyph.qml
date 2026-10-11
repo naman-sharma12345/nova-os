@@ -1,19 +1,20 @@
 // The moon as it stands tonight, drawn flat: an unlit disc in faint ink with a hairline rim, and the lit
 // part in paper. e = the moon's elongation from the sun in degrees (0 new, 90 first quarter, 180 full),
-// from tenka-almanac. Lit side on the right while waxing, as seen from the northern half of the world.
+// from tenka-almanac. Theme-free, so Tenka Lite can use it too (almanac/AlmanacCard.qml, DeskLedger.qml). Lit side on the right while waxing, as seen from the northern half of the world.
 import QtQuick
 
 Canvas {
     id: m
     property real e: 0
-    property color lit: Theme.alpha(Theme.t.text, 0.86)
-    property color dark: Theme.alpha(Theme.t.text, 0.10)
-    property color rim: Theme.alpha(Theme.gold, 0.45)
+    property color lit: Qt.rgba(0.94, 0.90, 0.84, 0.86)    // the owner sets these from the theme
+    property color dark: Qt.rgba(0.94, 0.90, 0.84, 0.10)
+    property color rim: Qt.rgba(0.79, 0.64, 0.35, 0.45)
     width: 22; height: 22
     antialiasing: true
     onEChanged: requestPaint()
     onLitChanged: requestPaint()
     onDarkChanged: requestPaint()
+    onRimChanged: requestPaint()
     onPaint: {
         const ctx = getContext("2d");
         ctx.reset();

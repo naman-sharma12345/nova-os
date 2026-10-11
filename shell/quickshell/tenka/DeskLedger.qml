@@ -5,6 +5,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Mpris
 import QtQuick
+import "almanac"
 
 Item {
     id: dl
@@ -117,8 +118,10 @@ Item {
                     visible: dl.almanac !== null
                     width: parent.width; height: visible ? Math.max(48, almCol.implicitHeight + 18) : 0
                     Rectangle { width: parent.width; height: 1; color: Theme.alpha(Theme.t.text, 0.08) }
+                    MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: Theme.ipc("almanac", "open") }
                     MoonGlyph { id: moon; x: 2; anchors.verticalCenter: parent.verticalCenter; anchors.verticalCenterOffset: 2
-                                width: 24; height: 24; e: dl.almanac ? dl.almanac.moon.elongation : 0 }
+                                width: 24; height: 24; e: dl.almanac ? dl.almanac.moon.elongation : 0
+                                lit: Theme.alpha(Theme.t.text, 0.86); dark: Theme.alpha(Theme.t.text, 0.10); rim: Theme.alpha(Theme.gold, 0.45) }
                     Column {
                         id: almCol
                         x: moon.width + 14; anchors.verticalCenter: parent.verticalCenter; anchors.verticalCenterOffset: 2

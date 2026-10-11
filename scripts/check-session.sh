@@ -17,7 +17,8 @@
 # 12. The Drift is wired: hypridle opens it (ipc "open", not qs's own word "show"), and Lite's screensaver theme
 #     points at a program in xfce4-screensaver's own dir (it runs no theme from anywhere else)
 # 13. tenka-almanac names the right solar term and moon for known dates (Dec 9 2026 is a new moon, the Mar 2027
-#     equinox, a full moon), and the term's line follows the theme (micro-season on Tenka, saying on Tianxia)
+#     equinox, a full moon), the term's line follows the theme (micro-season on Tenka, saying on Tianxia), the
+#     wheel's dates (2026 equinox and solstice, the Oct 26 full moon to the hour), and the card is wired
 # 14. tenka-incense lights a stick (state burning, about the minutes asked), puts it out (no sleeper left behind),
 #     and is wired in both sessions; Incense.qml imports Quickshell.Hyprland (its GlobalShortcut needs it, or the
 #     whole shell fails to load)
@@ -253,6 +254,14 @@ echo "$A" | sed -n 1p | grep -q '^Major Snow  ·  .*  ·  New moon$' && echo "$A
 echo "$A" | sed -n 3p | grep -q "^Frost's Descent  ·  First frost  ·  Full moon$" || { echo "FAIL: tenka-almanac dates: $A"; fail=1; }
 mkdir -p "$T/alm/.config/tenka"; echo '{ "name": "xianxia" }' > "$T/alm/.config/tenka/shell-theme.json"
 HOME="$T/alm" python3 "$BIN/tenka-almanac" json 2026-10-12 | python3 -c 'import json,sys; a=json.load(sys.stdin); sys.exit(0 if a["term"]=="Cold Dew" and a["detail_kind"]=="saying" and a["title"]=="The Heavenly Calendar" else 1)' || { echo "FAIL: tenka-almanac theme words"; fail=1; }
+python3 "$BIN/tenka-almanac" wheel 2026-10-12 | python3 -c '
+import json, sys, datetime as d
+a = json.load(sys.stdin); t = {x["name"]: d.datetime.utcfromtimestamp(x["start"]) for x in a["terms"]}
+m = {x["name"]: d.datetime.utcfromtimestamp(x["at"]) for x in a["moons"][1:4]}
+ok = t["Spring Equinox"].strftime("%m-%d") == "03-20" and t["Winter Solstice"].strftime("%m-%d") == "12-21" and m["Full moon"].strftime("%m-%d %H") == "10-26 04"
+sys.exit(0 if ok else 1)' || { echo "FAIL: tenka-almanac wheel dates"; fail=1; }
+grep -q '^ *Almanac {}' "$ROOT/shell/quickshell/tenka/shell.qml" && grep -q '^Exec=tenka-almanac open$' "$IC/usr/share/applications/tenka-almanac.desktop" &&
+[ -f "$IC/usr/share/tenka/almanac/LiteAlmanac.qml" ] || { echo "FAIL: almanac card wiring"; fail=1; }
 grep -q '"tenka-almanac", "json"' "$ROOT/shell/quickshell/tenka/DeskLedger.qml" && grep -q "tenka-almanac json" "$IC/usr/share/tenka/conky/desk.lua" || { echo "FAIL: almanac not on the desks"; fail=1; }
 # 14. The Incense: light, read, put out; wiring
 mkdir -p "$T/inc/rt"; chmod 700 "$T/inc/rt"

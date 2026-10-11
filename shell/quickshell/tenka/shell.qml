@@ -38,6 +38,7 @@ ShellRoot {
     Colophon {}
     Drift {}
     Incense {}
+    Almanac {}
     ControlCenter {}
     Notifications {}
     Osd {}

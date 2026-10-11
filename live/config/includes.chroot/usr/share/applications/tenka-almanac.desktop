@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=The Almanac
+GenericName=Calendar of the seasons
+Comment=The solar term, its micro-season and tonight's moon, on the wheel of the year
+Exec=tenka-almanac open
+Icon=x-office-calendar-symbolic
+Categories=Utility;
+Keywords=almanac;calendar;moon;phase;season;solar;term;equinox;solstice;heavenly;

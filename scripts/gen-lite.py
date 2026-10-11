@@ -389,6 +389,13 @@ def gtk_theme(name, T, d):
     """)
     W(os.path.join(d, "gtk-3.0/gtk.css"), css)
     W(os.path.join(d, "gtk-3.0/gtk-dark.css"), css)
+    # the build hook recolours a copy of the Orchis base with this (its blue accent becomes the theme's gold) and
+    # imports that copy instead; if the hook can't, the theme keeps importing Orchis as it is
+    g = p['accent2'].lstrip("#"); gr, gg, gb = int(g[0:2], 16), int(g[2:4], 16), int(g[4:6], 16)
+    W(os.path.join(d, "gtk-3.0/orchis-recolor.sed"), "".join(
+        f"s/{b}/{p['accent2']}/gI\n" for b in ("#3281EA", "#70A7F0", "#1B73E8", "#428BEC"))
+        + f"s/rgba(50, 129, 234,/rgba({gr}, {gg}, {gb},/g\n"
+        + 's|url("assets/|url("../../Orchis-Dark/gtk-3.0/assets/|g\n')
     W(os.path.join(d, "index.theme"), textwrap.dedent(f"""\
     [Desktop Entry]
     Type=X-GNOME-Metatheme

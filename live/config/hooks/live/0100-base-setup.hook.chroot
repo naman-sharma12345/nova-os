@@ -182,5 +182,19 @@ if [ -f "$m" ] && ! grep -q '<Filename>thunar.desktop</Filename>' "$m"; then
          -e 's|<Filename>xfce4-file-manager.desktop</Filename>|<Filename>thunar.desktop</Filename>|' "$m"
 fi
 
+# Lite: the Tenka GTK themes sit on Orchis-Dark; give each a copy of that base with its blue accent turned to the
+# theme's gold (the sed list comes from scripts/gen-lite.py) and import the copy. If anything fails, the theme keeps
+# importing Orchis as it is.
+o=/usr/share/themes/Orchis-Dark/gtk-3.0/gtk.css
+for t in /usr/share/themes/Tenka-*/gtk-3.0; do
+  [ -f "$o" ] && [ -f "$t/orchis-recolor.sed" ] || continue
+  if sed -f "$t/orchis-recolor.sed" "$o" > "$t/base.css.new" && [ -s "$t/base.css.new" ]; then
+    mv "$t/base.css.new" "$t/base.css"
+    for f in gtk.css gtk-dark.css; do
+      [ -f "$t/$f" ] && sed -i 's|@import url("../../Orchis-Dark/gtk-3.0/gtk.css");|@import url("base.css");|' "$t/$f"
+    done
+  else rm -f "$t/base.css.new"; fi
+done
+
 fc-cache -f >/dev/null 2>&1 || true
 update-initramfs -u -k all || true

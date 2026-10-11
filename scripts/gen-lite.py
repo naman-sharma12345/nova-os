@@ -231,6 +231,36 @@ def gtk_theme(name, T, d):
     .xfsm-logout-dialog checkbutton label {{ font-size: 12px; color: {p['subtext']}; }}
     .xfsm-logout-dialog checkbutton check {{ border-radius: 0; }}
     """)
+    css += textwrap.dedent(f"""\
+    /* Message dialogs (every "are you sure", "could not", "replace file?"): the ledger card again. Ink, a Marcellus
+       title over a quiet body, and the answers as words on one hairline. The answer under the pointer or keyboard
+       gets the accent rule. Selectors carry .background: Orchis' own dialog rules outrank anything weaker. */
+    messagedialog.background {{ background-color: {A(p['base'], 0.98)}; }}
+    messagedialog.background label {{ font-family: "{disp}"; font-weight: normal; color: {p['subtext']}; }}
+    messagedialog.background label.title, messagedialog.background label.primary, messagedialog.background label:first-child {{
+        color: {p['text']}; font-size: 16px; }}
+    messagedialog.csd decoration, messagedialog decoration {{ border-radius: 3px; border: 1px solid {A(p['accent2'], 0.22)};
+        border-top: 1px solid {A(p['accent2'], 0.75)}; box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45); }}
+    messagedialog.background .titlebar {{ background: none; border: none; box-shadow: none; }}
+    messagedialog.background .dialog-action-area, messagedialog.background .dialog-action-box {{
+        border-top: 1px solid {A(p['accent2'], 0.18)}; background: none; }}
+    messagedialog.background .dialog-action-area button, messagedialog.background .dialog-action-box button,
+    messagedialog.background buttonbox button, messagedialog.background buttonbox > button.text-button,
+    messagedialog.background buttonbox > button.text-button.image-button {{
+        background: none; background-color: transparent; background-image: none; border: none; border-radius: 0; box-shadow: none; outline: none; min-height: 30px; margin: 6px 2px;
+        padding: 0 14px; border-bottom: 1px solid transparent; }}
+    messagedialog.background .dialog-action-area button label, messagedialog.background .dialog-action-box button label,
+    messagedialog.background buttonbox button label {{ color: {p['accent2']}; letter-spacing: 0.8px; font-size: 13px; }}
+    messagedialog.background .dialog-action-area button:hover, messagedialog.background .dialog-action-area button:focus,
+    messagedialog.background .dialog-action-box button:hover, messagedialog.background .dialog-action-box button:focus,
+    messagedialog.background buttonbox button:hover, messagedialog.background buttonbox button:focus,
+    messagedialog.background buttonbox > button.text-button:hover, messagedialog.background buttonbox > button.text-button:focus,
+    messagedialog.background buttonbox > button.text-button.image-button:hover, messagedialog.background buttonbox > button.text-button.image-button:focus {{
+        border: none; border-bottom: 1px solid {p['accent']}; border-radius: 0; box-shadow: none; outline: none;
+        background-color: transparent; background-image: none; }}
+    messagedialog.background button.destructive-action label {{ color: {p['accent']}; }}
+    messagedialog.background button image {{ color: {A(p['accent2'], 0.8)}; }}
+    """)
     W(os.path.join(d, "gtk-3.0/gtk.css"), css)
     W(os.path.join(d, "gtk-3.0/gtk-dark.css"), css)
     W(os.path.join(d, "index.theme"), textwrap.dedent(f"""\

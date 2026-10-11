@@ -5,5 +5,7 @@
   </property>
   <property name="desktop-menu" type="empty">
     <property name="show" type="bool" value="true"/>
+    <!-- words only, like the launcher's categories -->
+    <property name="show-icons" type="bool" value="false"/>
   </property>
 </channel>

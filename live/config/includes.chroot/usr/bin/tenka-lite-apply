@@ -47,7 +47,7 @@ seed() {   # xfconfd is not running yet: write its XML, XFCE reads it on start
     echo '</channel>'; } > "$XD/xfce4-terminal.xml"
   { echo '<?xml version="1.0" encoding="UTF-8"?>'; echo '<channel name="xfce4-desktop" version="1.0">'
     echo '  <property name="desktop-icons" type="empty"><property name="style" type="int" value="0"/></property>'
-    echo '  <property name="desktop-menu" type="empty"><property name="show" type="bool" value="true"/></property>'
+    echo '  <property name="desktop-menu" type="empty"><property name="show" type="bool" value="true"/><property name="show-icons" type="bool" value="false"/></property>'
     echo '  <property name="backdrop" type="empty"><property name="screen0" type="empty">'
     for m in $MONS; do echo "    <property name=\"monitor$m\" type=\"empty\">"
       for ws in 0 1 2 3; do echo "      <property name=\"workspace$ws\" type=\"empty\"><property name=\"last-image\" type=\"string\" value=\"$W\"/><property name=\"image-style\" type=\"int\" value=\"5\"/></property>"; done

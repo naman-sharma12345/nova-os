@@ -4,7 +4,8 @@
 cmd=$(cat /proc/cmdline)
 # pure CPU emulation (QEMU without KVM): its AVX2 emulation runs llvmpipe's 256-bit shader code wrong, and the
 # probe, the greeter and Hyprland all crashed in that code (nightly #13-#15); 128-bit vectors run correctly
-[ "$(systemd-detect-virt 2>/dev/null)" = qemu ] && export LP_NATIVE_VECTOR_WIDTH=128
+# correctly; SSE4.1 only (no AVX/AVX2/FMA in the generated code) is what the clean Westmere runs used
+[ "$(systemd-detect-virt 2>/dev/null)" = qemu ] && export LP_NATIVE_VECTOR_WIDTH=128 GALLIUM_OVERRIDE_CPU_CAPS=sse4.1
 case "$cmd" in *tenka.session=lite*|*tenka.session=plasma*|*nomodeset*) echo "reason: chosen at boot" >&2; echo lite; exit 0 ;; esac
 renderer() {
   r=$(timeout 10 eglinfo -B -p gbm 2>/dev/null | grep -i -m1 'renderer')

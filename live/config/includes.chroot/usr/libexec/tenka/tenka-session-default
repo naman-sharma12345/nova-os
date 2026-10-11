@@ -7,8 +7,8 @@ mkdir -p /run/tenka; echo "$mode" > /run/tenka/mode
 if [ "$(systemd-detect-virt 2>/dev/null)" = qemu ]; then
   touch /run/tenka/emulated
   mkdir -p /etc/sddm.conf.d /etc/environment.d
-  printf '[General]\nGreeterEnvironment=LP_NATIVE_VECTOR_WIDTH=128\n' > /etc/sddm.conf.d/30-tenka-emulated.conf
-  echo 'LP_NATIVE_VECTOR_WIDTH=128' > /etc/environment.d/95-tenka-emulated.conf
+  printf '[General]\nGreeterEnvironment=LP_NATIVE_VECTOR_WIDTH=128,GALLIUM_OVERRIDE_CPU_CAPS=sse4.1\n' > /etc/sddm.conf.d/30-tenka-emulated.conf
+  printf 'LP_NATIVE_VECTOR_WIDTH=128\nGALLIUM_OVERRIDE_CPU_CAPS=sse4.1\n' > /etc/environment.d/95-tenka-emulated.conf
 else
   rm -f /run/tenka/emulated /etc/sddm.conf.d/30-tenka-emulated.conf /etc/environment.d/95-tenka-emulated.conf
 fi

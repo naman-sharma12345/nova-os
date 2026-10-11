@@ -13,6 +13,10 @@ ROOT = gt.ROOT
 IC = os.path.join(ROOT, "live/config/includes.chroot")
 
 def rgb(c, a=255): c = c.lstrip("#"); return (int(c[0:2], 16), int(c[2:4], 16), int(c[4:6], 16), a)
+def solid(c1, c2, a):
+    """c1 mixed toward c2 by a, as an opaque hex colour (for widgets that drop alpha)."""
+    c1, c2 = c1.lstrip("#"), c2.lstrip("#")
+    return "#" + "".join(f"{round(int(c1[i:i+2], 16) * (1 - a) + int(c2[i:i+2], 16) * a):02x}" for i in (0, 2, 4))
 def W(path, s):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     open(path, "w").write(s)
@@ -137,6 +141,13 @@ def gtk_theme(name, T, d):
     menubar > menuitem label, .menubar > menuitem label {{ font-family: "Marcellus"; font-weight: normal; color: {p['subtext']}; letter-spacing: 0.3px; }}
     menubar > menuitem:hover, .menubar > menuitem:hover {{ background-color: transparent; box-shadow: inset 0 -1px 0 {p['accent']}; }}
     menubar > menuitem:hover label, .menubar > menuitem:hover label {{ color: {p['text']}; }}
+    /* icon views elsewhere (the image viewer's film strip, pickers): the chosen item on a faint accent tint, never
+       the stock bright block */
+    /* the image viewer's own film strip draws with style properties (defaults: a pale blue block, a blue frame) */
+    * {{ -RsttoIconBar-active-item-fill-color: {solid(p['base'], p['accent'], 0.22)}; -RsttoIconBar-active-item-border-color: {solid(p['base'], p['accent2'], 0.6)};
+        -RsttoIconBar-cursor-item-fill-color: {solid(p['base'], p['text'], 0.06)}; -RsttoIconBar-cursor-item-border-color: {solid(p['base'], p['accent2'], 0.25)}; }}
+    iconview.view:selected, iconview.view:selected:focus, iconview:selected {{ background-color: {A(p['accent'], 0.22)}; color: {p['text']};
+        border-radius: 0; outline: 1px solid {A(p['accent2'], 0.55)}; outline-offset: -1px; }}
     /* the Settings Manager (xfce4-settings-manager; the viewport is .exoiconview in 4.20, .xfceiconview later): categories as ledger headings (Marcellus, gold, spaced) over a
        hairline, the settings as plain Marcellus words under the gold line icons, the chosen one on a faint tint */
     .xfceiconview, viewport.xfceiconview, .xfceiconview *, .exoiconview, viewport.exoiconview, .exoiconview * {{ background-color: transparent; font-family: "Marcellus"; }}

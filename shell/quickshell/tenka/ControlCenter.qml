@@ -296,8 +296,11 @@ PanelWindow {
 
             Box {
                 num: "01"; label: "SIGNAL"
-                Row2 { k: cc.netKind === "wifi" ? "Wi-Fi" : "Network"; v: cc.net; on: cc.net !== "Offline"; toggle: true }
-                Row2 { k: "Bluetooth"; v: "Off"; toggle: true; last: true }
+                // the network row opens the connection editor (network-manager-gnome ships it); no Bluetooth row,
+                // because no Bluetooth stack ships and a switch that does nothing is a lie
+                Row2 { k: cc.netKind === "wifi" ? "Wi-Fi" : "Network"; v: cc.net; on: cc.net !== "Offline"; toggle: true
+                       onHit: { cc.open = false; Theme.run("setsid nm-connection-editor >/dev/null 2>&1 &") } }
+                Row2 { k: "Uptime"; v: cc.up.replace(" hours", "h").replace(" hour", "h").replace(" minutes", "m").replace(" minute", "m").replace(",", ""); last: true }
             }
             Box {
                 num: "02"; label: "SOUND"

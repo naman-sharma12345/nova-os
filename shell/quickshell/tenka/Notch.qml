@@ -122,7 +122,7 @@ PanelWindow {
                            font.family: Theme.display; font.pixelSize: 10; font.letterSpacing: 4 }
                 }
                 Text { width: parent.width; wrapMode: Text.WordWrap; maximumLineCount: 2; elide: Text.ElideRight
-                       text: notch.player ? (notch.player.trackTitle || "") : Theme.t.proverbs[Theme.now.getHours() % Math.max(1, Theme.t.proverbs.length)]
+                       text: notch.player ? (notch.player.trackTitle || "") : Theme.proverb
                        color: Theme.t.text; font.family: Theme.display; font.pixelSize: 17; lineHeight: 1.15 }
                 Text { visible: !!notch.player; text: notch.player ? (notch.player.trackArtist || "") : ""
                        color: Theme.alpha(Theme.t.text, 0.6); font.family: Theme.display; font.pixelSize: 12; font.letterSpacing: 1 }

@@ -243,6 +243,14 @@ Item {
         }
     }
 
+    // the day's proverb, set against the lower right in every direction but "still"
+    ProverbPlate {
+        visible: face.style !== "still"
+        anchors.right: parent.right; anchors.rightMargin: 140 * face.s
+        anchors.bottom: parent.bottom; anchors.bottomMargin: 150 * face.s
+        s: face.s; alignRight: true; maxWidth: 520; size: 22; shadow: true
+    }
+
     // the gate: the lock opens through the login screen's last frame (seal pressed, then it falls away
     // over the face in the same 1.4 s ease), so locking reads as a return to the threshold. An unlock
     // hands the same gate to the arrival overlay. Performance mode skips it.

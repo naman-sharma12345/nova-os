@@ -1,4 +1,4 @@
-// The desktop, minimal: the art, the time, one seal, the date and the hour's proverb. Nothing else.
+// The desktop, minimal: the art, the time, one seal, the date and the day's proverb. Nothing else.
 // Click the clock (or Super+D, or the bottom edge) and the cards and the dock slide in.
 import Quickshell
 import Quickshell.Wayland
@@ -107,15 +107,10 @@ PanelWindow {
             color: Theme.alpha(Theme.t.text, 0.82)
             font.family: Theme.display; font.pixelSize: 19 * desk.s; font.letterSpacing: 9 * desk.s
         }
-        Text {
+        ProverbPlate {
             id: prov
-            anchors.top: dateText.bottom; anchors.topMargin: 34 * desk.s; x: 8 * desk.s
-            width: 560 * desk.s; wrapMode: Text.WordWrap
-            text: Theme.t.proverbs[Theme.now.getHours() % Math.max(1, Theme.t.proverbs.length)]
-            color: Theme.alpha(Theme.t.text, 0.72)
-            font.family: Theme.display; font.pixelSize: 22 * desk.s; lineHeight: 1.25
-            layer.enabled: !Theme.perf
-            layer.effect: MultiEffect { shadowEnabled: true; shadowColor: "black"; shadowBlur: 0.25; shadowOpacity: 0.5; shadowVerticalOffset: 1 }
+            anchors.top: dateText.bottom; anchors.topMargin: 30 * desk.s; x: 8 * desk.s
+            s: desk.s; maxWidth: 560; size: 22; textOpacity: 0.78; shadow: true
         }
         MouseArea { id: clockHit; x: 0; y: 0; width: clockRow.width; height: clockRow.height; cursorShape: Qt.PointingHandCursor
                     onClicked: { Theme.deskOpen = !Theme.deskOpen; Theme.pinOpen = Theme.deskOpen } }
@@ -168,7 +163,7 @@ PanelWindow {
         Text {   // the proverb, as a subtitle
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.bottom: parent.bottom; anchors.bottomMargin: 40 * desk.s
-            text: "“" + Theme.t.proverbs[Theme.now.getHours() % Math.max(1, Theme.t.proverbs.length)] + "”"
+            text: "“" + Theme.proverb + "”"
             color: Theme.alpha(Theme.t.text, 0.55)
             font.family: Theme.display; font.italic: false; font.pixelSize: 16 * desk.s; font.letterSpacing: 1.5 * desk.s
         }
@@ -222,7 +217,7 @@ PanelWindow {
                     width: parent.height
                     horizontalAlignment: Text.AlignHCenter
                     wrapMode: Text.WordWrap; maximumLineCount: 2; elide: Text.ElideRight; lineHeight: 1.2
-                    text: Theme.t.proverbs[Theme.now.getHours() % Math.max(1, Theme.t.proverbs.length)]
+                    text: Theme.proverb
                     color: Theme.alpha(Theme.t.text, 0.72)
                     font.family: Theme.display; font.pixelSize: 15 * desk.s; font.letterSpacing: 2 * desk.s
                 }

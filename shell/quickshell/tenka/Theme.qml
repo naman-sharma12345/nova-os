@@ -49,6 +49,12 @@ Singleton {
     Component.onCompleted: { perfQ.running = true; if ((Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE") || "") !== "") wsQ.running = true }
     // Performance mode (tenka-perf): its flag file is ~/.config/tenka/perf. The shell's own motion rests with it.
     property bool perf: false
+    // the day's proverb: one line a day from the pack, the same on the desk, the notch and the lock
+    function dayOfYear(d) { return Math.floor((new Date(d.getFullYear(), d.getMonth(), d.getDate()) - new Date(d.getFullYear(), 0, 0)) / 86400000) }
+    readonly property string proverb: {
+        var p = adapter.proverbs || []
+        return p.length ? p[dayOfYear(now) % p.length] : ""
+    }
     // the arrival overlay (Threshold.qml) plays when this fires: "arrive" (session start) or "unlock"
     signal arrive(string kind)
     Process {

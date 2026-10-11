@@ -79,9 +79,9 @@ function conky_tenka_desk()
     -- the month and the hour's old name
     local hour = 'HOUR OF THE ' .. HOURS[math.floor(((d.hour + 1) % 24) / 2) + 1]:upper()
     text(cr, os.date('%B %Y'):upper() .. '   ·   ' .. hour, X + 8, Y + 268, 19, tr, tg, tb, 0.82, 9)
-    -- the proverb, wrapped at ~560 px
+    -- the day's proverb (one a day, the same line the flagship desk and lock show), wrapped at ~560 px
     if #t.proverbs > 0 then
-        local p = t.proverbs[(d.hour % #t.proverbs) + 1]
+        local p = t.proverbs[(d.yday % #t.proverbs) + 1]
         local line, yy = '', Y + 330
         for w in p:gmatch('%S+') do
             local try = (line == '' and w) or (line .. ' ' .. w)

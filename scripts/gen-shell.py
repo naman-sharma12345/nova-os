@@ -1,5 +1,6 @@
 # Writes themes/<theme>/home/.config/tenka/shell-theme.json: the words, colours and art the
 # Tenka shell (shell/quickshell/tenka) reads for each pack. tenka-theme copies it into $HOME.
+# "proverbs": one for each day (the shell, the lock and the Lite desk pick by day of the year).
 import json, os
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PACKS = {
@@ -31,10 +32,35 @@ PACKS = {
     "proverbs": [
       "Fall seven times, stand up eight.",
       "The bamboo that bends is stronger than the oak that resists.",
-      "The sword is the soul.",
       "Even monkeys fall from trees.",
       "A single arrow is easily broken, not ten in a bundle.",
-      "Beginning is easy. Continuing is hard."
+      "Beginning is easy. Continuing is hard.",
+      "Vision without action is a daydream.",
+      "After victory, tighten the cords of your helmet.",
+      "One kind word can warm three winter months.",
+      "Sit on a stone for three years and it grows warm.",
+      "Even dust, piled up, becomes a mountain.",
+      "The frog in the well knows nothing of the great sea.",
+      "If you chase two hares, you will catch neither.",
+      "Wait, and fair weather will come for sailing.",
+      "Every reverse side has its own reverse side.",
+      "To teach is to learn twice.",
+      "Fortune comes to the house that laughs.",
+      "Deep rivers move in silence.",
+      "Look at the moon, not at the finger that points to it.",
+      "The sword is the soul.",
+      "Polish the mirror of the heart.",
+      "Every day is a good day.",
+      "One moment, one meeting.",
+      "Today's self defeats yesterday's.",
+      "A road is made by walking it.",
+      "A blade is sharpened on stone, a person on hardship.",
+      "Even the longest road is walked one step at a time.",
+      "One day with a great teacher is worth a thousand days of study.",
+      "The blossom falls at the height of its beauty.",
+      "Rest the blade. Keep the edge.",
+      "Where there is a will, the rock gives way.",
+      "The heart that is calm sees clearly."
     ]
   },
   "xianxia": {
@@ -68,7 +94,32 @@ PACKS = {
       "Cultivate the heart, and the sword will follow.",
       "Heaven and earth are wide. The heart is wider.",
       "The Dao that can be named is not the eternal Dao.",
-      "Still water runs deep."
+      "Still water runs deep.",
+      "Knowing others is wisdom. Knowing yourself is enlightenment.",
+      "The highest good is like water.",
+      "A tree too wide to embrace grows from a tiny shoot.",
+      "Do not fear going slowly. Fear only standing still.",
+      "To know you have enough is to be rich.",
+      "Dig the well before you are thirsty.",
+      "One generation plants the trees; the next enjoys the shade.",
+      "Jade must be carved before it becomes a vessel.",
+      "Great talents ripen late.",
+      "Of three people walking, one can be my teacher.",
+      "Learning is rowing upstream: stop, and you drift back.",
+      "A gem is not polished without friction.",
+      "Return to the root and find stillness.",
+      "Act without striving, and nothing is left undone.",
+      "The softest thing in the world overcomes the hardest.",
+      "Those who know do not speak. Those who speak do not know.",
+      "A single spark can set the prairie alight.",
+      "Ride the wind and break the waves.",
+      "The ten thousand things return to the One.",
+      "Hold fast to the centre.",
+      "When you drink the water, remember the spring.",
+      "The mountain refuses no grain of earth, and so it is high.",
+      "Be still as the mountain, flow as the great river.",
+      "Take one step back, and the sea and sky open wide.",
+      "The heart, once settled, is a clear pool under the moon."
     ]
   }
 }

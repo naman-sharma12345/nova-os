@@ -12,6 +12,7 @@
 #  7. the Inkstone's search puts whole words and word starts ahead of matches inside a word (needs node)
 #  8. tenka-loupe freezes the screen into a private file, copies, and keeps LATELY (colours only, newest first)
 #  9. tenka-codex reads every key from the live Hyprland / XFCE config, including the user's own user.lua
+# 10. tenka-glance tells a folder, a text and a picture apart, and reads a picture's size from its header
 set -u
 ROOT=$(cd "$(dirname "$0")/.." && pwd); BIN="$ROOT/live/config/includes.chroot/usr/bin"
 fail=0; T=$(mktemp -d); trap 'rm -rf "$T"' EXIT
@@ -197,6 +198,20 @@ if not any(k == "Super + Shift + M" and g == "Yours" for k, g in kh): bad.append
 if ("Super + 1 … 0", "Desks") not in kh: bad.append("workspace loop not folded")
 if len(h["groups"]) < 6: bad.append("hyprland groups: %d" % len(h["groups"]))
 if bad: print("FAIL: tenka-codex: " + "; ".join(bad)); sys.exit(1)
+EOF
+# 10. tenka-glance knows a folder, a text and a picture (its size from the file's own header), and reads no further
+#     than it needs (a text's opening lines only)
+mkdir -p "$T/glance/Letters"; seq 1 500 > "$T/glance/long.txt"
+printf '\211PNG\r\n\032\n\000\000\000\rIHDR\000\000\003\000\000\000\002\000\010\006\000\000\000' > "$T/glance/seal.png"
+XDG_RUNTIME_DIR="$T" python3 "$BIN/tenka-glance" --facts "$T/glance" "$T/glance/long.txt" "$T/glance/seal.png" > "$T/glance.json" &&
+python3 - "$T/glance.json" <<'EOF' || fail=1
+import json, sys
+it, bad = json.load(open(sys.argv[1]))["items"], []
+if [i["kind"] for i in it] != ["folder", "text", "image"]: bad.append("kinds: %s" % [i["kind"] for i in it])
+if it[0]["count"] != 3 or it[0]["items"][0]["name"] != "Letters": bad.append("folder: %s" % it[0]["items"])
+if len(it[1]["lines"].splitlines()) != 60: bad.append("text lines: %d" % len(it[1]["lines"].splitlines()))
+if it[2]["extra"] != "768 × 512": bad.append("picture size: %r" % it[2]["extra"])
+if bad: print("FAIL: tenka-glance: " + "; ".join(bad)); sys.exit(1)
 EOF
 [ "$fail" = 0 ] && echo "check-session: ok"
 exit $fail

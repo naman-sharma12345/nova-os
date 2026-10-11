@@ -97,3 +97,5 @@ fzf
 tmux
 zathura
 zathura-pdf-poppler
+# The Glance (tenka-glance) shows a PDF's first page with pdftoppm
+poppler-utils

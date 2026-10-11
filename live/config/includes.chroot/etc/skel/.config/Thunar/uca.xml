@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Tenka: Thunar's own actions. "Glance" (Ctrl+Space, see accels.scm) is The Glance: a quick look at the
+     selected files without opening them (tenka-glance). -->
+<actions>
+<action>
+	<icon>view-preview</icon>
+	<name>Glance</name>
+	<submenu></submenu>
+	<unique-id>1760000000000001-1</unique-id>
+	<command>tenka-glance %F</command>
+	<description>A quick look, without opening it (Ctrl+Space)</description>
+	<range>*</range>
+	<patterns>*</patterns>
+	<startup-notify/>
+	<directories/>
+	<audio-files/>
+	<image-files/>
+	<other-files/>
+	<text-files/>
+	<video-files/>
+</action>
+<action>
+	<icon>utilities-terminal</icon>
+	<name>Open Terminal Here</name>
+	<submenu></submenu>
+	<unique-id>1760000000000002-1</unique-id>
+	<command>exo-open --working-directory %f --launch TerminalEmulator</command>
+	<description>A terminal in this folder</description>
+	<range></range>
+	<patterns>*</patterns>
+	<startup-notify/>
+	<directories/>
+</action>
+</actions>

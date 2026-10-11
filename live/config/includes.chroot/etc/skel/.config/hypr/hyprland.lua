@@ -107,6 +107,8 @@ hl.window_rule({ name = "float-utils",
 -- names X11 windows), so it is matched by its title: floated, centred, at the size it was drawn for
 hl.window_rule({ name = "tenka-welcome", match = { title = "^(Welcome to Tenka)$" },
     float = true, center = true, size = "1180 700" })
+-- The Glance (tenka-glance, Ctrl+Space in Files) is a qml window too: floated and centred at its own size
+hl.window_rule({ name = "tenka-glance", match = { title = "^(The Glance)$" }, float = true, center = true })
 hl.window_rule({ name = "glass-terminal", match = { class = "^(kitty)$" }, opacity = "0.94 0.88" })
 -- the file manager is translucent through its own GTK CSS (glass); the compositor only blurs behind it
 hl.window_rule({ name = "glass-files", match = { class = "^([Tt]hunar)$" }, opacity = "1.0 0.94" })

@@ -264,6 +264,18 @@ def gtk_theme(name, T, d):
     levelbar block.low {{ background-color: {DANGER}; }}
     levelbar block.empty {{ background-color: {A(p['text'], 0.10)}; }}
     levelbar trough {{ border-radius: 2px; }}
+    levelbar.horizontal block {{ min-height: 4px; }} levelbar.vertical block {{ min-width: 4px; }}
+    /* switches: one accent, not two; a plain ivory dot on a quiet track, the track takes the accent when on */
+    switch {{ background-image: none; background-color: {A(p['text'], 0.12)}; border: none; box-shadow: none; }}
+    switch:checked {{ background-color: {A(p['accent'], 0.85)}; }}
+    switch slider {{ background-image: none; background-color: {A(p['text'], 0.45)}; border: none; box-shadow: none; }}
+    switch:checked slider {{ background-color: {p['text']}; }}
+    switch:disabled, switch:disabled slider {{ background-color: {A(p['text'], 0.08)}; }}
+    /* plain notice bars (info, warning, error): the same faint tint and short rule as the question bar, never a slab */
+    infobar.info > revealer > box, infobar.info:backdrop > revealer > box {{ background-color: {A(p['text'], 0.05)}; color: {p['text']}; box-shadow: inset 2px 0 0 {A(p['text'], 0.35)}; }}
+    infobar.warning > revealer > box, infobar.warning:backdrop > revealer > box {{ background-color: {A(p['accent2'], 0.12)}; color: {p['text']}; box-shadow: inset 2px 0 0 {p['accent2']}; }}
+    infobar.error > revealer > box, infobar.error:backdrop > revealer > box {{ background-color: {A(DANGER, 0.12)}; color: {p['text']}; box-shadow: inset 2px 0 0 {DANGER}; }}
+    infobar.info label, infobar.warning label, infobar.error label {{ color: {p['text']}; }}
     /* sliders: a small gold dot drawn by the theme; the base theme's knob is a blue picture no recolour reaches */
     scale slider, scale slider:hover, scale slider:active, scale slider:focus {{ background-image: none; background-color: {p['accent2']};
         min-width: 12px; min-height: 12px; margin: -5px; border: 2px solid {p['base']}; border-radius: 50%; box-shadow: none; transition: none; }}

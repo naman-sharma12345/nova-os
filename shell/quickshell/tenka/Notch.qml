@@ -60,10 +60,7 @@ PanelWindow {
         Rectangle {   // the gold hairline along the lower edge
             anchors.bottom: parent.bottom; anchors.horizontalCenter: parent.horizontalCenter
             width: parent.width - 34; height: 1
-            gradient: Gradient { orientation: Gradient.Horizontal
-                GradientStop { position: 0; color: "transparent" }
-                GradientStop { position: 0.5; color: Theme.alpha(Theme.t.gold, 0.7) }
-                GradientStop { position: 1; color: "transparent" } }
+            color: Theme.alpha(Theme.t.gold, 0.4)
         }
 
         // the meter: VOLUME ────◆──── 64, for a breath after a key press

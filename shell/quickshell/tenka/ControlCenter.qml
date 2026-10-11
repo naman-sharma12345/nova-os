@@ -170,9 +170,7 @@ PanelWindow {
                 spacing: 12
                 Text { text: "THE TWO PATHS"; color: Theme.t.gold; font.family: Theme.display; font.pixelSize: 13; font.letterSpacing: 6; anchors.verticalCenter: parent.verticalCenter }
                 Rectangle { width: 150; height: 1; anchors.verticalCenter: parent.verticalCenter
-                    gradient: Gradient { orientation: Gradient.Horizontal
-                        GradientStop { position: 0; color: Theme.alpha(Theme.t.gold, 0.6) }
-                        GradientStop { position: 1; color: "transparent" } } }
+                    color: Theme.alpha(Theme.t.gold, 0.35) }
             }
             Row {
                 spacing: 12

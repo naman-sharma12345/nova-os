@@ -150,13 +150,11 @@ PanelWindow {
             anchors.top: filmClock.bottom; anchors.topMargin: 8 * desk.s
             spacing: 22 * desk.s
             Rectangle { width: 260 * desk.s; height: 1; anchors.verticalCenter: parent.verticalCenter
-                gradient: Gradient { orientation: Gradient.Horizontal
-                    GradientStop { position: 0; color: "transparent" } GradientStop { position: 1; color: Theme.alpha(Theme.t.gold, 0.9) } } }
+                color: Theme.alpha(Theme.t.gold, 0.5) }
             Image { width: 34 * desk.s; height: 42 * desk.s; source: Theme.asset("seal.png"); smooth: true; rotation: -3
                 Text { anchors.centerIn: parent; text: Theme.now.getDate(); color: Theme.t.ink; font.family: Theme.display; font.pixelSize: 17 * desk.s } }
             Rectangle { width: 260 * desk.s; height: 1; anchors.verticalCenter: parent.verticalCenter
-                gradient: Gradient { orientation: Gradient.Horizontal
-                    GradientStop { position: 0; color: Theme.alpha(Theme.t.gold, 0.9) } GradientStop { position: 1; color: "transparent" } } }
+                color: Theme.alpha(Theme.t.gold, 0.5) }
         }
         Text {
             anchors.horizontalCenter: parent.horizontalCenter

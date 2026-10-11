@@ -167,10 +167,7 @@ Item {
             Item {
                 anchors.horizontalCenter: parent.horizontalCenter; width: 300 * face.s; height: 30 * face.s
                 Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1
-                    gradient: Gradient { orientation: Gradient.Horizontal
-                        GradientStop { position: 0; color: "transparent" }
-                        GradientStop { position: 0.5; color: face.lock.status !== "" ? Theme.t.accent : Theme.alpha(Theme.t.gold, 0.9) }
-                        GradientStop { position: 1; color: "transparent" } } }
+                    color: face.lock.status !== "" ? Theme.t.accent : Theme.alpha(Theme.t.gold, 0.6) }
                 Row { anchors.centerIn: parent; spacing: 8 * face.s; visible: face.lock.typed.length > 0
                       Repeater { model: Math.min(face.lock.typed.length, 18)
                           Rectangle { width: 5 * face.s; height: width; radius: width / 2; color: Theme.t.gold } } }

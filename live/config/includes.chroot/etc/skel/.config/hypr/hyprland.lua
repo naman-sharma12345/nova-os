@@ -139,7 +139,7 @@ hl.bind("ALT + Tab",           hl.dsp.global("tenka:switcher-next"))   -- the tu
 hl.bind("ALT + SHIFT + Tab",   hl.dsp.global("tenka:switcher-prev"))
 hl.bind("ALT + Alt_L",         hl.dsp.global("tenka:switcher-commit"), { release = true, transparent = true, non_consuming = true })
 hl.bind("ALT + Alt_R",         hl.dsp.global("tenka:switcher-commit"), { release = true, transparent = true, non_consuming = true })
-hl.bind(M .. " + N",           hl.dsp.exec_cmd("qs -c tenka ipc call slip edit"))   -- the slip: a note to self on the desk
+hl.bind(M .. " + N",           hl.dsp.global("tenka:slip"))            -- the slip: a note to self on the desk
 hl.bind(M .. " + SHIFT + C",   hl.dsp.exec_cmd("hyprpicker -a"))
 hl.bind("Print",               hl.dsp.exec_cmd("tenka-shot area"))
 hl.bind("SHIFT + Print",       hl.dsp.exec_cmd("tenka-shot screen"))

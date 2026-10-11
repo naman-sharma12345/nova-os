@@ -200,6 +200,7 @@ def gtk_theme(name, T, d):
     dialog combobox button.combo:only-child, dialog button.font, dialog spinbutton:not(.vertical) {{ border-bottom: 1px solid {A(p['accent2'], 0.35)}; }}
     dialog combobox button.combo:only-child:hover, dialog combobox button.combo:only-child:checked, dialog button.font:hover, dialog spinbutton:focus-within {{ border-bottom-color: {p['accent']}; }}
     dialog spinbutton button {{ color: {A(p['text'], 0.5)}; }}
+    dialog spinbutton:not(.vertical) > entry {{ min-width: 34px; padding: 0 8px; margin: 0; border: none; box-shadow: none; outline: none; }}
     dialog combobox > box.linked > button.combo:only-child, dialog combobox > box.linked > button.combo:only-child:hover {{ background-color: transparent; background-image: none;
         border-radius: 0; box-shadow: none; border: none; border-bottom: 1px solid {A(p['accent2'], 0.35)}; }}
     dialog combobox > box.linked > button.combo:only-child:hover {{ border-bottom-color: {p['accent']}; }}

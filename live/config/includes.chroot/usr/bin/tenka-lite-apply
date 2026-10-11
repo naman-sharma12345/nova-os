@@ -33,7 +33,7 @@ seed() {   # xfconfd is not running yet: write its XML, XFCE reads it on start
   { echo '<?xml version="1.0" encoding="UTF-8"?>'; echo '<channel name="xsettings" version="1.0">'
     echo '  <property name="Net" type="empty">'; p ThemeName string "$THEME_GTK"; p IconThemeName string "$THEME_ICONS"; echo '  </property>'
     echo '  <property name="Gtk" type="empty">'; p CursorThemeName string "$THEME_CURSOR"; p CursorThemeSize int 24
-    p FontName string "Inter 10"; p MonospaceFontName string "JetBrains Mono 10"; echo '  </property>'
+    p FontName string "Inter 10"; p MonospaceFontName string "JetBrains Mono 10"; p MenuImages bool false; echo '  </property>'
     echo '  <property name="Xft" type="empty">'; p Antialias int 1; p HintStyle string hintslight; p RGBA string rgb; echo '  </property>'
     echo '</channel>'; } > "$XD/xsettings.xml"
   { echo '<?xml version="1.0" encoding="UTF-8"?>'; echo '<channel name="xfce4-notifyd" version="1.0">'

@@ -365,6 +365,7 @@ def gen(name, T):
     gtk-font-name=Inter 11
     gtk-application-prefer-dark-theme=1
     gtk-decoration-layout=:
+    gtk-menu-images=0
     """))
     W(f"{H}/.config/gtk-4.0/settings.ini", textwrap.dedent(f"""\
     [Settings]

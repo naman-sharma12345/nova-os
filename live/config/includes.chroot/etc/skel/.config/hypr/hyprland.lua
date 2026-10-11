@@ -95,7 +95,7 @@ hl.layer_rule({ name = "wallpaper-fade", match = { namespace = "^wallpaper$" }, 
 hl.layer_rule({ name = "launcher-dim", match = { namespace = "^launcher$" }, dim_around = true })
 hl.layer_rule({ name = "logout-anim", match = { namespace = "^logout_dialog$" }, animation = "fade" })
 -- the Tenka shell animates its own surfaces; the compositor only fades them
-hl.layer_rule({ name = "tenka-fade", match = { namespace = "^tenka-(launcher|control|power|cards|osd|overview|switcher|air)$" }, animation = "fade" })
+hl.layer_rule({ name = "tenka-fade", match = { namespace = "^tenka-(launcher|control|power|cards|osd|overview|switcher|air|bond)$" }, animation = "fade" })
 hl.layer_rule({ name = "tenka-wall", match = { namespace = "^tenka-wall$" }, animation = "fade" })
 
 -- windows -----------------------------------------------------------------

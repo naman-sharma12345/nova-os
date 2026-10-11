@@ -42,6 +42,8 @@ mesa-utils
 network-manager
 wpasupplicant
 iw
+# --- Bluetooth: the stack only; the flagship's card is our own (The Bond, Bond.qml)
+bluez
 pipewire-audio
 wireplumber
 pipewire-pulse

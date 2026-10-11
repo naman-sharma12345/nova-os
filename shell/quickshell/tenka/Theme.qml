@@ -58,6 +58,7 @@ Singleton {
     // the arrival overlay (Threshold.qml) plays when this fires: "arrive" (session start) or "unlock"
     signal arrive(string kind)
     signal askWifi()                     // Control Center asks the shell's own Wi-Fi picker (Wifi.qml)
+    signal askBluetooth()                // Control Center asks the shell's own Bluetooth card (Bond.qml)
     Process {
         id: perfQ; command: ["sh", "-c", "test -e \"$HOME/.config/tenka/perf\" && echo on || echo off"]
         stdout: StdioCollector { onStreamFinished: root.perf = text.trim() === "on" }

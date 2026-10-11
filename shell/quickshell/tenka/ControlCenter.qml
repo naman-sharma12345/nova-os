@@ -6,6 +6,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Services.Pipewire
+import Quickshell.Bluetooth
 import QtQuick
 import QtQuick.Effects
 
@@ -36,6 +37,13 @@ PanelWindow {
     property string up: ""
     property string net: "Offline"
     property string netKind: "wifi"
+    // Bluetooth, read live from BlueZ; TENKA_BT_SIM gives renders a made-up joined device
+    readonly property var btA: Bluetooth.defaultAdapter
+    readonly property var btJoined: btA ? btA.devices.values.filter(d => d.connected) : []
+    readonly property bool btOn: Quickshell.env("TENKA_BT_SIM") ? true : (btA !== null && btA.enabled)
+    readonly property string btWord: Quickshell.env("TENKA_BT_SIM") ? "Sora Headphones"
+        : !btA ? "No radio" : !btA.enabled ? "Off" : btJoined.length === 1 ? btJoined[0].name
+        : btJoined.length > 1 ? btJoined.length + " joined" : "On"
     Process { running: cc.open; command: ["sh", "-c", "nmcli -t -f TYPE,STATE,CONNECTION dev 2>/dev/null | grep -m1 ':connected:' || (ip route 2>/dev/null | grep -q '^default' && echo ethernet:connected:Wired)"]
               stdout: StdioCollector { onStreamFinished: { const p = text.trim().split(":"); if (p.length > 2) { cc.netKind = p[0]; cc.net = p[2] } else cc.net = "Offline" } } }
     Process { id: upP; running: cc.open; command: ["sh", "-c", "uptime -p | sed 's/^up //'"]
@@ -99,7 +107,7 @@ PanelWindow {
                 Repeater {
                     model: [
                         { g: cc.netKind === "wifi" ? "\uf1eb" : "\udb80\ude00", n: cc.netKind === "wifi" ? "Wi-Fi" : "Network", s: cc.net, on: cc.net !== "Offline", act: "net" },
-                        { g: "\uf023", n: Theme.t.lockWord, s: "Lock now", on: false, act: "lock" },
+                        { g: "\uf293", n: "Bluetooth", s: cc.btWord, on: cc.btOn, act: "bt" },
                         { g: Theme.stillness ? "\uf1f6" : "\uf0f3", n: Theme.t.stillWord, s: Theme.stillness ? "On · silent" : "Off", on: Theme.stillness, act: "still" },
                         { g: "\uf186", n: "Night ink", s: Theme.nightInk ? "Warm" : "Off", on: Theme.nightInk, act: "night" },
                         { g: "\uf0e7", n: "Performance", s: Theme.perf ? "On · still" : "Off", on: Theme.perf, act: "perf" },
@@ -129,6 +137,7 @@ PanelWindow {
                                     if (a === "night") { Theme.nightInk = !Theme.nightInk; Theme.run(Theme.nightInk ? "pkill hyprsunset; setsid hyprsunset -t 4200 >/dev/null 2>&1 &" : "pkill hyprsunset") }
                                     if (a === "perf") { Theme.perf = !Theme.perf; Theme.run("tenka-perf " + (Theme.perf ? "on" : "off")) }
                                     if (a === "net") { cc.open = false; Theme.askWifi() }
+                                    if (a === "bt") { cc.open = false; Theme.askBluetooth() }
                                     if (a === "lock") { cc.open = false; Theme.run("loginctl lock-session") } } }
                     }
                 }
@@ -297,10 +306,11 @@ PanelWindow {
 
             Box {
                 num: "01"; label: "SIGNAL"
-                // the network row opens the connection editor (network-manager-gnome ships it); no Bluetooth row,
-                // because no Bluetooth stack ships and a switch that does nothing is a lie
+                // the network row opens The Air (Wifi.qml), the Bluetooth row opens The Bond (Bond.qml)
                 Row2 { k: cc.netKind === "wifi" ? "Wi-Fi" : "Network"; v: cc.net; on: cc.net !== "Offline"; toggle: true
                        onHit: { cc.open = false; Theme.askWifi() } }
+                Row2 { k: "Bluetooth"; v: cc.btWord; on: cc.btOn; toggle: true
+                       onHit: { cc.open = false; Theme.askBluetooth() } }
                 Row2 { k: "Uptime"; v: cc.up.replace(" hours", "h").replace(" hour", "h").replace(" minutes", "m").replace(" minute", "m").replace(",", ""); last: true }
             }
             Box {

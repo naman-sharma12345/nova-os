@@ -23,6 +23,8 @@ xfce4-whiskermenu-plugin
 xfce4-pulseaudio-plugin
 xfce4-notifyd
 xfce4-power-manager
+# Bluetooth for Lite: blueman (GTK, so the Tenka GTK theme dresses it; its applet is the pairing agent)
+blueman
 xfce4-screensaver
 xfce4-docklike-plugin
 xfce4-clipman-plugin

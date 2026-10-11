@@ -30,6 +30,7 @@ ShellRoot {
     Slip {}
     Seal {}
     Wifi {}
+    Bond {}
     ControlCenter {}
     Notifications {}
     Osd {}

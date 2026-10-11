@@ -12,6 +12,11 @@
       <property name="&lt;Super&gt;t" type="string" value="tenka-welcome --picker"/>
       <property name="&lt;Super&gt;Escape" type="string" value="xfce4-session-logout"/>
       <property name="Print" type="string" value="xfce4-screenshooter -r"/>
+      <property name="XF86AudioRaiseVolume" type="string" value="tenka-osd volume up"/>
+      <property name="XF86AudioLowerVolume" type="string" value="tenka-osd volume down"/>
+      <property name="XF86AudioMute" type="string" value="tenka-osd volume mute"/>
+      <property name="XF86MonBrightnessUp" type="string" value="tenka-osd brightness up"/>
+      <property name="XF86MonBrightnessDown" type="string" value="tenka-osd brightness down"/>
     </property>
   </property>
   <property name="xfwm4" type="empty">

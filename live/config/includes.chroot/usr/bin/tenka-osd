@@ -1,0 +1,35 @@
+#!/bin/sh
+# tenka-osd: change the volume or the brightness and show Tenka's one OSD, in either session.
+#   tenka-osd volume up|down|mute     tenka-osd brightness up|down     tenka-osd volume|brightness show
+# Flagship (Hyprland): the shell draws it (volume follows PipeWire by itself; brightness is handed over).
+# Lite (XFCE, X11): a tiny Qt window (/usr/share/tenka/osd/LiteOsd.qml) that quits 2 s after the last key.
+kind=${1:-volume}; act=${2:-show}
+case "$kind:$act" in
+  volume:up)       wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%+ ;;
+  volume:down)     wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%- ;;
+  volume:mute)     wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle ;;
+  brightness:up)   brightnessctl -q set 5%+ ;;
+  brightness:down) brightnessctl -q set 5%- ;;
+  *:show) ;;
+  *) echo "usage: tenka-osd volume up|down|mute|show | brightness up|down|show" >&2; exit 2 ;;
+esac
+if [ "$kind" = volume ]; then
+  out=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null)          # "Volume: 0.45 [MUTED]"
+  v=$(printf '%s\n' "$out" | awk '{ printf "%d", $2 * 100 + 0.5 }')
+  case "$out" in *MUTED*) m=1 ;; *) m=0 ;; esac
+else
+  v=$(brightnessctl -m 2>/dev/null | cut -d, -f4 | tr -d %); m=0
+fi
+[ -n "$v" ] || exit 0
+if [ -n "${WAYLAND_DISPLAY:-}" ] && pgrep -x qs >/dev/null 2>&1; then
+  [ "$kind" = brightness ] && qs -c tenka ipc call osd brightness "$v" >/dev/null 2>&1
+  exit 0
+fi
+[ -n "${DISPLAY:-}" ] || exit 0
+st=${XDG_RUNTIME_DIR:-/tmp}/tenka-osd
+printf '%s %s %s %s\n' "$kind" "$v" "$m" "$(date +%s%N)" > "$st.tmp" && mv -f "$st.tmp" "$st"
+pid=$(cat "$st.pid" 2>/dev/null)
+if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then exit 0; fi
+QML_XHR_ALLOW_FILE_READ=1 QT_QPA_PLATFORM=xcb setsid /usr/lib/qt6/bin/qml /usr/share/tenka/osd/LiteOsd.qml -- \
+  "$st" "$HOME/.config/tenka/shell-theme.json" >/dev/null 2>&1 &
+echo $! > "$st.pid"

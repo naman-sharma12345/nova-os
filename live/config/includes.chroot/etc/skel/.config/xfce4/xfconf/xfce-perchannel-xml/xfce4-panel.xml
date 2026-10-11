@@ -80,7 +80,8 @@
       <property name="icon-size" type="int" value="14"/>
     </property>
     <property name="plugin-8" type="string" value="pulseaudio">
-      <property name="enable-keyboard-shortcuts" type="bool" value="true"/>
+      <property name="enable-keyboard-shortcuts" type="bool" value="false"/>
+      <property name="show-notifications" type="uint" value="0"/>
     </property>
     <property name="plugin-5" type="string" value="genmon"/>
     <property name="plugin-13" type="string" value="separator">

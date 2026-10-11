@@ -1,0 +1,4 @@
+# Tenka: git speaks in the theme's ink. The colours live in ~/.config/tenka/git-colors,
+# rewritten on every theme switch; anything you set here or in ~/.gitconfig wins.
+[include]
+	path = ~/.config/tenka/git-colors

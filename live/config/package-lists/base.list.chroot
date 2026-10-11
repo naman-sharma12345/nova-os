@@ -51,6 +51,9 @@ pavucontrol
 alsa-utils
 # --- CLI
 bash-completion
+# man pages, drawn in the theme's ink (LESS_TERMCAP in ~/.bashrc.d/tenka-theme.sh)
+man-db
+manpages
 curl
 wget
 ca-certificates

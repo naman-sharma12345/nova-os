@@ -112,6 +112,14 @@ def gtk_theme(name, T, d):
        page keeps a clear gap after them instead of letters touching the gutter */
     window.mousepad notebook scrolledwindow {{ border-left: 12px solid {p['mantle']}; }}
     window.mousepad textview.view {{ padding-left: 16px; padding-right: 12px; }}
+    /* the file manager: Marcellus throughout, and the chosen place in the side pane marked the menu way, with a
+       faint lift and a short accent rule at its left edge instead of a grey fill */
+    window.thunar .sidebar treeview.view, window.thunar .view,
+    window.thunar entry, window.thunar statusbar label {{ font-family: Marcellus; font-weight: normal; font-size: 13px; }}
+    window.thunar statusbar label {{ font-size: 12px; color: {A(p['text'], 0.62)}; }}
+    window.thunar .sidebar treeview.view:selected, window.thunar .sidebar treeview.view:selected:focus {{ background-color: {A(p['text'], 0.06)};
+        color: {p['accent2']}; background-image: linear-gradient({p['accent']}, {p['accent']}); background-size: 2px 16px;
+        background-position: left center; background-repeat: no-repeat; }}
     headerbar, .titlebar, menubar, toolbar {{ background-color: {p['surface']}; color: {p['text']}; box-shadow: none; }}
     .sidebar, placessidebar, placessidebar list {{ background-color: {p['base']}; }}
     *:selected, selection, row:selected, .view:selected {{ background-color: {A(p['accent'], 0.85)}; color: {p['text']}; }}

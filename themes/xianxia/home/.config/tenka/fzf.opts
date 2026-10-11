@@ -1,0 +1,2 @@
+--color=bg+:#12211e,bg:-1,fg:#a9bdb4,fg+:#eef3ec,hl:#5fc9a0,hl+:#5fc9a0,border:#1d332e,header:#e2bd6b,info:#72827c,marker:#e2bd6b,pointer:#5fc9a0,prompt:#5fc9a0,spinner:#e2bd6b
+--border=rounded --layout=reverse --height=40% --pointer='❯' --marker='•'

@@ -38,6 +38,7 @@ if command -v gsettings >/dev/null; then
   gsettings set org.gnome.desktop.interface cursor-size 24 2>/dev/null
   gsettings set org.gnome.desktop.interface font-name "Inter 11" 2>/dev/null
   gsettings set org.gnome.desktop.interface color-scheme prefer-dark 2>/dev/null
+  gsettings set org.gnome.desktop.interface accent-color "${THEME_GNOME_ACCENT:-red}" 2>/dev/null   # libadwaita apps, via the portal
   gsettings set org.xfce.mousepad.preferences.view color-scheme tenka 2>/dev/null   # the editor's ink page (themes/*/home)
 fi
 
@@ -48,7 +49,6 @@ if [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
   # at login (--init) tenka-session starts the shell, or its fallback, itself right after this
   if pgrep -x qs >/dev/null || [ "${INIT}" = 1 ]; then :   # the Tenka shell follows ~/.config/tenka/shell-theme.json live
   else pkill -x waybar; (setsid waybar >/dev/null 2>&1 &); makoctl reload 2>/dev/null; fi
-  pkill -USR1 -x kitty 2>/dev/null
   tenka-wallpaper first
 fi
 
@@ -59,7 +59,11 @@ if [ "${XDG_CURRENT_DESKTOP:-}" = "XFCE" ]; then
   [ "${INIT}" = 1 ] || tenka-lite-apply
 fi
 
-# 5. boot + login (GRUB, Plymouth, SDDM, os-release, installer), applied on next boot
+# 5. every app already open repaints in place: kitty, Qt/Kvantum, btop, tmux, Neovim, mako
+#    (fzf, starship and Firefox follow their files by themselves). The shell's ink-wash wipe covers the desk.
+[ "${INIT}" = 1 ] || /usr/libexec/tenka/tenka-recolour
+
+# 6. boot + login (GRUB, Plymouth, SDDM, os-release, installer), applied on next boot
 if [ "$(cat /etc/tenka/theme 2>/dev/null)" != "$T" ]; then
   pkexec /usr/libexec/tenka/tenka-theme-system "$T" >/dev/null 2>&1 &
 fi

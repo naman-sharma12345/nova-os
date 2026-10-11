@@ -1,0 +1,41 @@
+#!/bin/bash
+# tenka-recolour: repaint the apps that are already open after tenka-theme laid down a new pack.
+# Each app is asked the way it listens; nothing here restarts an app or touches a user's own choices.
+#   tenka-recolour            (tenka-theme runs it after a switch)
+U=$(id -u)
+C="${XDG_CONFIG_HOME:-$HOME/.config}"
+
+# kitty: SIGUSR1 re-reads kitty.conf, which includes the pack's colours
+pkill -USR1 -u "$U" -x kitty 2>/dev/null
+
+# Qt (qt6ct + Kvantum): qt6ct watches its config dir and re-applies the style when it changes.
+# A new style key makes Qt build a fresh Kvantum style, and that re-reads ~/.config/Kvantum.
+# "kvantum" and "kvantum-dark" draw the same Tenka theme (it has no separate dark variant),
+# so alternating them is the cue that forces the re-read.
+Q="$C/qt6ct/qt6ct.conf"
+if [ -f "$Q" ] && grep -q '^style=kvantum' "$Q"; then
+  F="$HOME/.cache/tenka/qt-style"; mkdir -p "${F%/*}"
+  [ "$(cat "$F" 2>/dev/null)" = kvantum-dark ] && s=kvantum || s=kvantum-dark
+  sed -i "s/^style=kvantum.*/style=$s/" "$Q" && echo "$s" > "$F"
+fi
+
+# btop: SIGUSR2 reloads btop.conf and its theme
+pkill -USR2 -u "$U" -x btop 2>/dev/null
+
+# tmux: every server of this user re-sources the pack's status line
+for s in "${TMUX_TMPDIR:-/tmp}/tmux-$U"/*; do
+  [ -S "$s" ] && tmux -S "$s" source-file -q "$C/tmux/tenka-theme.conf" 2>/dev/null
+done
+
+# Neovim: running editors that wear the Tenka colours re-load them (a user's own scheme is left alone)
+for s in "${XDG_RUNTIME_DIR:-/tmp}"/nvim.*.0; do
+  [ -S "$s" ] && timeout 2 nvim --server "$s" --remote-expr \
+    'execute("if get(g:, \"colors_name\", \"\") ==# \"tenka\" | colorscheme tenka | endif")' >/dev/null 2>&1
+done
+
+# notifications, when mako is the daemon (the Tenka shell follows its own theme file)
+pgrep -u "$U" -x mako >/dev/null && makoctl reload 2>/dev/null
+
+# fzf reads ~/.config/tenka/fzf.opts on every run, starship reads its config on every prompt, and
+# Firefox watches ~/.config/tenka/firefox.css itself; GTK follows tenka-theme's gsettings: no nudge needed.
+exit 0

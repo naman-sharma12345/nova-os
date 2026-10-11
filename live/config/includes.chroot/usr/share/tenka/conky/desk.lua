@@ -39,6 +39,42 @@ local function season_of(d)
     if m >= 3 and m <= 5 then return 'plum' elseif m >= 6 and m <= 8 then return 'lotus'
     elseif m >= 9 and m <= 11 then return 'maple' else return 'snow' end
 end
+-- The Almanac (Tianxia: The Heavenly Calendar): the solar term and tonight's moon from tenka-almanac,
+-- read once every ten minutes (the term turns every ~15 days; the moon by the hour)
+local alm, alm_at = nil, -1000
+local function almanac()
+    local now = os.time()
+    if now - alm_at < 600 then return alm end
+    alm_at = now
+    local f = io.popen('tenka-almanac json 2>/dev/null')
+    local s = f and f:read('*a') or ''
+    if f then f:close() end
+    local term = s:match('"term"%s*:%s*"([^"]*)"')
+    local e = tonumber(s:match('"elongation"%s*:%s*([%d%.]+)') or '')
+    alm = term and { term = term, e = e or 0, phase = s:match('"phase"%s*:%s*"([^"]*)"') or '' } or nil
+    return alm
+end
+-- the moon drawn flat: faint unlit disc, hairline gold rim, the lit part in the desk's text colour
+local function moon(cr, cx, cy, r, e, tr, tg, tb, gr, gg, gb)
+    cairo_new_path(cr); cairo_arc(cr, cx, cy, r, 0, 2 * math.pi)
+    cairo_set_source_rgba(cr, tr, tg, tb, 0.12); cairo_fill(cr)
+    local side = e < 180 and 1 or -1
+    local c = math.cos(math.rad(e)) * side
+    local N = 32
+    cairo_new_path(cr)
+    for i = 0, N do
+        local f = -math.pi / 2 + math.pi * i / N
+        local x, y = cx + side * r * math.cos(f), cy + r * math.sin(f)
+        if i == 0 then cairo_move_to(cr, x, y) else cairo_line_to(cr, x, y) end
+    end
+    for i = N, 0, -1 do
+        local f = -math.pi / 2 + math.pi * i / N
+        cairo_line_to(cr, cx + c * r * math.cos(f), cy + r * math.sin(f))
+    end
+    cairo_close_path(cr); cairo_set_source_rgba(cr, tr, tg, tb, 0.88); cairo_fill(cr)
+    cairo_new_path(cr); cairo_arc(cr, cx, cy, r, 0, 2 * math.pi)
+    cairo_set_source_rgba(cr, gr, gg, gb, 0.5); cairo_set_line_width(cr, 1); cairo_stroke(cr)
+end
 local HOURS = { 'Rat','Ox','Tiger','Rabbit','Dragon','Snake','Horse','Goat','Monkey','Rooster','Dog','Pig' }
 
 local function text(cr, s, x, y, size, r, g, b, a, track)
@@ -103,7 +139,15 @@ function conky_tenka_desk()
         -- its own short line under the date (the art behind the end of the date line is often bright)
         local word = (season .. ' season'):upper()
         text(cr, word, X + 9, Y + 300 + 1.5, 13, 0, 0, 0, 0.5, 6)
-        text(cr, word, X + 8, Y + 300, 13, sr, sg, sb, 1, 6)
+        local sw = text(cr, word, X + 8, Y + 300, 13, sr, sg, sb, 1, 6)
+        -- the solar term after it, then the moon
+        local a = almanac()
+        if a then
+            local tw = '   ·   ' .. a.term:upper()
+            text(cr, tw, X + 9 + sw, Y + 300 + 1.5, 13, 0, 0, 0, 0.5, 6)
+            local w2 = text(cr, tw, X + 8 + sw, Y + 300, 13, tr, tg, tb, 0.8, 6)
+            moon(cr, X + 8 + sw + w2 + 22, Y + 295, 8, a.e, tr, tg, tb, gr, gg, gb)
+        end
     end
     -- the day's proverb (one a day, the same line the flagship desk and lock show), wrapped at ~560 px
     if #t.proverbs > 0 then

@@ -43,6 +43,16 @@ Item {
     }
     Timer { interval: 1800000; running: Theme.desk.city !== ""; repeat: true; triggeredOnStart: true; onTriggered: wx.running = true }
 
+    property var almanac: null
+    Process {
+        id: almP
+        command: ["tenka-almanac", "json"]
+        stdout: StdioCollector { onStreamFinished: { try { dl.almanac = JSON.parse(text) } catch (e) {} } }
+    }
+    // the term turns every ~15 days and the moon by the hour: once on open, then every 20 minutes while up
+    Timer { interval: 1200000; running: dl.visible; repeat: true; triggeredOnStart: true; onTriggered: almP.running = true }
+    Connections { target: Theme.t; function onNameChanged() { almP.running = true } }
+
     readonly property var p: Mpris.players.values.length ? Mpris.players.values[0] : null
     readonly property real frac: !p || !p.lengthSupported || p.length <= 0 ? 0 : Math.min(1, p.position / p.length)
     function mmss(s) { s = Math.max(0, Math.floor(s || 0)); return Math.floor(s / 60) + ":" + ("0" + (s % 60)).slice(-2) }
@@ -98,6 +108,32 @@ Item {
                                    color: parent.today ? Theme.t.text : Theme.alpha(Theme.t.text, parent.past ? 0.28 : 0.82)
                                    font.family: Theme.display; font.pixelSize: 13 }
                         }
+                    }
+                }
+                // The Almanac (Tianxia: The Heavenly Calendar): the solar term, its micro-season or old
+                // saying, and tonight's moon, from tenka-almanac (computed locally, no network)
+                Item {
+                    id: alm
+                    visible: dl.almanac !== null
+                    width: parent.width; height: visible ? Math.max(48, almCol.implicitHeight + 18) : 0
+                    Rectangle { width: parent.width; height: 1; color: Theme.alpha(Theme.t.text, 0.08) }
+                    MoonGlyph { id: moon; x: 2; anchors.verticalCenter: parent.verticalCenter; anchors.verticalCenterOffset: 2
+                                width: 24; height: 24; e: dl.almanac ? dl.almanac.moon.elongation : 0 }
+                    Column {
+                        id: almCol
+                        x: moon.width + 14; anchors.verticalCenter: parent.verticalCenter; anchors.verticalCenterOffset: 2
+                        width: parent.width - x; spacing: 3
+                        Row {
+                            width: parent.width; spacing: 0
+                            Text { id: termT; text: dl.almanac ? dl.almanac.term : ""; color: Theme.alpha(Theme.t.text, 0.92)
+                                   font.family: Theme.display; font.pixelSize: 14 }
+                            Item { width: parent.width - termT.width - moonT.width; height: 1 }
+                            Text { id: moonT; text: dl.almanac ? dl.almanac.moon.phase.toUpperCase() : ""; color: Theme.alpha(Theme.t.text, 0.45)
+                                   font.family: Theme.display; font.pixelSize: 10; font.letterSpacing: 2; anchors.baseline: termT.baseline }
+                        }
+                        Text { width: parent.width; wrapMode: Text.WordWrap; maximumLineCount: 2; elide: Text.ElideRight
+                               lineHeight: 1.1; text: dl.almanac ? dl.almanac.detail : ""
+                               color: Theme.alpha(Theme.gold, 0.9); font.family: Theme.display; font.pixelSize: 12 }
                     }
                 }
                 Repeater {

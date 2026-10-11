@@ -1,0 +1,172 @@
+#!/usr/bin/python3
+"""tenka-almanac: The Almanac (Tianxia: The Heavenly Calendar).
+
+The old East Asian year has 24 solar terms, one every 15 degrees of the sun's path, and Japan splits each
+into three micro-seasons of about five days ("East wind melts the ice", "Wild geese return"). This reads
+where the sun and moon stand right now and names the term, the micro-season (Tenka) or the term's old
+saying (Tianxia), the moon's phase and how far off the next term is. Computed here, nothing from the web.
+  tenka-almanac            the facts as JSON (the desk reads this)
+  tenka-almanac text       a few lines for a terminal
+  tenka-almanac line       one short line ("Cold Dew  ·  Wild geese return  ·  Waxing crescent")
+  tenka-almanac DATE ...   any of the above for a date (YYYY-MM-DD), e.g. tenka-almanac text 2027-03-21
+"""
+import json, math, os, sys, time, datetime as dt
+
+TERMS = [  # starting at the Spring Equinox (0 degrees)
+    "Spring Equinox", "Clear and Bright", "Grain Rain", "Start of Summer", "Grain Buds", "Grain in Ear",
+    "Summer Solstice", "Minor Heat", "Major Heat", "Start of Autumn", "End of Heat", "White Dew",
+    "Autumn Equinox", "Cold Dew", "Frost's Descent", "Start of Winter", "Minor Snow", "Major Snow",
+    "Winter Solstice", "Minor Cold", "Major Cold", "Start of Spring", "Rain Water", "Awakening of Insects"]
+SAYINGS = [  # Tianxia: one old line for each term
+    "Day and night stand level.", "The willows green; the graves are swept.", "Rain for the hundred grains.",
+    "Frogs call in the paddies.", "The grain fills but is not yet full.", "Sow the awned grain.",
+    "The longest day; the deer shed their antlers.", "Warm winds arrive.", "Fireflies rise from the summer grass.",
+    "Cool winds come.", "The heat withdraws.", "Dew whitens; the wild geese come.",
+    "Thunder lowers its voice.", "Dew turns cold; the chrysanthemums turn gold.", "First frost; the leaves fall.",
+    "Water begins to freeze.", "Rainbows hide away.", "The tiger begins to court.",
+    "The longest night; the light returns.", "Wild geese turn north.", "Hens brood; the year closes.",
+    "East wind thaws the ice.", "Snow gives way to rain.", "Spring thunder wakes the sleepers."]
+KO = [  # Tenka: the 72 micro-seasons, three per term, in the same order (from the Spring Equinox)
+    "Sparrows start to nest", "First cherry blossoms", "Distant thunder",
+    "Swallows return", "Wild geese fly north", "First rainbows",
+    "First reeds sprout", "Last frost, rice seedlings grow", "Peonies bloom",
+    "Frogs start singing", "Worms surface", "Bamboo shoots sprout",
+    "Silkworms feast on mulberry leaves", "Safflowers bloom", "Wheat ripens and is harvested",
+    "Praying mantises hatch", "Rotten grass becomes fireflies", "Plums turn yellow",
+    "Self-heal withers", "Irises bloom", "Crow-dipper sprouts",
+    "Warm winds blow", "First lotus blossoms", "Hawks learn to fly",
+    "Paulownia trees bear seeds", "Earth is damp, air is humid", "Great rains sometimes fall",
+    "Cool winds blow", "Evening cicadas sing", "Thick fog descends",
+    "Cotton flowers bloom", "The heat starts to die down", "Rice ripens",
+    "Dew glistens white on grass", "Wagtails sing", "Swallows leave",
+    "Thunder ceases", "Insects hole up underground", "Farmers drain the fields",
+    "Wild geese return", "Chrysanthemums bloom", "Crickets chirp around the door",
+    "First frost", "Light rains sometimes fall", "Maple leaves and ivy turn yellow",
+    "Camellias bloom", "Land starts to freeze", "Daffodils bloom",
+    "Rainbows hide", "North wind blows the leaves from the trees", "Tachibana citrus leaves turn yellow",
+    "Cold sets in, winter begins", "Bears start hibernating", "Salmon gather and swim upstream",
+    "Self-heal sprouts", "Deer shed their antlers", "Wheat sprouts under snow",
+    "Parsley flourishes", "Springs thaw", "Pheasants start to call",
+    "Butterburs bud", "Ice thickens on streams", "Hens start laying eggs",
+    "East wind melts the ice", "Bush warblers sing in the mountains", "Fish emerge from the ice",
+    "Rain moistens the soil", "Mist starts to linger", "Grass sprouts, trees bud",
+    "Hibernating insects surface", "First peach blossoms", "Caterpillars become butterflies"]
+PHASES = ["New moon", "Waxing crescent", "First quarter", "Waxing gibbous",
+          "Full moon", "Waning gibbous", "Last quarter", "Waning crescent"]
+SYNODIC = 29.530588861
+
+def new_moon(k):
+    """Julian day of true new moon number k (k=0: 2000-01-06), Meeus ch. 49, main periodic terms (~minutes)."""
+    T = k / 1236.85
+    j = 2451550.09766 + SYNODIC * k + 0.00015437 * T * T
+    E = 1 - 0.002516 * T
+    r = math.radians
+    M = r((2.5534 + 29.10535670 * k) % 360)
+    Mp = r((201.5643 + 385.81693528 * k + 0.0107582 * T * T) % 360)
+    F = r((160.7108 + 390.67050284 * k - 0.0016118 * T * T) % 360)
+    Om = r((124.7746 - 1.56375588 * k) % 360)
+    return j + (-0.40720 * math.sin(Mp) + 0.17241 * E * math.sin(M) + 0.01608 * math.sin(2 * Mp)
+                + 0.01039 * math.sin(2 * F) + 0.00739 * E * math.sin(Mp - M) - 0.00514 * E * math.sin(Mp + M)
+                + 0.00208 * E * E * math.sin(2 * M) - 0.00111 * math.sin(Mp - 2 * F) - 0.00057 * math.sin(Mp + 2 * F)
+                + 0.00056 * E * math.sin(2 * Mp + M) - 0.00042 * math.sin(3 * Mp) + 0.00042 * E * math.sin(M + 2 * F)
+                + 0.00038 * E * math.sin(M - 2 * F) - 0.00024 * E * math.sin(2 * Mp - M) - 0.00017 * math.sin(Om))
+
+def lunation(j):
+    """(last new moon, next new moon) around Julian day j (UT; the ~1 min TT offset is ignored)."""
+    k = math.floor((j - 2451550.09766) / SYNODIC)
+    a, b = new_moon(k), new_moon(k + 1)
+    while j < a: k -= 1; a, b = new_moon(k), a
+    while j >= b: k += 1; a, b = b, new_moon(k + 1)
+    return a, b
+
+def jd(t):  # unix seconds -> Julian day
+    return t / 86400.0 + 2440587.5
+
+def sun_longitude(j):
+    """Apparent ecliptic longitude of the sun in degrees (low-precision series, good to ~0.01 deg)."""
+    n = j - 2451545.0
+    L = (280.460 + 0.9856474 * n) % 360
+    g = math.radians((357.528 + 0.9856003 * n) % 360)
+    return (L + 1.915 * math.sin(g) + 0.020 * math.sin(2 * g)) % 360
+
+def moon_elongation(j):
+    """Moon's longitude minus the sun's, 0..360 (0 new, 90 first quarter, 180 full); ~0.3 deg series."""
+    n = j - 2451545.0
+    r = math.radians
+    Lp = 218.316 + 13.176396 * n
+    Mp = r(134.963 + 13.064993 * n)
+    M = r(357.529 + 0.98560028 * n)
+    D = r(297.850 + 12.190749 * n)
+    F = r(93.272 + 13.229350 * n)
+    lam = (Lp + 6.289 * math.sin(Mp) - 1.274 * math.sin(2 * D - Mp) + 0.658 * math.sin(2 * D)
+           + 0.214 * math.sin(2 * Mp) - 0.186 * math.sin(M) - 0.114 * math.sin(2 * F))
+    return (lam - sun_longitude(j)) % 360
+
+def theme_name():
+    try:
+        s = open(os.path.expanduser("~/.config/tenka/shell-theme.json"), encoding="utf-8").read()
+        return "xianxia" if '"xianxia"' in s.split('"name"', 1)[1][:40] else "samurai"
+    except (OSError, IndexError):
+        return os.environ.get("TENKA_THEME", "samurai")
+
+def almanac(t=None, theme=None):
+    t = time.time() if t is None else t
+    theme = theme or theme_name()
+    j = jd(t)
+    lam = sun_longitude(j)
+    term = int(lam // 15) % 24
+    ko = int(lam // 5) % 72
+    # the next term: step forward (the sun moves ~0.9856 deg a day) and refine
+    target = (term + 1) * 15 % 360
+    k = j + ((target - lam) % 360) / 0.9856
+    for _ in range(4):
+        k += (((target - sun_longitude(k) + 180) % 360) - 180) / 0.9856
+    days = max(0, int(math.ceil(k - j - 1e-6)))
+    a0, a1 = lunation(j)
+    age = j - a0
+    frac = age / (a1 - a0)
+    e = moon_elongation(j)
+    illum = (1 - math.cos(math.radians(e))) / 2
+    # the four instants get about a day (12 deg of elongation) either side; between them, crescent or gibbous
+    q = int(((e + 45) % 360) // 90)
+    if abs(((e - q * 90 + 180) % 360) - 180) <= 12.2: phase = PHASES[q * 2]
+    else: phase = PHASES[(int(e // 90) * 2 + 1) % 8]
+    xia = theme == "xianxia"
+    return {
+        "theme": theme,
+        "title": "The Heavenly Calendar" if xia else "The Almanac",
+        "term": TERMS[term], "term_index": term,
+        "sun_longitude": round(lam, 2),
+        "detail": SAYINGS[term] if xia else KO[ko],
+        "detail_kind": "saying" if xia else "micro-season",
+        "ko": KO[ko], "ko_index": ko, "saying": SAYINGS[term],
+        "next_term": TERMS[(term + 1) % 24], "next_in_days": days,
+        "moon": {"phase": phase, "age_days": round(age, 1), "illumination": round(illum, 3),
+                 "fraction": round(frac, 4), "elongation": round(e, 1), "waxing": e < 180},
+    }
+
+def main(argv):
+    mode, when = "json", None
+    for a in argv:
+        if a in ("json", "text", "line"): mode = a
+        elif a in ("-h", "--help", "help"): print(__doc__.strip()); return 0
+        else:
+            try: when = dt.datetime.strptime(a, "%Y-%m-%d").replace(hour=12).timestamp()
+            except ValueError: print("tenka-almanac: not a date (YYYY-MM-DD): " + a, file=sys.stderr); return 2
+    a = almanac(when)
+    m = a["moon"]
+    if mode == "json":
+        print(json.dumps(a, ensure_ascii=False))
+    elif mode == "line":
+        print("  ·  ".join([a["term"], a["detail"].rstrip("."), m["phase"]]))
+    else:
+        nxt = "tomorrow" if a["next_in_days"] <= 1 else "in %d days" % a["next_in_days"]
+        print(a["title"].upper())
+        print("  Term        " + a["term"])
+        print("  " + ("Saying      " if a["detail_kind"] == "saying" else "Season      ") + a["detail"])
+        print("  Moon        %s, %d%% lit, %.1f days old" % (m["phase"], round(m["illumination"] * 100), m["age_days"]))
+        print("  Next        %s, %s" % (a["next_term"], nxt))
+    return 0
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

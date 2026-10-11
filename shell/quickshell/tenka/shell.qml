@@ -25,6 +25,7 @@ ShellRoot {
     }
     Launcher {}
     Clipboard {}
+    Overview {}
     ControlCenter {}
     Notifications {}
     Osd {}

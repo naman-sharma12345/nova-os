@@ -130,6 +130,13 @@ def gtk_theme(name, T, d):
     menu menuitem arrow {{ color: {A(p['text'], 0.45)}; min-width: 10px; min-height: 10px; }}
     menu separator, .menu separator {{ background-color: {A(p['accent2'], 0.18)}; min-height: 1px; margin: 5px 18px; }}
     menu > separator:first-child, menu > menuitem.separator:first-child, menu > separator:last-child {{ min-height: 0; margin: 0; background: none; }}
+    /* app menubars (editor, viewer, terminal): Marcellus words on the window's ink, the open one marked by a short
+       accent rule under it instead of a filled block */
+    menubar, .menubar {{ background-color: transparent; background-image: none; box-shadow: none; border-bottom: 1px solid {A(p['accent2'], 0.14)}; padding: 0 4px; }}
+    menubar > menuitem, .menubar > menuitem {{ padding: 5px 10px; border-radius: 0; background: none; box-shadow: inset 0 -1px 0 transparent; }}
+    menubar > menuitem label, .menubar > menuitem label {{ font-family: "Marcellus"; font-weight: normal; color: {p['subtext']}; letter-spacing: 0.3px; }}
+    menubar > menuitem:hover, .menubar > menuitem:hover {{ background-color: transparent; box-shadow: inset 0 -1px 0 {p['accent']}; }}
+    menubar > menuitem:hover label, .menubar > menuitem:hover label {{ color: {p['text']}; }}
     /* the Settings Manager (xfce4-settings-manager; the viewport is .exoiconview in 4.20, .xfceiconview later): categories as ledger headings (Marcellus, gold, spaced) over a
        hairline, the settings as plain Marcellus words under the gold line icons, the chosen one on a faint tint */
     .xfceiconview, viewport.xfceiconview, .xfceiconview *, .exoiconview, viewport.exoiconview, .exoiconview * {{ background-color: transparent; font-family: "Marcellus"; }}

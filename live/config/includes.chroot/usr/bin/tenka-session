@@ -15,7 +15,7 @@ if command -v qs >/dev/null 2>&1 && [ -d /etc/xdg/quickshell/tenka ]; then
   # the compositor to blur.
   [ -e "$HOME/.config/tenka/perf" ] && export TENKA_SELF_BLUR=1
   tenka-wallpaper restore >/dev/null 2>&1
-  qs -c tenka >/dev/null 2>&1 &
+  tenka-shell >/dev/null 2>&1 &   # keeps the shell up, and safe on software GL (see tenka-shell)
 else
   tenka-wallpaper restore &
   waybar >/dev/null 2>&1 &

@@ -1,0 +1,79 @@
+#!/bin/sh
+# tenka-shell: keeps the Tenka shell (Quickshell) on the desk. Started by tenka-session.
+# Without 3D (a VM with no virgl, a machine with no GPU driver) Mesa draws in software, and Quickshell has been
+# seen to crash there (Mesa's llvmpipe, inside the frame swap). So:
+#  - at start it reads how the desk is drawn: no /dev/dri render node, or an EGL renderer named llvmpipe /
+#    softpipe / swrast, means software, and the shell starts one rung up the ladder below;
+#  - if the shell dies it comes back, after a growing pause (1 s .. 30 s), so the desk never stays black;
+#  - two crashes on one rung inside two minutes climb a rung; the highest rung that has held for five minutes
+#    is kept in ~/.config/tenka/shell-rung, so the next login starts where it last worked.
+# Rungs: 0 as is | 1 Mesa's plain software path (shared-memory buffers, no dmabuf), basic render loop |
+#        2 + llvmpipe with one raster thread |
+#        3 softpipe | 4 Qt Quick's own software renderer (no GL at all).
+# tenka-shell --rung prints the rung it would start on; --why says why; --reset forgets the kept rung. TENKA_QS / TENKA_QS_CONFIG override the binary and config (tests).
+QS=${TENKA_QS:-qs}
+CONF="${XDG_CONFIG_HOME:-$HOME/.config}/tenka"
+STATE="${XDG_RUNTIME_DIR:-/tmp}/tenka-shell"
+mkdir -p "$CONF" "$STATE" 2>/dev/null
+
+soft_why() {
+  ls /dev/dri/renderD* >/dev/null 2>&1 || { echo "no render node"; return 0; }
+  r=$(timeout 6 eglinfo -B -p wayland 2>/dev/null | grep -im1 'renderer')
+  [ -n "$r" ] || r=$(timeout 6 eglinfo -B 2>/dev/null | grep -im1 'renderer')
+  case "$r" in *llvmpipe*|*softpipe*|*swrast*|*SWR*|*lavapipe*) echo "software renderer (${r#*: })"; return 0 ;; esac
+  return 1
+}
+start_rung() {
+  kept=$(cat "$CONF/shell-rung" 2>/dev/null); case "$kept" in [0-4]) ;; *) kept=0 ;; esac
+  base=0; why=$(soft_why) && base=1
+  [ "$kept" -gt "$base" ] && base=$kept
+  echo "$base"
+}
+case "$1" in
+  --rung) start_rung; exit 0 ;;
+  --reset) rm -f "$CONF/shell-rung"; exit 0 ;;
+  --why) w=$(soft_why) && echo "software: $w" || echo "hardware"; echo "kept rung: $(cat "$CONF/shell-rung" 2>/dev/null || echo none)"; exit 0 ;;
+esac
+
+# one keeper per session
+exec 9>"$STATE/lock"
+flock -n 9 2>/dev/null || exit 0
+
+rung=$(start_rung); pause=1; fails=0; first=0
+echo "$(date +%T) start rung $rung" >> "$STATE/log"
+while :; do
+  (
+    export QS_DISABLE_CRASH_HANDLER=1     # we restart it ourselves; no crash dialog windows
+    [ "$rung" -ge 1 ] && export LIBGL_ALWAYS_SOFTWARE=1 QS_DISABLE_DMABUF=1 QSG_RENDER_LOOP=basic
+    [ "$rung" -ge 2 ] && export GALLIUM_DRIVER=llvmpipe LP_NUM_THREADS=1
+    [ "$rung" -ge 3 ] && export GALLIUM_DRIVER=softpipe
+    [ "$rung" -ge 4 ] && export QT_QUICK_BACKEND=software
+    [ "$rung" -ge 1 ] && export TENKA_SELF_BLUR=1   # frost the glass ourselves: less for the compositor
+    echo "$rung" > "$STATE/rung"
+    exec "$QS" -n -c "${TENKA_QS_CONFIG:-tenka}"
+  ) >/dev/null 2>&1 &
+  pid=$!; t0=$(date +%s)
+  wait "$pid"; st=$?; up=$(( $(date +%s) - t0 ))
+  [ "$up" -ge 300 ] && { echo "$rung" > "$CONF/shell-rung"; pause=1; fails=0; }
+  case "$st" in
+    0|143) # quit or stopped on purpose (a reload, a logout): only come back if no shell is up
+      sleep 3
+      if pgrep -x qs >/dev/null 2>&1 || pgrep -x quickshell >/dev/null 2>&1; then sleep 10; fi
+      continue ;;
+  esac
+  pgrep -x qs >/dev/null 2>&1 && { sleep 5; continue; }   # another instance took the desk (-n exit)
+  echo "$(date +%T) rung $rung ended (status $st after ${up}s)" >> "$STATE/log"
+  if [ "$up" -lt 120 ]; then
+    fails=$((fails + 1)); now=$(date +%s)
+    [ "$first" -eq 0 ] && first=$now
+    if [ "$fails" -ge 2 ] && [ $((now - first)) -le 120 ] && [ "$rung" -lt 4 ]; then
+      rung=$((rung + 1)); fails=0; first=0; pause=1
+      echo "$(date +%T) climb to rung $rung" >> "$STATE/log"
+      echo "$rung" > "$CONF/shell-rung"
+    fi
+  else
+    fails=0; first=0
+  fi
+  sleep "$pause"; pause=$((pause * 2)); [ "$pause" -gt 30 ] && pause=30
+  tail -n 40 "$STATE/log" > "$STATE/log.t" 2>/dev/null && mv "$STATE/log.t" "$STATE/log"
+done

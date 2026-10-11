@@ -140,11 +140,12 @@ def gen(name, T):
     }}
     #custom-crest {{ color: @text; padding: 0 12px 0 8px; margin-right: 4px;
       border-right: 1px solid {rgba(p['accent2'], 0.30)}; }}
-    #workspaces button {{ color: @subtext; padding: 0 7px; margin: 3px 1px; border-radius: 999px; font-size: 14px;
-      transition: all 220ms cubic-bezier(0.22, 1, 0.36, 1); background: transparent; }}
+    #workspaces button {{ color: @subtext; padding: 0 7px; margin: 3px 1px; border-radius: 0; font-size: 14px;
+      transition: all 220ms cubic-bezier(0.22, 1, 0.36, 1); background: transparent; box-shadow: none; }}
     #workspaces button.empty {{ color: {rgba(p['subtext'], 0.45)}; }}
-    #workspaces button.active {{ color: @accent; padding: 0 14px; text-shadow: {glow};
-      background: linear-gradient(90deg, {rgba(p['accent'], 0.18)}, {rgba(p['accent2'], 0.14)}); }}
+    /* the current workspace: accent words on a 1px accent rule, the ledger's mark. No pill, no gradient. */
+    #workspaces button.active {{ color: @accent; text-shadow: {glow}; background: transparent;
+      box-shadow: inset 0 -1px 0 {p['accent']}; }}
     #workspaces button:hover {{ color: @text; background: {rgba(p['text'], 0.08)}; box-shadow: none; }}
     #window {{ color: @subtext; padding: 0 10px; font-style: italic; }}
     #custom-clock {{ font-family: "{disp}"; font-size: 16px; color: @text; padding: 0 12px; }}

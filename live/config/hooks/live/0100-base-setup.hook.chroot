@@ -131,11 +131,11 @@ for pair in xfce4-terminal-emulator:Terminal xfce4-file-manager:Files xfce4-web-
 done
 
 # One short name per app, the same in the dock's tooltips, the launcher and the menus: Terminal, Files, Editor,
-# Player (the dock showed "Xfce Terminal", "Thunar File Manager", "mpv Media Player"). Only the main entry's
+# Firefox, Player (the dock showed "Xfce Terminal", "Thunar File Manager", "mpv Media Player"). Only the main entry's
 # Name changes; the old name moves into Keywords so typing "thunar" or "mousepad" still finds it. The XFCE
 # wrapper entries that already said Terminal and Files are hidden so each app is listed once, and the desktop
 # menu's top three point at the real apps.
-for pair in xfce4-terminal:Terminal thunar:Files org.xfce.mousepad:Editor mpv:Player; do
+for pair in xfce4-terminal:Terminal thunar:Files firefox-esr:Firefox org.xfce.mousepad:Editor mpv:Player; do
   f=/usr/share/applications/${pair%%:*}.desktop; [ -f "$f" ] || continue
   grep -qx "Name=${pair#*:}" "$f" && continue
   awk -v new="${pair#*:}" '

@@ -198,6 +198,9 @@ def gtk_theme(name, T, d):
     #docklike-3 button {{ border-radius: 0; margin: 0; }}
     .xfce4-panel button {{ color: {p['text']}; border-radius: {r}px; padding: 2px 8px; background: transparent; border: none; box-shadow: none; }}
     .xfce4-panel button:hover {{ background-color: {A(p['text'], 0.08)}; }}
+    /* dock hover: no grey block; a short gold rule lights up over the hovered app (the ledger's mark, as in Files) */
+    #docklike-3 button:hover {{ background-color: transparent; box-shadow: none; background-image: linear-gradient({p['accent2']}, {p['accent2']});
+        background-size: 60% 2px; background-repeat: no-repeat; background-position: center top; -gtk-icon-effect: highlight; }}
     .xfce4-panel button:checked, .xfce4-panel button:active {{ background-color: {A(p['accent'], 0.22)}; color: {p['accent2']}; }}
     .xfce4-panel label {{ font-family: Marcellus; font-size: 13px; letter-spacing: 1px; }}
     #genmon-11 {{ padding: 0 6px; }}

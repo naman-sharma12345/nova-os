@@ -59,7 +59,7 @@ Item {
     Rectangle {   // the ink
         anchors.fill: parent; radius: g.radius
         color: Theme.alpha(g.tintColor, g.tint)
-        border.width: 1; border.color: Theme.alpha(Theme.t.gold, g.line)
+        border.width: 1; border.color: Theme.alpha(Theme.gold, g.line)
     }
     Rectangle {   // top sheen
         visible: g.sheen
@@ -72,7 +72,7 @@ Item {
     Rectangle {   // the inner gold hairline
         visible: g.innerLine > 0
         anchors.fill: parent; anchors.margins: 5; radius: Math.max(0, g.radius - 5)
-        color: "transparent"; border.width: 1; border.color: Theme.alpha(Theme.t.gold, g.innerLine)
+        color: "transparent"; border.width: 1; border.color: Theme.alpha(Theme.gold, g.innerLine)
     }
     Item { id: inner; anchors.fill: parent }
 }

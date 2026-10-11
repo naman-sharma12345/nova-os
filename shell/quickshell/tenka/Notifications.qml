@@ -59,7 +59,7 @@ PanelWindow {
 
                 // the frame: ink fill, then one 1px rule drawn in clipped pieces so the top rule opens
                 // around the sender and the time (nothing painted behind them: no patch on any wallpaper)
-                readonly property color rc: crit ? Theme.alpha(Theme.t.accent, 0.85) : Theme.alpha(Theme.t.gold, 0.42)
+                readonly property color rc: crit ? Theme.alpha(Theme.accent, 0.85) : Theme.alpha(Theme.gold, 0.42)
                 readonly property int rr: Theme.ledgerR
                 readonly property var cuts: [0, sender.x - 8, sender.x + sender.width + 8, stamp.x - 8, stamp.x + stamp.width + 8, width]
                 Rectangle { anchors.fill: parent; anchors.topMargin: 8; radius: card.rr; color: Theme.alpha(Theme.t.base, Theme.selfBlur ? 0.92 : 0.80) }
@@ -81,7 +81,7 @@ PanelWindow {
                     id: sender; x: 22; y: 0; height: 16; spacing: 7
                     IconImage { implicitSize: 13; anchors.verticalCenter: parent.verticalCenter; visible: !!(card.n && card.n.appIcon)
                                 source: card.n && card.n.appIcon ? Quickshell.iconPath(card.n.appIcon, "dialog-information") : "" }
-                    Text { text: (card.n ? card.n.appName || "Tenka" : "").toUpperCase(); color: card.crit ? Theme.t.accent : Theme.t.gold
+                    Text { text: (card.n ? card.n.appName || "Tenka" : "").toUpperCase(); color: card.crit ? Theme.accent : Theme.gold
                            font.family: Theme.display; font.pixelSize: 11; font.letterSpacing: 4; anchors.verticalCenter: parent.verticalCenter }
                 }
                 Text { id: stamp; anchors.right: parent.right; anchors.rightMargin: 22; y: 1; height: 14; verticalAlignment: Text.AlignVCenter
@@ -105,7 +105,7 @@ PanelWindow {
                                 Text {
                                     required property var modelData; required property int index
                                     text: modelData.text.toUpperCase(); font.family: Theme.display; font.pixelSize: 12; font.letterSpacing: 3
-                                    color: am.containsMouse ? Theme.t.text : (index === 0 ? Theme.t.accent : Theme.alpha(Theme.t.text, 0.6))
+                                    color: am.containsMouse ? Theme.t.text : (index === 0 ? Theme.accent : Theme.alpha(Theme.t.text, 0.6))
                                     MouseArea { id: am; anchors.fill: parent; anchors.margins: -6; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
                                                 onClicked: { modelData.invoke(); list.remove(card.index) } }
                                 }

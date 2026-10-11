@@ -1,0 +1,22 @@
+#!/bin/bash
+# tenka-hour: the hour and the season the desk wears. Run by a user timer every 15 minutes and at login.
+# Writes ~/.config/tenka/hour.json: { "phase": dawn|day|dusk|night, "season": plum|lotus|maple|snow }.
+# The Tenka shell tints its accent, its gold and the wallpaper's veil from it, slowly and a little.
+#   tenka-hour            write it now
+#   tenka-hour off|on     stop or resume the shift (off pins the plain day look; the season stays)
+S="${XDG_CONFIG_HOME:-$HOME/.config}/tenka"; mkdir -p "$S"
+case "${1:-}" in
+  off) touch "$S/hour-off" ;;
+  on) rm -f "$S/hour-off" ;;
+esac
+h=$((10#$(date +%H))); m=$((10#$(date +%m)))
+if   [ -e "$S/hour-off" ];        then phase=day
+elif [ $h -ge 5 ] && [ $h -lt 8 ];  then phase=dawn
+elif [ $h -ge 8 ] && [ $h -lt 17 ]; then phase=day
+elif [ $h -ge 17 ] && [ $h -lt 20 ]; then phase=dusk
+else phase=night; fi
+case $m in 3|4|5) season=plum ;; 6|7|8) season=lotus ;; 9|10|11) season=maple ;; *) season=snow ;; esac
+new="{ \"phase\": \"$phase\", \"season\": \"$season\" }"
+# only a real change touches the file, so nothing redraws every quarter hour
+[ "$(cat "$S/hour.json" 2>/dev/null)" = "$new" ] || { echo "$new" > "$S/hour.json.new" && mv "$S/hour.json.new" "$S/hour.json"; }
+exit 0

@@ -61,7 +61,7 @@ Scope {
                 PathSvg { path: "M0 0 H" + fs.width + " V" + fs.height + " H0 Z " + fs.inner }
             }
             ShapePath {
-                fillColor: "transparent"; strokeColor: Theme.alpha(Theme.t.gold, 0.55); strokeWidth: 1
+                fillColor: "transparent"; strokeColor: Theme.alpha(Theme.gold, 0.55); strokeWidth: 1
                 PathSvg { path: fs.inner }
             }
         }
@@ -90,7 +90,7 @@ Scope {
                         readonly property bool active: (Hyprland.focusedWorkspace ? Hyprland.focusedWorkspace.id : 1) === index + 1
                         anchors.verticalCenter: parent.verticalCenter
                         width: active ? 18 : 4; height: 4; radius: 2
-                        color: active ? Theme.t.accent : Theme.alpha(Theme.t.text, 0.4)
+                        color: active ? Theme.accent : Theme.alpha(Theme.t.text, 0.4)
                         Behavior on width { NumberAnimation { duration: 400; easing.type: Easing.BezierSpline; easing.bezierCurve: [0.05, 0.7, 0.1, 1, 1, 1] } }
                         MouseArea { anchors.fill: parent; anchors.margins: -6; onClicked: Hyprland.dispatch("hl.dsp.focus({ workspace = " + (parent.index + 1) + " })") }
                     }
@@ -112,7 +112,7 @@ Scope {
                 id: tr; anchors.verticalCenter: parent.verticalCenter; spacing: 12
                 Text { text: Qt.formatDate(Theme.now, "ddd d").toUpperCase(); color: Theme.alpha(Theme.t.text, 0.55)
                        font.family: Theme.display; font.pixelSize: 11; font.letterSpacing: 3; anchors.verticalCenter: parent.verticalCenter }
-                Rectangle { width: 1; height: 12; color: Theme.alpha(Theme.t.gold, 0.5); anchors.verticalCenter: parent.verticalCenter }
+                Rectangle { width: 1; height: 12; color: Theme.alpha(Theme.gold, 0.5); anchors.verticalCenter: parent.verticalCenter }
                 Text { text: Theme.hm(Theme.now) + " " + Theme.ap(Theme.now); color: Theme.t.text
                        font.family: Theme.display; font.pixelSize: 14; font.letterSpacing: 1.5; anchors.verticalCenter: parent.verticalCenter }
             }

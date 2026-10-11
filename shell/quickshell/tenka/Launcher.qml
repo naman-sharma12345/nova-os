@@ -91,8 +91,8 @@ PanelWindow {
             id: pill
             x: 30; y: 30; width: parent.width - 60; height: 68; radius: 34
             color: Theme.alpha(Theme.t.base, 0.50)
-            border.width: 1; border.color: Theme.alpha(Theme.t.gold, search.activeFocus ? 0.50 : 0.24)
-            Rectangle { width: 46; height: 46; radius: 23; x: 11; anchors.verticalCenter: parent.verticalCenter; color: Theme.t.accent
+            border.width: 1; border.color: Theme.alpha(Theme.gold, search.activeFocus ? 0.50 : 0.24)
+            Rectangle { width: 46; height: 46; radius: 23; x: 11; anchors.verticalCenter: parent.verticalCenter; color: Theme.accent
                 Text { anchors.centerIn: parent; text: "\uf002"; font.family: Theme.glyphs; font.pixelSize: 18; color: Theme.t.ink } }
             TextField {
                 id: search
@@ -102,7 +102,7 @@ PanelWindow {
                 placeholderText: Theme.t.seekWord + " an app, a tool, a path…"
                 placeholderTextColor: Theme.alpha(Theme.t.text, 0.42)
                 color: Theme.t.text; font.family: Theme.display; font.pixelSize: 25; font.letterSpacing: 0.5
-                selectionColor: Theme.alpha(Theme.t.accent, 0.5)
+                selectionColor: Theme.alpha(Theme.accent, 0.5)
                 onTextChanged: launcher.sel = 0
                 Keys.onEscapePressed: launcher.hide()
                 Keys.onDownPressed: launcher.sel = Math.min(launcher.flat.length - 1, launcher.sel + (launcher.q === "" ? 6 : 1))
@@ -123,9 +123,9 @@ PanelWindow {
         component Label: Row {
             property string text
             spacing: 12
-            Text { text: parent.text; color: Theme.t.gold; font.family: Theme.display; font.pixelSize: 13; font.letterSpacing: 6; anchors.verticalCenter: parent.verticalCenter }
+            Text { text: parent.text; color: Theme.gold; font.family: Theme.display; font.pixelSize: 13; font.letterSpacing: 6; anchors.verticalCenter: parent.verticalCenter }
             Rectangle { width: 120; height: 1; anchors.verticalCenter: parent.verticalCenter
-                color: Theme.alpha(Theme.t.gold, 0.35) }   // flat hairline, no fade
+                color: Theme.alpha(Theme.gold, 0.35) }   // flat hairline, no fade
         }
 
         component Tile: Item {
@@ -137,14 +137,14 @@ PanelWindow {
             width: 146; height: 128
             Rectangle {
                 anchors.fill: parent; anchors.margins: 4; radius: 22
-                color: tile.on ? Theme.alpha(Theme.t.accent, 0.20) : (ma.containsMouse ? Theme.alpha(Theme.t.text, 0.06) : "transparent")
-                border.width: tile.on ? 1 : 0; border.color: Theme.alpha(Theme.t.accent, 0.85)
+                color: tile.on ? Theme.alpha(Theme.accent, 0.20) : (ma.containsMouse ? Theme.alpha(Theme.t.text, 0.06) : "transparent")
+                border.width: tile.on ? 1 : 0; border.color: Theme.alpha(Theme.accent, 0.85)
                 Behavior on color { ColorAnimation { duration: 140 } }
             }
             Rectangle {
                 id: chip
                 width: 72; height: 72; radius: 22; y: 14; anchors.horizontalCenter: parent.horizontalCenter
-                color: Theme.alpha(Theme.t.text, tile.on ? 0.08 : 0.0); border.width: 1; border.color: Theme.alpha(Theme.t.gold, tile.on ? 0.55 : 0.0)
+                color: Theme.alpha(Theme.t.text, tile.on ? 0.08 : 0.0); border.width: 1; border.color: Theme.alpha(Theme.gold, tile.on ? 0.55 : 0.0)
                 IconImage { anchors.centerIn: parent; implicitSize: tile.iconSize; source: launcher.iconFor(tile.app) }
             }
             Text {
@@ -189,10 +189,10 @@ PanelWindow {
                     Rectangle {
                         required property var modelData; required property int index
                         height: 44; width: rr.width + 36; radius: 22
-                        color: rm.containsMouse ? Theme.alpha(Theme.t.accent, 0.22) : Theme.alpha(Theme.t.text, 0.06)
-                        border.width: 1; border.color: Theme.alpha(index === 2 ? Theme.t.gold : Theme.t.text, index === 2 ? 0.5 : 0.14)
+                        color: rm.containsMouse ? Theme.alpha(Theme.accent, 0.22) : Theme.alpha(Theme.t.text, 0.06)
+                        border.width: 1; border.color: Theme.alpha(index === 2 ? Theme.gold : Theme.t.text, index === 2 ? 0.5 : 0.14)
                         Row { id: rr; anchors.centerIn: parent; spacing: 10
-                            Text { text: modelData[0]; font.family: Theme.glyphs; font.pixelSize: 14; color: index === 4 ? Theme.t.accent : Theme.t.gold; anchors.verticalCenter: parent.verticalCenter }
+                            Text { text: modelData[0]; font.family: Theme.glyphs; font.pixelSize: 14; color: index === 4 ? Theme.accent : Theme.gold; anchors.verticalCenter: parent.verticalCenter }
                             Text { text: modelData[1]; font.family: Theme.display; font.pixelSize: 15; color: Theme.alpha(Theme.t.text, 0.88); anchors.verticalCenter: parent.verticalCenter } }
                         MouseArea { id: rm; anchors.fill: parent; hoverEnabled: true; onClicked: { launcher.hide(); Theme.run(modelData[2]) } }
                     }
@@ -209,8 +209,8 @@ PanelWindow {
             model: launcher.found
             currentIndex: launcher.sel
             highlightMoveDuration: 140
-            highlight: Rectangle { radius: 18; color: Theme.alpha(Theme.t.accent, 0.20); border.width: 1; border.color: Theme.alpha(Theme.t.accent, 0.85)
-                Rectangle { width: 4; height: 26; radius: 2; color: Theme.t.accent; x: 10; anchors.verticalCenter: parent.verticalCenter } }
+            highlight: Rectangle { radius: 18; color: Theme.alpha(Theme.accent, 0.20); border.width: 1; border.color: Theme.alpha(Theme.accent, 0.85)
+                Rectangle { width: 4; height: 26; radius: 2; color: Theme.accent; x: 10; anchors.verticalCenter: parent.verticalCenter } }
             delegate: Item {
                 required property var modelData
                 required property int index
@@ -226,19 +226,19 @@ PanelWindow {
                     }
                 }
                 Text { visible: index === list.currentIndex; anchors.right: parent.right; anchors.rightMargin: 22; anchors.verticalCenter: parent.verticalCenter
-                       text: "OPEN  ↵"; color: Theme.t.gold; font.family: Theme.display; font.pixelSize: 12; font.letterSpacing: 4 }
+                       text: "OPEN  ↵"; color: Theme.gold; font.family: Theme.display; font.pixelSize: 12; font.letterSpacing: 4 }
                 MouseArea { anchors.fill: parent; hoverEnabled: true; onEntered: launcher.sel = index; onClicked: launcher.launch(modelData) }
             }
         }
 
         // ---- the foot
-        Rectangle { x: 30; width: parent.width - 60; height: 1; y: parent.height - 58; color: Theme.alpha(Theme.t.gold, 0.16) }
+        Rectangle { x: 30; width: parent.width - 60; height: 1; y: parent.height - 58; color: Theme.alpha(Theme.gold, 0.16) }
         Row {
             x: 40; y: parent.height - 40; spacing: 22
             Repeater {
                 model: [["↵", "open"], ["↑ ↓ ← →", "move"], ["Esc", "close"]]
                 Row { required property var modelData; spacing: 8
-                    Text { text: modelData[0]; color: Theme.t.gold; font.family: Theme.ui; font.pixelSize: 12 }
+                    Text { text: modelData[0]; color: Theme.gold; font.family: Theme.ui; font.pixelSize: 12 }
                     Text { text: modelData[1]; color: Theme.alpha(Theme.t.text, 0.5); font.family: Theme.ui; font.pixelSize: 12 } }
             }
         }
@@ -265,9 +265,9 @@ PanelWindow {
         Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
         MouseArea { anchors.fill: parent }
         Rectangle { anchors.fill: parent; radius: Theme.ledgerR; color: Theme.alpha(Theme.t.base, Theme.selfBlur ? 0.88 : 0.70)
-                    border.width: 1; border.color: Theme.alpha(Theme.t.gold, 0.45) }
+                    border.width: 1; border.color: Theme.alpha(Theme.gold, 0.45) }
 
-        Text { x: 34; y: 34; text: Theme.t.seekWord.toUpperCase(); color: Theme.t.gold; font.family: Theme.display; font.pixelSize: 12; font.letterSpacing: 5 }
+        Text { x: 34; y: 34; text: Theme.t.seekWord.toUpperCase(); color: Theme.gold; font.family: Theme.display; font.pixelSize: 12; font.letterSpacing: 5 }
         TextField {
             id: msearch
             x: 110; y: 18; width: parent.width - 140; height: 52
@@ -275,7 +275,7 @@ PanelWindow {
             placeholderText: "an app, a tool, a path"
             placeholderTextColor: Theme.alpha(Theme.t.text, 0.38)
             color: Theme.t.text; font.family: Theme.display; font.pixelSize: 24
-            selectionColor: Theme.alpha(Theme.t.accent, 0.5)
+            selectionColor: Theme.alpha(Theme.accent, 0.5)
             onTextChanged: launcher.sel = 0
             Keys.onEscapePressed: launcher.hide()
             Keys.onDownPressed: launcher.sel = Math.min(launcher.flat.length - 1, launcher.sel + 1)
@@ -283,7 +283,7 @@ PanelWindow {
             onAccepted: launcher.launch(launcher.flat[launcher.sel])
         }
         Rectangle { x: 30; y: 78; width: parent.width - 60; height: 1
-            color: Theme.alpha(Theme.t.gold, 0.35) }
+            color: Theme.alpha(Theme.gold, 0.35) }
 
         ListView {
             id: mlist
@@ -319,7 +319,7 @@ PanelWindow {
         Text {
             anchors.right: parent.right; anchors.rightMargin: 34; anchors.bottom: parent.bottom; anchors.bottomMargin: 24
             text: launcher.q === "" ? launcher.all.length + " PATHS" : launcher.found.length + " FOUND"
-            color: Theme.alpha(Theme.t.gold, 0.7); font.family: Theme.display; font.pixelSize: 12; font.letterSpacing: 3
+            color: Theme.alpha(Theme.gold, 0.7); font.family: Theme.display; font.pixelSize: 12; font.letterSpacing: 3
         }
     }
 }

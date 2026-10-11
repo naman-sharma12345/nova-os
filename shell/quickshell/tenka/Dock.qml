@@ -84,7 +84,7 @@ PanelWindow {
                         required property var modelData
                         readonly property bool open: !modelData.sep && dock.running(modelData.id)
                         width: modelData.sep ? 1 : 46; height: 46
-                        Rectangle { visible: !!it.modelData.sep; anchors.centerIn: parent; width: 1; height: 30; color: Theme.alpha(Theme.t.gold, 0.35) }
+                        Rectangle { visible: !!it.modelData.sep; anchors.centerIn: parent; width: 1; height: 30; color: Theme.alpha(Theme.gold, 0.35) }
                         Image {
                             visible: !it.modelData.sep
                             anchors.centerIn: parent; width: 40; height: 40; smooth: true
@@ -94,13 +94,13 @@ PanelWindow {
                             transformOrigin: Item.Bottom
                             Behavior on scale { NumberAnimation { duration: 220; easing.type: Easing.OutBack } }
                         }
-                        Rectangle { visible: it.open; width: 5; height: 5; radius: 2.5; color: Theme.t.accent
+                        Rectangle { visible: it.open; width: 5; height: 5; radius: 2.5; color: Theme.accent
                                     anchors.horizontalCenter: parent.horizontalCenter; anchors.top: parent.bottom; anchors.topMargin: 1 }
                         Rectangle {
                             visible: ma.containsMouse
                             anchors.horizontalCenter: parent.horizontalCenter; anchors.bottom: parent.top; anchors.bottomMargin: 18
                             width: nm.width + 20; height: 24; radius: 12; color: Theme.alpha(Theme.t.base, 0.85)
-                            border.width: 1; border.color: Theme.alpha(Theme.t.gold, 0.35)
+                            border.width: 1; border.color: Theme.alpha(Theme.gold, 0.35)
                             Text { id: nm; anchors.centerIn: parent; text: it.modelData.n || ""; color: Theme.t.text; font.family: Theme.display; font.pixelSize: 12 }
                         }
                         MouseArea { id: ma; anchors.fill: parent; enabled: !it.modelData.sep; hoverEnabled: true; onClicked: Theme.run(it.modelData.run) }
@@ -139,7 +139,7 @@ PanelWindow {
                             opacity: lcm.containsMouse ? 1 : 0.82 }
                     MouseArea { id: lcm; anchors.fill: parent; hoverEnabled: true; onClicked: Theme.ipc("launcher", "toggle") }
                 }
-                Rectangle { width: 1; height: 26; anchors.verticalCenter: parent.verticalCenter; color: Theme.alpha(Theme.t.gold, 0.35) }
+                Rectangle { width: 1; height: 26; anchors.verticalCenter: parent.verticalCenter; color: Theme.alpha(Theme.gold, 0.35) }
                 Repeater {
                     model: dock.apps
                     Item {
@@ -148,7 +148,7 @@ PanelWindow {
                         readonly property bool open: !modelData.sep && dock.running(modelData.id)
                         width: modelData.sep ? 1 : 32; height: 40
                         anchors.verticalCenter: parent ? parent.verticalCenter : undefined
-                        Rectangle { visible: !!li.modelData.sep; anchors.centerIn: parent; width: 1; height: 26; color: Theme.alpha(Theme.t.gold, 0.35) }
+                        Rectangle { visible: !!li.modelData.sep; anchors.centerIn: parent; width: 1; height: 26; color: Theme.alpha(Theme.gold, 0.35) }
                         Image {
                             visible: !li.modelData.sep
                             anchors.centerIn: parent; width: 30; height: 30; smooth: true
@@ -157,13 +157,13 @@ PanelWindow {
                             opacity: lma.containsMouse || li.open ? 1 : 0.72
                             Behavior on opacity { NumberAnimation { duration: 140 } }
                         }
-                        Rectangle { visible: li.open; width: 12; height: 2; color: Theme.t.accent
+                        Rectangle { visible: li.open; width: 12; height: 2; color: Theme.accent
                                     anchors.horizontalCenter: parent.horizontalCenter; anchors.bottom: parent.bottom; anchors.bottomMargin: -4 }
                         Item {   // the name: a small ruled tag
                             visible: lma.containsMouse || (dock.peek !== "" && dock.peek === li.modelData.id)
                             anchors.horizontalCenter: parent.horizontalCenter; anchors.bottom: parent.top; anchors.bottomMargin: 22
                             width: lnm.width + 22; height: 24
-                            Rectangle { anchors.fill: parent; radius: 3; color: Theme.alpha(Theme.t.base, 0.9); border.width: 1; border.color: Theme.alpha(Theme.t.gold, 0.45) }
+                            Rectangle { anchors.fill: parent; radius: 3; color: Theme.alpha(Theme.t.base, 0.9); border.width: 1; border.color: Theme.alpha(Theme.gold, 0.45) }
                             Text { id: lnm; anchors.centerIn: parent; text: (li.modelData.n || "").toUpperCase(); color: Theme.t.text
                                    font.family: Theme.display; font.pixelSize: 11; font.letterSpacing: 3 }
                         }

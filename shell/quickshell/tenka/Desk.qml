@@ -87,10 +87,10 @@ PanelWindow {
                     anchors.top: ampm.bottom; anchors.topMargin: 12 * desk.s; anchors.horizontalCenter: parent.horizontalCenter
                     width: 72 * desk.s; height: 92 * desk.s
                     Rectangle { anchors.fill: parent; color: Theme.alpha(Theme.t.base, 0.18); radius: Theme.xia ? 8 * desk.s : 2 * desk.s
-                                border.width: Math.max(1, Math.round(desk.s)); border.color: Theme.alpha(Theme.t.accent, 0.85) }
+                                border.width: Math.max(1, Math.round(desk.s)); border.color: Theme.alpha(Theme.accent, 0.85) }
                     Column {
                         anchors.centerIn: parent; spacing: 2 * desk.s
-                        Text { text: Qt.formatDate(Theme.now, "ddd").toUpperCase(); color: Theme.t.accent; anchors.horizontalCenter: parent.horizontalCenter
+                        Text { text: Qt.formatDate(Theme.now, "ddd").toUpperCase(); color: Theme.accent; anchors.horizontalCenter: parent.horizontalCenter
                                font.family: Theme.display; font.pixelSize: 14 * desk.s; font.letterSpacing: 4 * desk.s }
                         Text { text: Theme.now.getDate(); color: Theme.t.text; anchors.horizontalCenter: parent.horizontalCenter
                                font.family: Theme.display; font.pixelSize: 38 * desk.s }
@@ -102,6 +102,8 @@ PanelWindow {
             id: dateText
             anchors.top: clockRow.bottom; anchors.topMargin: -20 * desk.s; x: 8 * desk.s
             text: Qt.formatDate(Theme.now, "MMMM yyyy").toUpperCase() + "   ·   " + Theme.hourName(Theme.now).toUpperCase()
+                  + (Theme.seasonWord ? "   ·   <font color=\"" + Theme.seasonInk + "\">" + Theme.seasonWord.toUpperCase() + " SEASON</font>" : "")
+            textFormat: Text.StyledText
             color: Theme.alpha(Theme.t.text, 0.82)
             font.family: Theme.display; font.pixelSize: 19 * desk.s; font.letterSpacing: 9 * desk.s
         }
@@ -150,11 +152,11 @@ PanelWindow {
             anchors.top: filmClock.bottom; anchors.topMargin: 8 * desk.s
             spacing: 22 * desk.s
             Rectangle { width: 260 * desk.s; height: 1; anchors.verticalCenter: parent.verticalCenter
-                color: Theme.alpha(Theme.t.gold, 0.5) }
+                color: Theme.alpha(Theme.gold, 0.5) }
             Image { width: 34 * desk.s; height: 42 * desk.s; source: Theme.asset("seal.png"); smooth: true; rotation: -3
                 Text { anchors.centerIn: parent; text: Theme.now.getDate(); color: Theme.t.ink; font.family: Theme.display; font.pixelSize: 17 * desk.s } }
             Rectangle { width: 260 * desk.s; height: 1; anchors.verticalCenter: parent.verticalCenter
-                color: Theme.alpha(Theme.t.gold, 0.5) }
+                color: Theme.alpha(Theme.gold, 0.5) }
         }
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
@@ -185,22 +187,22 @@ PanelWindow {
         Behavior on opacity { NumberAnimation { duration: 260 } }
         Rectangle {   // the cord
             anchors.horizontalCenter: parent.horizontalCenter; y: 0; width: 1; height: 64 * desk.s
-            color: Theme.alpha(Theme.t.gold, 0.7)
+            color: Theme.alpha(Theme.gold, 0.7)
         }
         Rectangle {   // the scroll: frosted silk with a gold rod top and bottom
             id: silk
             y: 64 * desk.s; width: parent.width; height: parent.height - 64 * desk.s
             radius: 4 * desk.s
             color: Theme.alpha(Theme.t.base, 0.52)
-            border.width: 1; border.color: Theme.alpha(Theme.t.gold, 0.28)
-            Rectangle { anchors.horizontalCenter: parent.horizontalCenter; y: -5 * desk.s; width: parent.width + 24 * desk.s; height: 8 * desk.s; radius: 4 * desk.s; color: Theme.t.gold; opacity: 0.85 }
-            Rectangle { anchors.horizontalCenter: parent.horizontalCenter; y: parent.height - 3 * desk.s; width: parent.width + 24 * desk.s; height: 8 * desk.s; radius: 4 * desk.s; color: Theme.t.gold; opacity: 0.85 }
+            border.width: 1; border.color: Theme.alpha(Theme.gold, 0.28)
+            Rectangle { anchors.horizontalCenter: parent.horizontalCenter; y: -5 * desk.s; width: parent.width + 24 * desk.s; height: 8 * desk.s; radius: 4 * desk.s; color: Theme.gold; opacity: 0.85 }
+            Rectangle { anchors.horizontalCenter: parent.horizontalCenter; y: parent.height - 3 * desk.s; width: parent.width + 24 * desk.s; height: 8 * desk.s; radius: 4 * desk.s; color: Theme.gold; opacity: 0.85 }
             Column {
                 anchors.horizontalCenter: parent.horizontalCenter
                 y: 46 * desk.s; spacing: 0
                 Text { anchors.horizontalCenter: parent.horizontalCenter; text: (Theme.now.getHours() % 12 || 12)
                        color: Theme.t.text; font.family: Theme.display; font.pixelSize: 110 * desk.s; lineHeight: 0.9 }
-                Rectangle { anchors.horizontalCenter: parent.horizontalCenter; width: 46 * desk.s; height: 2; color: Theme.t.accent }
+                Rectangle { anchors.horizontalCenter: parent.horizontalCenter; width: 46 * desk.s; height: 2; color: Theme.accent }
                 Text { anchors.horizontalCenter: parent.horizontalCenter; text: Qt.formatTime(Theme.now, "mm")
                        color: Theme.t.text; font.family: Theme.display; font.pixelSize: 110 * desk.s; lineHeight: 0.9 }
                 Text { anchors.horizontalCenter: parent.horizontalCenter; text: Theme.ap(Theme.now); color: Theme.alpha(Theme.t.text, 0.7)

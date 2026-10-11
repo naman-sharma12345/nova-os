@@ -29,8 +29,8 @@ Item {
         x: 136 * face.s; y: 190 * face.s; width: 900 * face.s; height: 700 * face.s
         Row {
             id: hr; spacing: 14 * face.s
-            Rectangle { width: 8 * face.s; height: width; rotation: 45; color: Theme.t.accent; anchors.verticalCenter: parent.verticalCenter }
-            Text { text: Theme.hourName(Theme.now).toUpperCase(); color: Theme.t.gold; font.family: Theme.display
+            Rectangle { width: 8 * face.s; height: width; rotation: 45; color: Theme.accent; anchors.verticalCenter: parent.verticalCenter }
+            Text { text: Theme.hourName(Theme.now).toUpperCase(); color: Theme.gold; font.family: Theme.display
                    font.pixelSize: 17 * face.s; font.letterSpacing: 9 * face.s }
         }
         Row {
@@ -67,19 +67,19 @@ Item {
             anchors.top: ttl.bottom; anchors.topMargin: 30 * face.s; x: 6 * face.s
             width: 420 * face.s; height: 60 * face.s; radius: height / 2
             color: Theme.alpha(Theme.t.base, 0.55); border.width: 1
-            border.color: face.lock.status !== "" ? Theme.t.accent : Theme.alpha(Theme.t.gold, field.activeFocus ? 0.7 : 0.4)
+            border.color: face.lock.status !== "" ? Theme.accent : Theme.alpha(Theme.gold, field.activeFocus ? 0.7 : 0.4)
             Image { x: 10 * face.s; anchors.verticalCenter: parent.verticalCenter; width: 40 * face.s; height: 40 * face.s; source: Theme.t.crest; mipmap: true }
             Row {
                 x: 64 * face.s; anchors.verticalCenter: parent.verticalCenter; spacing: 10 * face.s
                 visible: face.lock.typed.length > 0
                 Repeater { model: Math.min(face.lock.typed.length, 18)
-                    Rectangle { width: 9 * face.s; height: width; radius: Theme.xia ? width / 2 : 1.5; rotation: Theme.xia ? 0 : 45; color: Theme.t.gold } }
+                    Rectangle { width: 9 * face.s; height: width; radius: Theme.xia ? width / 2 : 1.5; rotation: Theme.xia ? 0 : 45; color: Theme.gold } }
             }
             Text { x: 64 * face.s; anchors.verticalCenter: parent.verticalCenter; visible: face.lock.typed.length === 0
                    text: Theme.xia ? "Speak the word" : "Your password"; color: Theme.alpha(Theme.t.text, 0.45)
                    font.family: Theme.display; font.pixelSize: 18 * face.s; font.letterSpacing: 1 }
             Rectangle { anchors.right: parent.right; anchors.rightMargin: 8 * face.s; anchors.verticalCenter: parent.verticalCenter
-                        width: 44 * face.s; height: width; radius: width / 2; color: Theme.t.accent; opacity: face.lock.busy ? 0.5 : 1
+                        width: 44 * face.s; height: width; radius: width / 2; color: Theme.accent; opacity: face.lock.busy ? 0.5 : 1
                         Text { anchors.centerIn: parent; text: "\uf061"; font.family: Theme.glyphs; font.pixelSize: 16 * face.s; color: Theme.t.ink }
                         MouseArea { anchors.fill: parent; onClicked: face.lock.submit() } }
             TextInput {
@@ -91,7 +91,7 @@ Item {
         }
         Text { anchors.top: pill.bottom; anchors.topMargin: 14 * face.s; x: 30 * face.s
                text: face.lock.status !== "" ? face.lock.status : (Theme.xia ? "Enter to pass the gate" : "Enter to draw the blade")
-               color: face.lock.status !== "" ? Theme.t.accent : Theme.alpha(Theme.t.text, 0.5); font.family: Theme.ui; font.pixelSize: 12 * face.s }
+               color: face.lock.status !== "" ? Theme.accent : Theme.alpha(Theme.t.text, 0.5); font.family: Theme.ui; font.pixelSize: 12 * face.s }
     }
     Row {
         visible: face.style !== "still" && face.style !== "ledger"
@@ -119,13 +119,13 @@ Item {
         Text {
             anchors.centerIn: parent; anchors.verticalCenterOffset: -60 * face.s
             text: Qt.formatDate(Theme.now, "dddd").toUpperCase()
-            color: "transparent"; style: Text.Outline; styleColor: Theme.alpha(Theme.t.gold, 0.35)
+            color: "transparent"; style: Text.Outline; styleColor: Theme.alpha(Theme.gold, 0.35)
             font.family: Theme.brand; font.pixelSize: 300 * face.s; font.letterSpacing: 10 * face.s
             scale: Math.min(1, (parent.width * 0.96) / Math.max(1, implicitWidth))
         }
         Rectangle {   // a single vermilion / jade stroke under the word
             anchors.centerIn: parent; anchors.verticalCenterOffset: 70 * face.s
-            width: 520 * face.s; height: 3 * face.s; radius: height / 2; color: Theme.t.accent; opacity: 0.85
+            width: 520 * face.s; height: 3 * face.s; radius: height / 2; color: Theme.accent; opacity: 0.85
         }
         Column {
             anchors.centerIn: parent; anchors.verticalCenterOffset: -40 * face.s; spacing: 0
@@ -142,12 +142,12 @@ Item {
                 anchors.horizontalCenter: parent.horizontalCenter
                 width: 360 * face.s; height: 50 * face.s; radius: height / 2
                 color: Theme.alpha(Theme.t.base, 0.5); border.width: 1
-                border.color: face.lock.status !== "" ? Theme.t.accent : Theme.alpha(Theme.t.gold, 0.55)
+                border.color: face.lock.status !== "" ? Theme.accent : Theme.alpha(Theme.gold, 0.55)
                 Row { anchors.centerIn: parent; spacing: 9 * face.s; visible: face.lock.typed.length > 0
                       Repeater { model: Math.min(face.lock.typed.length, 18)
-                          Rectangle { width: 8 * face.s; height: width; radius: Theme.xia ? width / 2 : 1.5; rotation: Theme.xia ? 0 : 45; color: Theme.t.gold } } }
+                          Rectangle { width: 8 * face.s; height: width; radius: Theme.xia ? width / 2 : 1.5; rotation: Theme.xia ? 0 : 45; color: Theme.gold } } }
                 Text { anchors.centerIn: parent; visible: face.lock.typed.length === 0; text: face.hint
-                       color: face.lock.status !== "" ? Theme.t.accent : Theme.alpha(Theme.t.text, 0.5)
+                       color: face.lock.status !== "" ? Theme.accent : Theme.alpha(Theme.t.text, 0.5)
                        font.family: Theme.display; font.pixelSize: 16 * face.s; font.letterSpacing: 3 }
             }
         }
@@ -167,12 +167,12 @@ Item {
             Item {
                 anchors.horizontalCenter: parent.horizontalCenter; width: 300 * face.s; height: 30 * face.s
                 Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1
-                    color: face.lock.status !== "" ? Theme.t.accent : Theme.alpha(Theme.t.gold, 0.6) }
+                    color: face.lock.status !== "" ? Theme.accent : Theme.alpha(Theme.gold, 0.6) }
                 Row { anchors.centerIn: parent; spacing: 8 * face.s; visible: face.lock.typed.length > 0
                       Repeater { model: Math.min(face.lock.typed.length, 18)
-                          Rectangle { width: 5 * face.s; height: width; radius: width / 2; color: Theme.t.gold } } }
+                          Rectangle { width: 5 * face.s; height: width; radius: width / 2; color: Theme.gold } } }
                 Text { anchors.centerIn: parent; visible: face.lock.typed.length === 0; text: face.hint
-                       color: face.lock.status !== "" ? Theme.t.accent : Theme.alpha(Theme.t.text, 0.45)
+                       color: face.lock.status !== "" ? Theme.accent : Theme.alpha(Theme.t.text, 0.45)
                        font.family: Theme.display; font.pixelSize: 13 * face.s; font.letterSpacing: 5 * face.s }
             }
         }
@@ -182,17 +182,17 @@ Item {
     Item {
         visible: face.style === "ledger"
         anchors.fill: parent
-        readonly property color bad: Theme.t.accent
+        readonly property color bad: Theme.accent
         Column {
             x: 140 * face.s; anchors.bottom: parent.bottom; anchors.bottomMargin: 150 * face.s
             spacing: 0
             // 01 · the day, in small caps
             Row {
                 spacing: 14 * face.s
-                Text { text: "01"; color: Theme.alpha(Theme.t.gold, 0.7); font.family: Theme.display
+                Text { text: "01"; color: Theme.alpha(Theme.gold, 0.7); font.family: Theme.display
                        font.pixelSize: 13 * face.s; font.letterSpacing: 3 * face.s; anchors.verticalCenter: parent.verticalCenter }
-                Rectangle { width: 28 * face.s; height: 1; color: Theme.alpha(Theme.t.gold, 0.6); anchors.verticalCenter: parent.verticalCenter }
-                Text { text: Qt.formatDate(Theme.now, "dddd  ·  d MMMM").toUpperCase(); color: Theme.t.gold
+                Rectangle { width: 28 * face.s; height: 1; color: Theme.alpha(Theme.gold, 0.6); anchors.verticalCenter: parent.verticalCenter }
+                Text { text: Qt.formatDate(Theme.now, "dddd  ·  d MMMM").toUpperCase(); color: Theme.gold
                        font.family: Theme.display; font.pixelSize: 15 * face.s; font.letterSpacing: 6 * face.s }
             }
             // the time
@@ -207,8 +207,8 @@ Item {
             // the rule: one hairline with a short accent at its head
             Item {
                 width: 470 * face.s; height: 2 * face.s
-                Rectangle { anchors.verticalCenter: parent.verticalCenter; width: parent.width; height: 1; color: Theme.alpha(Theme.t.gold, 0.55) }
-                Rectangle { width: 56 * face.s; height: 2 * face.s; color: Theme.t.accent }
+                Rectangle { anchors.verticalCenter: parent.verticalCenter; width: parent.width; height: 1; color: Theme.alpha(Theme.gold, 0.55) }
+                Rectangle { width: 56 * face.s; height: 2 * face.s; color: Theme.accent }
             }
             Item { width: 1; height: 22 * face.s }
             Text { text: face.motto; color: Theme.alpha(Theme.t.text, 0.9); font.family: Theme.display
@@ -217,9 +217,9 @@ Item {
             // 02 · the field: a label, the marks, one underline
             Row {
                 spacing: 14 * face.s
-                Text { text: "02"; color: Theme.alpha(Theme.t.gold, 0.7); font.family: Theme.display
+                Text { text: "02"; color: Theme.alpha(Theme.gold, 0.7); font.family: Theme.display
                        font.pixelSize: 13 * face.s; font.letterSpacing: 3 * face.s; anchors.verticalCenter: parent.verticalCenter }
-                Rectangle { width: 28 * face.s; height: 1; color: Theme.alpha(Theme.t.gold, 0.6); anchors.verticalCenter: parent.verticalCenter }
+                Rectangle { width: 28 * face.s; height: 1; color: Theme.alpha(Theme.gold, 0.6); anchors.verticalCenter: parent.verticalCenter }
                 Text { text: (Theme.xia ? "THE WORD" : "PASSWORD") + "  ·  " + (Quickshell.env("USER") || "").toUpperCase()
                        color: Theme.alpha(Theme.t.text, 0.65); font.family: Theme.display; font.pixelSize: 13 * face.s; font.letterSpacing: 5 * face.s }
             }
@@ -228,17 +228,17 @@ Item {
                 width: 470 * face.s; height: 44 * face.s
                 Row { anchors.verticalCenter: parent.verticalCenter; spacing: 11 * face.s; visible: face.lock.typed.length > 0
                       Repeater { model: Math.min(face.lock.typed.length, 24)
-                          Rectangle { width: 7 * face.s; height: width; radius: Theme.xia ? width / 2 : 0; rotation: Theme.xia ? 0 : 45; color: Theme.t.gold } } }
+                          Rectangle { width: 7 * face.s; height: width; radius: Theme.xia ? width / 2 : 0; rotation: Theme.xia ? 0 : 45; color: Theme.gold } } }
                 Text { anchors.verticalCenter: parent.verticalCenter; visible: face.lock.typed.length === 0
                        text: face.lock.status !== "" ? face.lock.status : (Theme.xia ? "Speak the word" : "Type to unlock")
-                       color: face.lock.status !== "" ? Theme.t.accent : Theme.alpha(Theme.t.text, 0.4)
+                       color: face.lock.status !== "" ? Theme.accent : Theme.alpha(Theme.t.text, 0.4)
                        font.family: Theme.display; font.pixelSize: 18 * face.s; font.letterSpacing: 1 }
                 Text { anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter
-                       text: face.lock.busy ? "· · ·" : "ENTER"; color: Theme.alpha(Theme.t.gold, face.lock.typed.length > 0 ? 0.95 : 0.45)
+                       text: face.lock.busy ? "· · ·" : "ENTER"; color: Theme.alpha(Theme.gold, face.lock.typed.length > 0 ? 0.95 : 0.45)
                        font.family: Theme.display; font.pixelSize: 12 * face.s; font.letterSpacing: 5 * face.s
                        MouseArea { anchors.fill: parent; anchors.margins: -10; onClicked: face.lock.submit() } }
                 Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1
-                            color: face.lock.status !== "" ? Theme.t.accent : Theme.alpha(Theme.t.gold, face.lock.typed.length > 0 ? 0.9 : 0.5) }
+                            color: face.lock.status !== "" ? Theme.accent : Theme.alpha(Theme.gold, face.lock.typed.length > 0 ? 0.9 : 0.5) }
             }
         }
     }

@@ -81,7 +81,7 @@ Item {
                         model: ["M", "T", "W", "T", "F", "S", "S"]
                         Text { required property string modelData
                                width: grid.cw; height: 22; horizontalAlignment: Text.AlignHCenter; text: modelData
-                               color: Theme.alpha(Theme.t.gold, 0.85); font.family: Theme.display; font.pixelSize: 11; font.letterSpacing: 1 }
+                               color: Theme.alpha(Theme.gold, 0.85); font.family: Theme.display; font.pixelSize: 11; font.letterSpacing: 1 }
                     }
                     Repeater {
                         model: dl.weeks * 7
@@ -93,7 +93,7 @@ Item {
                             readonly property bool past: day < dl.d.getDate()
                             width: grid.cw; height: 26
                             Rectangle { anchors.centerIn: parent; width: 24; height: 24; visible: parent.today && parent.real
-                                        color: "transparent"; border.width: 1; border.color: Theme.t.accent; radius: Theme.xia ? 12 : 2 }
+                                        color: "transparent"; border.width: 1; border.color: Theme.accent; radius: Theme.xia ? 12 : 2 }
                             Text { anchors.centerIn: parent; text: parent.real ? parent.day : ""
                                    color: parent.today ? Theme.t.text : Theme.alpha(Theme.t.text, parent.past ? 0.28 : 0.82)
                                    font.family: Theme.display; font.pixelSize: 13 }
@@ -109,7 +109,7 @@ Item {
                         Text { anchors.verticalCenter: parent.verticalCenter; text: modelData.title; color: Theme.alpha(Theme.t.text, 0.86)
                                font.family: Theme.display; font.pixelSize: 14; width: parent.width - wh.width - 12; elide: Text.ElideRight }
                         Text { id: wh; anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter; text: modelData.when.toUpperCase()
-                               color: Theme.t.gold; font.family: Theme.display; font.pixelSize: 11; font.letterSpacing: 2 }
+                               color: Theme.gold; font.family: Theme.display; font.pixelSize: 11; font.letterSpacing: 2 }
                     }
                 }
             }
@@ -127,7 +127,7 @@ Item {
                         width: 84; height: 84
                         Image { anchors.fill: parent; anchors.margins: 1; fillMode: Image.PreserveAspectCrop; sourceSize.height: 240; smooth: true
                                 source: dl.p && dl.p.trackArtUrl ? dl.p.trackArtUrl : Theme.t.keyart; opacity: dl.p ? 1 : 0.55 }
-                        Rectangle { anchors.fill: parent; color: "transparent"; border.width: 1; border.color: Theme.alpha(Theme.t.gold, 0.45) }
+                        Rectangle { anchors.fill: parent; color: "transparent"; border.width: 1; border.color: Theme.alpha(Theme.gold, 0.45) }
                     }
                     Column {
                         width: parent.width - 100; spacing: 5; anchors.verticalCenter: parent.verticalCenter
@@ -141,9 +141,9 @@ Item {
                 Item {
                     width: parent.width; height: 26
                     Rectangle { y: 4; width: parent.width; height: 1; color: Theme.alpha(Theme.t.text, 0.16) }
-                    Rectangle { y: 3.5; width: Math.max(2, parent.width * dl.frac); height: 2; color: Theme.t.accent }
+                    Rectangle { y: 3.5; width: Math.max(2, parent.width * dl.frac); height: 2; color: Theme.accent }
                     Rectangle { x: Math.max(0, parent.width * dl.frac - 3.5); y: 1; width: 7; height: 7; radius: Theme.xia ? 3.5 : 0
-                                rotation: Theme.xia ? 0 : 45; color: Theme.t.gold }
+                                rotation: Theme.xia ? 0 : 45; color: Theme.gold }
                     Text { y: 13; text: dl.p ? dl.mmss(dl.p.position) : "0:00"; color: Theme.alpha(Theme.t.text, 0.42); font.family: Theme.display; font.pixelSize: 11 }
                     Text { y: 13; anchors.right: parent.right; text: dl.p ? dl.mmss(dl.p.length) : "0:00"; color: Theme.alpha(Theme.t.text, 0.42); font.family: Theme.display; font.pixelSize: 11 }
                 }
@@ -154,7 +154,7 @@ Item {
                         Text {
                             required property string modelData; required property int index
                             text: modelData; font.family: Theme.display; font.pixelSize: 12; font.letterSpacing: 4
-                            color: index === 1 ? Theme.t.accent : Theme.alpha(Theme.t.text, tm.containsMouse ? 0.9 : 0.5)
+                            color: index === 1 ? Theme.accent : Theme.alpha(Theme.t.text, tm.containsMouse ? 0.9 : 0.5)
                             opacity: dl.p ? 1 : 0.5
                             MouseArea { id: tm; anchors.fill: parent; anchors.margins: -8; hoverEnabled: true; enabled: !!dl.p
                                         onClicked: index === 0 ? dl.p.previous() : index === 1 ? dl.p.togglePlaying() : dl.p.next() }

@@ -62,6 +62,34 @@ Singleton {
     property real osdValue: 0
     property int osdTick: 0
 
+    // The hour and the season. tenka-hour writes ~/.config/tenka/hour.json on a quarter-hour user timer;
+    // until it has, the clock decides. Dawn, dusk and night lean the accent a little toward their light,
+    // the season (plum, lotus, maple, snow) leans the gold, and the wallpaper wears a faint flat veil.
+    FileView {
+        path: Quickshell.env("HOME") + "/.config/tenka/hour.json"
+        watchChanges: true
+        onFileChanged: reload()
+        JsonAdapter { id: hourCfg; property string phase: ""; property string season: "" }
+    }
+    readonly property string phase: hourCfg.phase || phaseOf(now)
+    readonly property string season: hourCfg.season || seasonOf(now)
+    function phaseOf(d) { const h = d.getHours(); return h >= 5 && h < 8 ? "dawn" : h >= 8 && h < 17 ? "day" : h >= 17 && h < 20 ? "dusk" : "night" }
+    function seasonOf(d) { const m = d.getMonth() + 1; return m >= 3 && m <= 5 ? "plum" : m >= 6 && m <= 8 ? "lotus" : m >= 9 && m <= 11 ? "maple" : "snow" }
+    function mix(a, b, k) { const x = Qt.color(a), y = Qt.color(b); return Qt.rgba(x.r + (y.r - x.r) * k, x.g + (y.g - x.g) * k, x.b + (y.b - x.b) * k, 1) }
+    // each pack keeps its own light: Tenka's ink and vermilion, Tianxia's jade and mist
+    readonly property var phaseLight: xia ? ({ dawn: "#f0b7a4", day: "#5fc9a0", dusk: "#e2a35a", night: "#2c4a5c" })
+                                          : ({ dawn: "#f2a7b5", day: "#d8412f", dusk: "#e0913a", night: "#2e3f63" })
+    readonly property real phaseLean: ({ dawn: 0.14, day: 0, dusk: 0.16, night: 0.20 })[phase] || 0
+    readonly property color accent: mix(adapter.accent, phaseLight[phase] || adapter.accent, phaseLean)
+    readonly property var seasonLight: xia ? ({ plum: "#c97a9b", lotus: "#f0a3b8", maple: "#d9763a", snow: "#d8e2e6" })
+                                           : ({ plum: "#b8577a", lotus: "#e8a0b0", maple: "#c4532d", snow: "#dfe3e6" })
+    readonly property color gold: mix(adapter.gold, seasonLight[season] || adapter.gold, 0.30)
+    readonly property color seasonInk: mix(adapter.gold, seasonLight[season] || adapter.gold, 0.6)   // the season's own word
+    readonly property string seasonWord: ({ plum: "Plum", lotus: "Lotus", maple: "Maple", snow: "Snow" })[season] || ""
+    // the wallpaper's veil: flat colour, a few percent, never a glow
+    readonly property color veil: ({ dawn: "#f2c9a0", day: adapter.base, dusk: "#b8662a", night: adapter.base })[phase] || adapter.base
+    readonly property real veilAmount: ({ dawn: 0.08, day: 0, dusk: 0.12, night: 0.30 })[phase] || 0
+
     SystemClock { id: clock; precision: SystemClock.Seconds }
     IpcHandler {
         target: "desk"

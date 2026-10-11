@@ -53,9 +53,9 @@ PanelWindow {
                    color: Theme.t.text; font.family: Theme.display; font.pixelSize: 46; font.letterSpacing: 1 }
             Row {
                 anchors.horizontalCenter: parent.horizontalCenter; spacing: 12
-                Rectangle { width: 120; height: 1; anchors.verticalCenter: parent.verticalCenter; color: Theme.alpha(Theme.t.gold, 0.6) }
-                Rectangle { width: 8; height: 8; rotation: 45; color: Theme.t.gold; anchors.verticalCenter: parent.verticalCenter }
-                Rectangle { width: 120; height: 1; anchors.verticalCenter: parent.verticalCenter; color: Theme.alpha(Theme.t.gold, 0.6) }
+                Rectangle { width: 120; height: 1; anchors.verticalCenter: parent.verticalCenter; color: Theme.alpha(Theme.gold, 0.6) }
+                Rectangle { width: 8; height: 8; rotation: 45; color: Theme.gold; anchors.verticalCenter: parent.verticalCenter }
+                Rectangle { width: 120; height: 1; anchors.verticalCenter: parent.verticalCenter; color: Theme.alpha(Theme.gold, 0.6) }
             }
             Item { width: 1; height: 8 }
             // the rites as the boot menu's own list: words in Marcellus, the chosen one on the brush stroke

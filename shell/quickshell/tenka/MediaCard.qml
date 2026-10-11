@@ -21,13 +21,13 @@ Glass {
                 source: m.p && m.p.trackArtUrl ? m.p.trackArtUrl : Theme.t.keyart }
         Rectangle { id: artMask; anchors.fill: parent; radius: 16; visible: false; layer.enabled: true }
         MultiEffect { anchors.fill: parent; source: art; maskEnabled: true; maskSource: artMask; maskThresholdMin: 0.5; maskSpreadAtMin: 1.0 }
-        Rectangle { anchors.fill: parent; radius: 16; color: "transparent"; border.width: 1; border.color: Theme.alpha(Theme.t.gold, 0.35) }
+        Rectangle { anchors.fill: parent; radius: 16; color: "transparent"; border.width: 1; border.color: Theme.alpha(Theme.gold, 0.35) }
     }
     Column {
         anchors.left: cover.right; anchors.leftMargin: 18; anchors.right: parent.right; anchors.rightMargin: 22
         anchors.bottom: cover.bottom
         spacing: 6
-        Text { text: m.idle ? "THE QUIET HOUR" : (m.p.isPlaying ? "NOW PLAYING" : "PAUSED"); color: Theme.t.gold; font.family: Theme.display; font.pixelSize: 11; font.letterSpacing: 5 }
+        Text { text: m.idle ? "THE QUIET HOUR" : (m.p.isPlaying ? "NOW PLAYING" : "PAUSED"); color: Theme.gold; font.family: Theme.display; font.pixelSize: 11; font.letterSpacing: 5 }
         Text { width: parent.width; wrapMode: Text.WordWrap; maximumLineCount: 2; elide: Text.ElideRight; color: Theme.t.text
                font.family: Theme.display; font.pixelSize: 21; lineHeight: 1.05
                text: m.idle ? "Nothing playing" : (m.p.trackTitle || "Untitled") }
@@ -52,7 +52,7 @@ Glass {
             Item {
                 required property string modelData; required property int index
                 width: index === 1 ? 44 : 30; height: 44
-                Rectangle { visible: parent.index === 1; anchors.fill: parent; radius: 22; color: "transparent"; border.width: 1; border.color: Theme.alpha(Theme.t.gold, 0.55) }
+                Rectangle { visible: parent.index === 1; anchors.fill: parent; radius: 22; color: "transparent"; border.width: 1; border.color: Theme.alpha(Theme.gold, 0.55) }
                 Image { anchors.centerIn: parent; width: parent.index === 1 ? 20 : 18; height: width; smooth: true; source: Theme.icon(parent.modelData + "-light"); opacity: m.idle ? 0.4 : 0.9 }
                 MouseArea { anchors.fill: parent; enabled: !m.idle
                             onClicked: parent.index === 0 ? m.p.previous() : parent.index === 1 ? m.p.togglePlaying() : m.p.next() }

@@ -37,7 +37,7 @@ Glass {
 
     component Enso: Item {
         id: e
-        property real v: 0; property string label: ""; property color c: Theme.t.accent; property int seed: 1
+        property real v: 0; property string label: ""; property color c: Theme.accent; property int seed: 1
         width: 78; height: 112
         Canvas {
             id: cv; width: 78; height: 78
@@ -79,11 +79,11 @@ Glass {
         }
         Row {
             spacing: 12; anchors.horizontalCenter: parent.horizontalCenter
-            Enso { v: card.cpu; label: "CPU"; c: Theme.t.accent; seed: 1 }
-            Enso { v: card.mem; label: "MEMORY"; c: Theme.t.gold; seed: 2 }
+            Enso { v: card.cpu; label: "CPU"; c: Theme.accent; seed: 1 }
+            Enso { v: card.mem; label: "MEMORY"; c: Theme.gold; seed: 2 }
             Enso { v: card.disk; label: "DISK"; c: Theme.alpha(Theme.t.text, 0.9); seed: 3 }
         }
-        Rectangle { width: parent.width; height: 1; color: Theme.alpha(Theme.t.gold, 0.18) }
+        Rectangle { width: parent.width; height: 1; color: Theme.alpha(Theme.gold, 0.18) }
         Column {
             spacing: 6
             Text { visible: card.weather !== ""; text: card.weather; color: Theme.alpha(Theme.t.text, 0.85); font.family: Theme.ui; font.pixelSize: 12 }

@@ -34,6 +34,14 @@ PanelWindow {
         Image { id: next; width: wall.width; height: wall.height; fillMode: Image.PreserveAspectCrop; sourceSize.width: 3840; asynchronous: true
                 onStatusChanged: if (status === Image.Ready && wall.edge === 0 && source != "" && !sweep.running) sweep.start() }
     }
+    // the hour's veil (Theme.veil): a flat wash of dawn, dusk or night over the picture, a few percent,
+    // eased in over half a minute so nobody sees it move
+    Rectangle {
+        anchors.fill: parent
+        color: Theme.veil; opacity: Theme.veilAmount
+        Behavior on opacity { enabled: !Theme.perf; NumberAnimation { duration: 30000; easing.type: Easing.InOutSine } }
+        Behavior on color { enabled: !Theme.perf; ColorAnimation { duration: 30000 } }
+    }
     // the stroke: a flat band of ink with dry-brush edges, painted once per pack
     Canvas {
         id: brush

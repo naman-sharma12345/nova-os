@@ -25,7 +25,7 @@ Glass {
                 model: ["M", "T", "W", "T", "F", "S", "S"]
                 Text { required property string modelData
                        width: cal.cw; height: 20; horizontalAlignment: Text.AlignHCenter; text: modelData
-                       color: Theme.t.gold; font.family: Theme.display; font.pixelSize: 11; font.letterSpacing: 1 }
+                       color: Theme.gold; font.family: Theme.display; font.pixelSize: 11; font.letterSpacing: 1 }
             }
             Repeater {
                 model: cal.weeks * 7
@@ -43,15 +43,15 @@ Glass {
                 }
             }
         }
-        Rectangle { width: parent.width; height: 1; color: Theme.alpha(Theme.t.gold, 0.18); visible: Theme.desk.events.length > 0 }
+        Rectangle { width: parent.width; height: 1; color: Theme.alpha(Theme.gold, 0.18); visible: Theme.desk.events.length > 0 }
         Repeater {
             model: Theme.desk.events.slice(0, 2)
             Row {
                 required property var modelData
                 spacing: 10
-                Rectangle { width: 5; height: 5; radius: 2.5; color: Theme.t.accent; anchors.verticalCenter: parent.verticalCenter }
+                Rectangle { width: 5; height: 5; radius: 2.5; color: Theme.accent; anchors.verticalCenter: parent.verticalCenter }
                 Text { text: modelData.title; color: Theme.alpha(Theme.t.text, 0.88); font.family: Theme.ui; font.pixelSize: 12; anchors.verticalCenter: parent.verticalCenter }
-                Text { text: "·  " + modelData.when; color: Theme.alpha(Theme.t.gold, 0.85); font.family: Theme.display; font.pixelSize: 12; anchors.verticalCenter: parent.verticalCenter }
+                Text { text: "·  " + modelData.when; color: Theme.alpha(Theme.gold, 0.85); font.family: Theme.display; font.pixelSize: 12; anchors.verticalCenter: parent.verticalCenter }
             }
         }
     }

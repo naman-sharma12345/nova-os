@@ -1,0 +1,11 @@
+[Unit]
+Description=Tenka: look at the hour every quarter hour
+
+[Timer]
+OnStartupSec=5
+OnCalendar=*:0/15
+Persistent=true
+AccuracySec=1min
+
+[Install]
+WantedBy=timers.target

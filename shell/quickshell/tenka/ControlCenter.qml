@@ -70,7 +70,7 @@ PanelWindow {
                 width: parent.width; spacing: 14
                 Item {
                     width: 58; height: 58
-                    Rectangle { anchors.fill: parent; radius: 29; color: Theme.alpha(Theme.t.base, 0.6); border.width: 2; border.color: Theme.t.gold }
+                    Rectangle { anchors.fill: parent; radius: 29; color: Theme.alpha(Theme.t.base, 0.6); border.width: 2; border.color: Theme.gold }
                     Image { source: Theme.t.crest; anchors.centerIn: parent; width: 44; height: 44; mipmap: true }
                 }
                 Column {
@@ -85,7 +85,7 @@ PanelWindow {
                         model: [["\uf023", "loginctl lock-session"], ["\uf011", "qs -c tenka ipc call power toggle"]]
                         Rectangle { required property var modelData; required property int index
                             width: 42; height: 42; radius: 21
-                            color: index === 1 ? Theme.t.accent : Theme.alpha(Theme.t.text, 0.08)
+                            color: index === 1 ? Theme.accent : Theme.alpha(Theme.t.text, 0.08)
                             border.width: index === 1 ? 0 : 1; border.color: Theme.alpha(Theme.t.text, 0.14)
                             Text { anchors.centerIn: parent; text: modelData[0]; font.family: Theme.glyphs; font.pixelSize: 15; color: index === 1 ? Theme.t.ink : Theme.t.text }
                             MouseArea { anchors.fill: parent; onClicked: { cc.open = false; Theme.run(modelData[1]) } } }
@@ -108,14 +108,14 @@ PanelWindow {
                     Rectangle {
                         required property var modelData
                         width: 196; height: 70; radius: 22
-                        color: modelData.on ? (modelData.gold ? Theme.alpha(Theme.t.gold, 0.22) : Theme.alpha(Theme.t.accent, 0.92)) : Theme.alpha(Theme.t.text, 0.07)
-                        border.width: 1; border.color: modelData.on ? Theme.alpha(Theme.t.gold, 0.55) : Theme.alpha(Theme.t.text, 0.12)
+                        color: modelData.on ? (modelData.gold ? Theme.alpha(Theme.gold, 0.22) : Theme.alpha(Theme.accent, 0.92)) : Theme.alpha(Theme.t.text, 0.07)
+                        border.width: 1; border.color: modelData.on ? Theme.alpha(Theme.gold, 0.55) : Theme.alpha(Theme.t.text, 0.12)
                         Behavior on color { ColorAnimation { duration: 180 } }
                         Rectangle {
                             x: 12; anchors.verticalCenter: parent.verticalCenter; width: 44; height: 44; radius: 22
                             color: parent.modelData.on && !parent.modelData.gold ? Theme.alpha(Theme.t.ink, Theme.xia ? 0.14 : 0.18) : Theme.alpha(Theme.t.text, 0.08)
                             Text { anchors.centerIn: parent; text: parent.parent.modelData.g; font.family: Theme.glyphs; font.pixelSize: 17
-                                   color: parent.parent.modelData.on ? (parent.parent.modelData.gold ? Theme.t.gold : Theme.t.ink) : Theme.alpha(Theme.t.text, 0.8) }
+                                   color: parent.parent.modelData.on ? (parent.parent.modelData.gold ? Theme.gold : Theme.t.ink) : Theme.alpha(Theme.t.text, 0.8) }
                         }
                         Column {
                             x: 66; anchors.verticalCenter: parent.verticalCenter; spacing: 2
@@ -141,16 +141,16 @@ PanelWindow {
                 signal moved(real v)
                 width: parent.width; height: 58
                 Text { text: sl.label; color: Theme.alpha(Theme.t.text, 0.6); font.family: Theme.display; font.pixelSize: 12; font.letterSpacing: 4 }
-                Text { anchors.right: parent.right; text: Math.round(sl.v * 100) + "%"; color: Theme.t.gold; font.family: Theme.display; font.pixelSize: 13; font.letterSpacing: 1 }
+                Text { anchors.right: parent.right; text: Math.round(sl.v * 100) + "%"; color: Theme.gold; font.family: Theme.display; font.pixelSize: 13; font.letterSpacing: 1 }
                 Rectangle {
                     id: track; y: 22; width: parent.width; height: 34; radius: 17; color: Theme.alpha(Theme.t.text, 0.09)
                     border.width: 1; border.color: Theme.alpha(Theme.t.text, 0.10)
                     Rectangle {
                         height: parent.height; radius: 17; width: Math.max(height, parent.width * sl.v)
-                        color: Theme.alpha(Theme.t.gold, 0.85)   // flat: value fills are one colour, no gradient
+                        color: Theme.alpha(Theme.gold, 0.85)   // flat: value fills are one colour, no gradient
                         Behavior on width { NumberAnimation { duration: 160 } }
                         Rectangle { anchors.right: parent.right; anchors.rightMargin: 5; anchors.verticalCenter: parent.verticalCenter
-                                    width: 24; height: 24; radius: 12; color: Theme.t.ink; border.width: 2; border.color: Theme.t.gold }
+                                    width: 24; height: 24; radius: 12; color: Theme.t.ink; border.width: 2; border.color: Theme.gold }
                     }
                     Text { x: 14; anchors.verticalCenter: parent.verticalCenter; text: sl.g; font.family: Theme.glyphs; font.pixelSize: 15; color: Theme.t.ink }
                     MouseArea { anchors.fill: parent; onPressed: m => sl.moved(Math.max(0, Math.min(1, m.x / width)))
@@ -168,9 +168,9 @@ PanelWindow {
             // ---- the two paths
             Row {
                 spacing: 12
-                Text { text: "THE TWO PATHS"; color: Theme.t.gold; font.family: Theme.display; font.pixelSize: 13; font.letterSpacing: 6; anchors.verticalCenter: parent.verticalCenter }
+                Text { text: "THE TWO PATHS"; color: Theme.gold; font.family: Theme.display; font.pixelSize: 13; font.letterSpacing: 6; anchors.verticalCenter: parent.verticalCenter }
                 Rectangle { width: 150; height: 1; anchors.verticalCenter: parent.verticalCenter
-                    color: Theme.alpha(Theme.t.gold, 0.35) }
+                    color: Theme.alpha(Theme.gold, 0.35) }
             }
             Row {
                 spacing: 12
@@ -188,12 +188,12 @@ PanelWindow {
                         Rectangle { anchors.fill: parent; radius: 18
                             gradient: Gradient { GradientStop { position: 0.4; color: "transparent" } GradientStop { position: 1; color: Theme.alpha("#000000", 0.75) } } }
                         Rectangle { anchors.fill: parent; radius: 18; color: "transparent"; border.width: parent.cur ? 2 : 1
-                                    border.color: parent.cur ? Theme.t.gold : Theme.alpha(Theme.t.text, 0.2) }
+                                    border.color: parent.cur ? Theme.gold : Theme.alpha(Theme.t.text, 0.2) }
                         Column { x: 14; anchors.bottom: parent.bottom; anchors.bottomMargin: 10
                             Text { text: parent.parent.modelData[1].toUpperCase(); color: "#f4ede0"; font.family: Theme.display; font.pixelSize: 17; font.letterSpacing: 5 }
                             Text { text: parent.parent.modelData[2]; color: Theme.alpha("#f4ede0", 0.7); font.family: Theme.ui; font.pixelSize: 11 } }
                         Rectangle { visible: parent.cur; anchors.right: parent.right; anchors.top: parent.top; anchors.margins: 10
-                                    width: 22; height: 22; radius: 11; color: Theme.t.gold
+                                    width: 22; height: 22; radius: 11; color: Theme.gold
                                     Text { anchors.centerIn: parent; text: "\uf00c"; font.family: Theme.glyphs; font.pixelSize: 11; color: "#1a1410" } }
                         MouseArea { anchors.fill: parent; onClicked: Theme.run("tenka-theme " + parent.modelData[0]) }
                     }
@@ -211,7 +211,7 @@ PanelWindow {
         default property alias content: inner.data
         width: parent ? parent.width : 0
         height: inner.childrenRect.height + 34
-        readonly property color rc: Theme.alpha(Theme.t.gold, 0.38)
+        readonly property color rc: Theme.alpha(Theme.gold, 0.38)
         // 1px rules with a gap where the label sits (nothing painted behind it, so it reads on glass)
         Rectangle { x: 0; y: 8; width: 1; height: bx.height - 8; color: bx.rc }
         Rectangle { x: bx.width - 1; y: 8; width: 1; height: bx.height - 8; color: bx.rc }
@@ -219,7 +219,7 @@ PanelWindow {
         Rectangle { x: 0; y: 8; width: 8; height: 1; color: bx.rc }
         Rectangle { x: lbl.x + lbl.width + 8; y: 8; width: Math.max(0, bx.width - x); height: 1; color: bx.rc }
         Text { id: lbl; x: 16; y: 1; text: bx.num + "   " + bx.label
-               color: Theme.t.gold; font.family: Theme.display; font.pixelSize: 11; font.letterSpacing: 4 }
+               color: Theme.gold; font.family: Theme.display; font.pixelSize: 11; font.letterSpacing: 4 }
         Column { id: inner; x: 18; y: 26; width: bx.width - 36; spacing: 0 }
     }
     component Row2: Item {
@@ -234,8 +234,8 @@ PanelWindow {
             Rectangle {   // the toggle: a small square, outlined when off, filled when on
                 visible: r2.toggle; anchors.verticalCenter: parent.verticalCenter
                 width: 11; height: 11; radius: Theme.xia ? 6 : 1; rotation: Theme.xia ? 0 : 45
-                color: r2.on ? Theme.t.accent : "transparent"; border.width: 1
-                border.color: r2.on ? Theme.t.accent : Theme.alpha(Theme.t.text, 0.45)
+                color: r2.on ? Theme.accent : "transparent"; border.width: 1
+                border.color: r2.on ? Theme.accent : Theme.alpha(Theme.t.text, 0.45)
             }
         }
         Rectangle { visible: !r2.last; anchors.bottom: parent.bottom; width: parent.width; height: 1; color: Theme.alpha(Theme.t.text, 0.08) }
@@ -247,14 +247,14 @@ PanelWindow {
         signal moved(real v)
         width: parent ? parent.width : 0; height: 46
         Text { y: 4; text: hs.k; color: Theme.t.text; font.family: Theme.display; font.pixelSize: 16 }
-        Text { y: 6; anchors.right: parent.right; text: Math.round(hs.v * 100); color: Theme.t.gold; font.family: Theme.display; font.pixelSize: 13; font.letterSpacing: 1 }
+        Text { y: 6; anchors.right: parent.right; text: Math.round(hs.v * 100); color: Theme.gold; font.family: Theme.display; font.pixelSize: 13; font.letterSpacing: 1 }
         Item {
             y: 32; width: parent.width; height: 12
             Rectangle { anchors.verticalCenter: parent.verticalCenter; width: parent.width; height: 1; color: Theme.alpha(Theme.t.text, 0.2) }
-            Rectangle { anchors.verticalCenter: parent.verticalCenter; width: parent.width * hs.v; height: 2; color: Theme.t.gold   // value fills are one colour (gold), as in Lite
+            Rectangle { anchors.verticalCenter: parent.verticalCenter; width: parent.width * hs.v; height: 2; color: Theme.gold   // value fills are one colour (gold), as in Lite
                         Behavior on width { NumberAnimation { duration: 140 } } }
             Rectangle { x: parent.width * hs.v - width / 2; anchors.verticalCenter: parent.verticalCenter
-                        width: 9; height: 9; rotation: 45; color: Theme.t.gold }
+                        width: 9; height: 9; rotation: 45; color: Theme.gold }
             MouseArea { anchors.fill: parent; anchors.margins: -10
                         onPressed: m => hs.moved(Math.max(0, Math.min(1, (m.x - 10) / (width - 20))))
                         onPositionChanged: m => hs.moved(Math.max(0, Math.min(1, (m.x - 10) / (width - 20)))) }
@@ -273,7 +273,7 @@ PanelWindow {
         Behavior on opacity { NumberAnimation { duration: 220 } }
         MouseArea { anchors.fill: parent }
         Rectangle { anchors.fill: parent; radius: Theme.ledgerR; color: Theme.alpha(Theme.t.base, Theme.selfBlur ? 0.9 : 0.78)
-                    border.width: 1; border.color: Theme.alpha(Theme.t.gold, 0.5) }
+                    border.width: 1; border.color: Theme.alpha(Theme.gold, 0.5) }
 
         Column {
             id: lcol
@@ -286,7 +286,7 @@ PanelWindow {
                        font.family: Theme.display; font.pixelSize: 64; font.letterSpacing: 2 }
                 Column {
                     anchors.right: parent.right; anchors.top: parent.top; anchors.topMargin: 12; spacing: 4
-                    Text { anchors.right: parent.right; text: Theme.ap(Theme.now) + "  ·  " + Qt.formatDate(Theme.now, "dddd").toUpperCase(); color: Theme.t.gold
+                    Text { anchors.right: parent.right; text: Theme.ap(Theme.now) + "  ·  " + Qt.formatDate(Theme.now, "dddd").toUpperCase(); color: Theme.gold
                            font.family: Theme.display; font.pixelSize: 12; font.letterSpacing: 4 }
                     Text { anchors.right: parent.right; text: Qt.formatDate(Theme.now, "d MMMM"); color: Theme.alpha(Theme.t.text, 0.7)
                            font.family: Theme.display; font.pixelSize: 14; font.letterSpacing: 1 }
@@ -330,7 +330,7 @@ PanelWindow {
                                 readonly property bool cur: Theme.t.name === modelData[0]
                                 spacing: 9
                                 Rectangle { anchors.verticalCenter: parent.verticalCenter; width: 8; height: 8; rotation: 45
-                                            color: parent.cur ? Theme.t.gold : "transparent"; border.width: 1; border.color: Theme.t.gold }
+                                            color: parent.cur ? Theme.gold : "transparent"; border.width: 1; border.color: Theme.gold }
                                 Text { text: parent.modelData[1]; color: parent.cur ? Theme.t.text : Theme.alpha(Theme.t.text, 0.5)
                                        font.family: Theme.display; font.pixelSize: 16; font.letterSpacing: 1
                                        MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: Theme.run("tenka-theme " + parent.parent.modelData[0]) } }
@@ -348,7 +348,7 @@ PanelWindow {
                     Text {
                         required property var modelData; required property int index
                         text: modelData[0].toUpperCase(); font.family: Theme.display; font.pixelSize: 12; font.letterSpacing: 4
-                        color: ra.containsMouse ? (index === 3 ? Theme.t.accent : Theme.t.gold) : Theme.alpha(Theme.t.text, 0.62)
+                        color: ra.containsMouse ? (index === 3 ? Theme.accent : Theme.gold) : Theme.alpha(Theme.t.text, 0.62)
                         MouseArea { id: ra; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
                                     onClicked: { cc.open = false; Theme.run(parent.modelData[1]) } }
                     }

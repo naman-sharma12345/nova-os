@@ -55,13 +55,13 @@ PanelWindow {
         scale: osd.shown ? 1 : 0.92
         Behavior on opacity { NumberAnimation { duration: 180 } }
         Behavior on scale { NumberAnimation { duration: 260; easing.type: Easing.OutBack } }
-        Rectangle { x: 14; anchors.verticalCenter: parent.verticalCenter; width: 44; height: 44; radius: 22; color: Theme.t.accent
+        Rectangle { x: 14; anchors.verticalCenter: parent.verticalCenter; width: 44; height: 44; radius: 22; color: Theme.accent
             Text { anchors.centerIn: parent; text: osd.glyph; font.family: Theme.glyphs; font.pixelSize: 17; color: Theme.t.ink } }
         Column {
             x: 74; anchors.verticalCenter: parent.verticalCenter; spacing: 8; width: parent.width - 74 - 70
             Text { text: osd.label; color: Theme.alpha(Theme.t.text, 0.6); font.family: Theme.display; font.pixelSize: 11; font.letterSpacing: 4 }
             Rectangle { width: parent.width; height: 6; radius: 3; color: Theme.alpha(Theme.t.text, 0.14)
-                Rectangle { height: parent.height; radius: 3; width: parent.width * Math.min(1, osd.v); color: Theme.t.gold
+                Rectangle { height: parent.height; radius: 3; width: parent.width * Math.min(1, osd.v); color: Theme.gold
                     Behavior on width { NumberAnimation { duration: 140 } } } }
         }
         Text { anchors.right: parent.right; anchors.rightMargin: 22; anchors.verticalCenter: parent.verticalCenter

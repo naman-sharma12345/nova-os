@@ -60,7 +60,7 @@ PanelWindow {
         Rectangle {   // the gold hairline along the lower edge
             anchors.bottom: parent.bottom; anchors.horizontalCenter: parent.horizontalCenter
             width: parent.width - 34; height: 1
-            color: Theme.alpha(Theme.t.gold, 0.4)
+            color: Theme.alpha(Theme.gold, 0.4)
         }
 
         // the meter: VOLUME ────◆──── 64, for a breath after a key press
@@ -71,15 +71,15 @@ PanelWindow {
             Behavior on opacity { NumberAnimation { duration: 160 } }
             Text { id: mk; anchors.verticalCenter: parent.verticalCenter; anchors.verticalCenterOffset: -1
                    text: Theme.osdKind === "brightness" ? "LIGHT" : (Theme.osdValue <= 0.001 ? "MUTED" : "VOLUME")
-                   color: Theme.t.gold; font.family: Theme.display; font.pixelSize: 10; font.letterSpacing: 4; width: 74 }
+                   color: Theme.gold; font.family: Theme.display; font.pixelSize: 10; font.letterSpacing: 4; width: 74 }
             Item {
                 x: 82; anchors.verticalCenter: parent.verticalCenter; anchors.verticalCenterOffset: -1
                 width: parent.width - 82 - 44; height: 10
                 Rectangle { anchors.verticalCenter: parent.verticalCenter; width: parent.width; height: 1; color: Theme.alpha(Theme.t.text, 0.22) }
-                Rectangle { anchors.verticalCenter: parent.verticalCenter; width: parent.width * Math.min(1, Theme.osdValue); height: 2; color: Theme.t.gold
+                Rectangle { anchors.verticalCenter: parent.verticalCenter; width: parent.width * Math.min(1, Theme.osdValue); height: 2; color: Theme.gold
                             Behavior on width { NumberAnimation { duration: 120 } } }
                 Rectangle { x: parent.width * Math.min(1, Theme.osdValue) - 4; anchors.verticalCenter: parent.verticalCenter
-                            width: 8; height: 8; rotation: 45; color: Theme.t.gold
+                            width: 8; height: 8; rotation: 45; color: Theme.gold
                             Behavior on x { NumberAnimation { duration: 120 } } }
             }
             Text { anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter; anchors.verticalCenterOffset: -1
@@ -92,9 +92,9 @@ PanelWindow {
             y: 6; spacing: 12
             opacity: notch.open || notch.meter ? 0 : 1
             Behavior on opacity { NumberAnimation { duration: 180 } }
-            Text { text: notch.roman[Math.max(0, Math.min(9, notch.wsId - 1))]; color: Theme.t.gold
+            Text { text: notch.roman[Math.max(0, Math.min(9, notch.wsId - 1))]; color: Theme.gold
                    font.family: Theme.display; font.pixelSize: 13; font.letterSpacing: 2; anchors.verticalCenter: parent.verticalCenter }
-            Rectangle { width: 6; height: 6; radius: 3; color: Theme.t.accent; anchors.verticalCenter: parent.verticalCenter }
+            Rectangle { width: 6; height: 6; radius: 3; color: Theme.accent; anchors.verticalCenter: parent.verticalCenter }
             Text { text: Theme.hm(Theme.now) + " " + Theme.ap(Theme.now); color: Theme.t.text
                    font.family: Theme.display; font.pixelSize: 14; font.letterSpacing: 1.5; anchors.verticalCenter: parent.verticalCenter }
         }
@@ -110,14 +110,14 @@ PanelWindow {
                    color: Theme.alpha(Theme.t.text, 0.7); font.family: Theme.display; font.pixelSize: 16; font.letterSpacing: 4 }
             Text { x: 8; anchors.top: big.bottom; anchors.topMargin: 2
                    text: Qt.formatDate(Theme.now, "dddd d MMMM").toUpperCase() + "  ·  " + Theme.hourName(Theme.now).toUpperCase()
-                   color: Theme.alpha(Theme.t.gold, 0.9); font.family: Theme.display; font.pixelSize: 10; font.letterSpacing: 3 }
-            Rectangle { x: 336; y: 8; width: 1; height: parent.height - 16; color: Theme.alpha(Theme.t.gold, 0.25) }
+                   color: Theme.alpha(Theme.gold, 0.9); font.family: Theme.display; font.pixelSize: 10; font.letterSpacing: 3 }
+            Rectangle { x: 336; y: 8; width: 1; height: parent.height - 16; color: Theme.alpha(Theme.gold, 0.25) }
             Column {
                 x: 358; y: 10; width: parent.width - 366; spacing: 6
                 Row {   // a numbered small-caps label, the ledger's way of naming a box
                     spacing: 8
-                    Text { text: "02"; color: Theme.alpha(Theme.t.gold, 0.7); font.family: Theme.display; font.pixelSize: 10; font.letterSpacing: 3; anchors.verticalCenter: parent.verticalCenter }
-                    Rectangle { width: 18; height: 1; color: Theme.alpha(Theme.t.gold, 0.55); anchors.verticalCenter: parent.verticalCenter }
+                    Text { text: "02"; color: Theme.alpha(Theme.gold, 0.7); font.family: Theme.display; font.pixelSize: 10; font.letterSpacing: 3; anchors.verticalCenter: parent.verticalCenter }
+                    Rectangle { width: 18; height: 1; color: Theme.alpha(Theme.gold, 0.55); anchors.verticalCenter: parent.verticalCenter }
                     Text { text: notch.player ? "NOW PLAYING" : "THE HOUR'S WORD"; color: Theme.alpha(Theme.t.text, 0.55)
                            font.family: Theme.display; font.pixelSize: 10; font.letterSpacing: 4 }
                 }

@@ -1,0 +1,6 @@
+[Unit]
+Description=Tenka: the hour and the season the desk wears
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/tenka-hour

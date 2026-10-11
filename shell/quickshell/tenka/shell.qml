@@ -28,6 +28,7 @@ ShellRoot {
     Overview {}
     Switcher {}
     Slip {}
+    Seal {}
     ControlCenter {}
     Notifications {}
     Osd {}

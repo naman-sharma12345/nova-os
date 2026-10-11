@@ -1,6 +1,7 @@
 #!/bin/sh
 # Started by Hyprland at login.
 tenka-theme --init
+rm -f "${XDG_RUNTIME_DIR:-/tmp}/tenka-seal"   # set again by the shell once it holds the polkit agent
 # Lite's denser file-manager glass is for xfwm4 and for performance mode (no blur); with blur on,
 # Hyprland's glass goes back to clear
 if [ -e "$HOME/.config/tenka/perf" ]; then
@@ -24,7 +25,9 @@ else
 fi
 hypridle >/dev/null 2>&1 &
 nm-applet --indicator >/dev/null 2>&1 &
-for a in /usr/libexec/hyprpolkitagent /usr/lib/hyprpolkitagent/hyprpolkitagent /usr/lib/x86_64-linux-gnu/libexec/hyprpolkitagent; do [ -x "$a" ] && { "$a" >/dev/null 2>&1 & break; }; done
+# the shell is the polkit agent (The Seal, Seal.qml); hyprpolkitagent stands in when the shell has not registered
+( sleep 15; [ -e "${XDG_RUNTIME_DIR:-/tmp}/tenka-seal" ] ||
+  for a in /usr/libexec/hyprpolkitagent /usr/lib/hyprpolkitagent/hyprpolkitagent /usr/lib/x86_64-linux-gnu/libexec/hyprpolkitagent; do [ -x "$a" ] && { exec "$a" >/dev/null 2>&1; }; done ) &
 wl-paste --type text --watch cliphist store >/dev/null 2>&1 &
 wl-paste --type image --watch cliphist store >/dev/null 2>&1 &
 sleep 1; tenka-sound login &

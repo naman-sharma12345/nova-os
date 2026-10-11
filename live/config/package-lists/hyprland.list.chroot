@@ -32,6 +32,7 @@ gvfs
 imv
 jq
 python3
+python3-gi
 
 # the Tenka shell (Quickshell) and what it uses
 quickshell

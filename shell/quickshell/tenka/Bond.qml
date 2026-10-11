@@ -9,6 +9,7 @@ import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Bluetooth
 import QtQuick
+import QtQuick.Controls
 
 PanelWindow {
     id: bond
@@ -21,6 +22,11 @@ PanelWindow {
     property string pendAct: ""       // "pair" | "connect" | "part"
     property int pendAge: 0
     property bool pendSeenPairing: false
+    // a question from the pairing agent (tenka-bond-agent): {id, kind, name, address, code, service, entered}
+    // kind: pin | passkey | confirm | authorize | service | display-pin | display-passkey
+    property var q: null
+    readonly property bool typing: q !== null && (q.kind === "pin" || q.kind === "passkey")
+    readonly property bool shows: q !== null && (q.kind === "confirm" || q.kind === "display-pin" || q.kind === "display-passkey")
     // sim (renders only): TENKA_BT_SIM=1 gives a made-up radio and devices
     readonly property string sim: Quickshell.env("TENKA_BT_SIM") || ""
     property bool simRadio: true
@@ -58,14 +64,50 @@ PanelWindow {
         function open(): void { bond.reveal() }
         function hide(): void { bond.open = false }
         function toggle(): void { bond.open ? (bond.open = false) : bond.reveal() }
-        function state(): string { return (bond.open ? "open" : "closed") + " radio=" + (bond.hasRadio ? (bond.radio ? "on" : "off") : "none") + " devs=" + bond.devs.length + " sel=" + bond.sel + (bond.note ? " note=" + bond.note : "") }
+        function ask(): void { askFile.reload() }
+        function state(): string { return (bond.open ? "open" : "closed") + (bond.q ? " ask=" + bond.q.kind : "") + " radio=" + (bond.hasRadio ? (bond.radio ? "on" : "off") : "none") + " devs=" + bond.devs.length + " sel=" + bond.sel + (bond.note ? " note=" + bond.note : "") }
     }
     Connections { target: Theme; function onAskBluetooth() { bond.reveal() } }
     onOpenChanged: {
         Theme.hush = open
         if (sim === "" && adapter && adapter.enabled) adapter.discovering = open
-        if (!open) { note = ""; pendAddr = "" }
+        if (!open) { if (q) refuse(); note = ""; pendAddr = "" }
     }
+    // the agent leaves its question in a private file and rings `qs ipc call bluetooth ask`
+    FileView {
+        id: askFile
+        path: (Quickshell.env("XDG_RUNTIME_DIR") || "/tmp") + "/tenka-bond/ask.json"
+        printErrors: false
+        onLoaded: bond.heard(text())
+    }
+    Process {
+        id: answerP
+        property string line: ""
+        command: ["tenka-bond-agent", "answer"]
+        stdinEnabled: true
+        onStarted: { write(line + "\n"); line = "" }
+    }
+    function heard(t) {
+        let o = null
+        try { o = JSON.parse(t) } catch (e) { return }
+        if (!o || o.kind === "none") { if (q && (!o || o.id === q.id)) q = null; return }
+        const fresh = !q || q.id !== o.id
+        if (!open) reveal()
+        q = o
+        if (fresh) { const i = devs.findIndex(d => d.address === o.address); if (i >= 0) sel = i }
+        if (fresh) { pendAge = 0; field.text = "" }
+        if (typing) field.forceActiveFocus(); else keys.forceActiveFocus()
+    }
+    function reply(v) {
+        if (!q) return
+        if (q.kind !== "display-pin" && q.kind !== "display-passkey" && sim === "") {
+            answerP.line = q.id + " " + v; answerP.running = true
+        }
+        if (v === "no" || v === "cancel") say("Refused " + q.name + ".", true)
+        q = null; field.text = ""; keys.forceActiveFocus()
+    }
+    function refuse() { reply(q && (q.kind === "confirm" || q.kind === "authorize" || q.kind === "service") ? "no" : "cancel") }
+    function spaced(c) { return c.length === 6 ? c.slice(0, 3) + " " + c.slice(3) : c }
     Timer { interval: 1000; repeat: true; running: bond.open; onTriggered: { bond.tick++; bond.follow() } }
 
     function reveal() {
@@ -74,6 +116,13 @@ PanelWindow {
         if (sim !== "" && Quickshell.env("TENKA_BT_SIM_SEL")) sel = parseInt(Quickshell.env("TENKA_BT_SIM_SEL"))
         if (sim !== "" && Quickshell.env("TENKA_BT_SIM_OFF")) simRadio = false
         keys.forceActiveFocus()
+        const sq = sim !== "" ? (Quickshell.env("TENKA_BT_SIM_ASK") || "") : ""
+        if (sq !== "" && !q) {
+            const d = devs[Math.min(sel, devs.length - 1)]
+            q = { id: 1, kind: sq, name: d ? d.name : "a device", address: d ? d.address : "", code: Quickshell.env("TENKA_BT_SIM_CODE") || "",
+                  service: "music", entered: parseInt(Quickshell.env("TENKA_BT_SIM_ENTERED") || "-1") }
+            if (typing) { field.text = Quickshell.env("TENKA_BT_SIM_TYPED") || ""; field.forceActiveFocus() }
+        }
     }
     function say(t, err) { note = t; noteErr = !!err }
     function kind(d) {
@@ -109,6 +158,7 @@ PanelWindow {
         if (pendAddr === "" || sim !== "") return
         const d = (adapter ? adapter.devices.values : []).find(x => x.address === pendAddr)
         if (!d) { say("The device went quiet.", true); pendAddr = ""; return }
+        if (q !== null) return              // the clock waits while the device asks for its code
         pendAge++
         if (pendAct === "pair") {
             if (d.pairing) pendSeenPairing = true
@@ -131,7 +181,7 @@ PanelWindow {
     Item {
         id: card
         readonly property int rows: Math.max(3, Math.min(7, bond.devs.length))
-        width: 620; height: 150 + rows * 50 + (bond.note !== "" ? 30 : 0)
+        width: 620; height: 150 + rows * 50 + (bond.q ? 118 : 0) + (bond.note !== "" ? 30 : 0)
         anchors.horizontalCenter: parent.horizontalCenter
         y: Math.max(40, parent.height * 0.22) + (bond.open ? 0 : 16)
         opacity: bond.open ? 1 : 0
@@ -221,15 +271,73 @@ PanelWindow {
                 MouseArea { anchors.fill: parent; onClicked: { bond.sel = row.index; bond.choose() } }
             }
         }
+        Item {
+            id: quest
+            visible: bond.q !== null
+            readonly property string who: bond.q ? String(bond.q.name).toUpperCase() : ""
+            x: 30; y: list.y + list.height + 14; width: parent.width - 60; height: 104
+            Rectangle { width: parent.width; height: 1; color: Theme.alpha(Theme.gold, 0.25) }
+            Text {
+                x: 4; y: 16; width: parent.width - 8; elide: Text.ElideRight
+                color: Theme.alpha(Theme.gold, 0.85); font.family: Theme.display; font.pixelSize: 11; font.letterSpacing: 4
+                text: !bond.q ? "" : bond.q.kind === "pin" ? "THE PIN FOR  " + quest.who
+                    : bond.q.kind === "passkey" ? "THE PASSKEY FOR  " + quest.who
+                    : bond.q.kind === "confirm" ? "DOES  " + quest.who + "  SHOW THIS NUMBER"
+                    : bond.q.kind === "authorize" ? "LET  " + quest.who + "  PAIR"
+                    : bond.q.kind === "service" ? "LET  " + quest.who + "  USE  " + String(bond.q.service).toUpperCase()
+                    : "TYPE THIS ON  " + quest.who + ",  THEN ENTER THERE"
+            }
+            TextField {
+                id: field
+                visible: bond.typing
+                y: 34; width: parent.width; height: 52
+                background: Item { Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1
+                                   color: field.activeFocus ? Theme.accent : Theme.alpha(Theme.gold, 0.4) } }
+                placeholderText: bond.q && bond.q.kind === "passkey" ? "six digits" : "the pin it asks for, often 0000"
+                placeholderTextColor: Theme.alpha(Theme.t.text, 0.38)
+                maximumLength: bond.q && bond.q.kind === "passkey" ? 6 : 16
+                validator: RegularExpressionValidator { regularExpression: bond.q && bond.q.kind === "passkey" ? /[0-9]{0,6}/ : /[ -~]{0,16}/ }
+                inputMethodHints: bond.q && bond.q.kind === "passkey" ? Qt.ImhDigitsOnly : Qt.ImhNone
+                color: Theme.t.text; font.family: Theme.display; font.pixelSize: 24; font.letterSpacing: 6; leftPadding: 4
+                selectionColor: Theme.alpha(Theme.accent, 0.5)
+                Keys.onEscapePressed: bond.refuse()
+                onAccepted: if (text !== "") bond.reply(text)
+            }
+            Row {
+                visible: bond.shows
+                x: 4; y: 38; spacing: 4
+                Repeater {
+                    model: bond.q && bond.shows ? bond.spaced(String(bond.q.code)).split("") : []
+                    Text {
+                        required property string modelData
+                        required property int index
+                        // digits already typed on the device turn gold (DisplayPasskey counts them)
+                        readonly property int digit: index > 3 ? index - 1 : index
+                        color: bond.q && bond.q.entered > digit && modelData !== " " ? Theme.gold : Theme.t.text
+                        text: modelData; font.family: Theme.display; font.pixelSize: 36; width: modelData === " " ? 18 : implicitWidth
+                    }
+                }
+            }
+            Text {
+                visible: bond.q !== null && !bond.typing && !bond.shows
+                x: 4; y: 44; width: parent.width - 8; elide: Text.ElideRight
+                text: bond.q ? String(bond.q.name) + (bond.q.address ? "   ·   " + bond.q.address : "") : ""
+                color: Theme.t.text; font.family: Theme.display; font.pixelSize: 21
+            }
+        }
         Text {
             visible: bond.note !== ""
-            x: 34; y: list.y + list.height + 10; width: parent.width - 68; elide: Text.ElideRight
+            x: 34; y: bond.q ? quest.y + quest.height + 2 : list.y + list.height + 10; width: parent.width - 68; elide: Text.ElideRight
             text: bond.note; color: bond.noteErr ? Theme.accent : Theme.alpha(Theme.t.text, 0.62)
             font.family: Theme.display; font.pixelSize: 14
         }
         Text {
             x: 34; anchors.bottom: parent.bottom; anchors.bottomMargin: 24
-            text: (bond.cur && bond.cur.connected ? "ENTER  to part" : "ENTER  to join") + (bond.cur && bond.cur.paired ? "      F  to forget" : "")
+            text: bond.q ? (bond.typing ? "ENTER  to send      ESC  to refuse"
+                          : bond.q.kind === "confirm" ? "ENTER  if it matches      ESC  if not"
+                          : bond.shows ? "type it on the device      ESC  to hide"
+                          : "ENTER  to allow      ESC  to refuse")
+                : (bond.cur && bond.cur.connected ? "ENTER  to part" : "ENTER  to join") + (bond.cur && bond.cur.paired ? "      F  to forget" : "")
                 + "      R  to look again      ESC  to close"
             color: Theme.alpha(Theme.t.text, 0.45); font.family: Theme.display; font.pixelSize: 12; font.letterSpacing: 2
         }
@@ -237,9 +345,16 @@ PanelWindow {
 
     Item {
         id: keys
-        focus: bond.open
+        focus: bond.open && !bond.typing
         Keys.onPressed: e => {
             const n = bond.devs.length
+            if (bond.q !== null) {
+                if (e.key === Qt.Key_Escape) bond.shows && bond.q.kind !== "confirm" ? (bond.q = null) : bond.refuse()
+                else if (e.key === Qt.Key_Return || e.key === Qt.Key_Enter) { if (!bond.typing && (bond.q.kind === "confirm" || !bond.shows)) bond.reply("yes") }
+                else return
+                e.accepted = true
+                return
+            }
             if (e.key === Qt.Key_Escape) bond.open = false
             else if (e.key === Qt.Key_Down || e.key === Qt.Key_Tab) { if (n) bond.sel = (bond.sel + 1) % n }
             else if (e.key === Qt.Key_Up || e.key === Qt.Key_Backtab) { if (n) bond.sel = (bond.sel - 1 + n) % n }

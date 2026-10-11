@@ -25,6 +25,7 @@ else
 fi
 hypridle >/dev/null 2>&1 &
 nm-applet --indicator >/dev/null 2>&1 &
+tenka-bond-agent >/dev/null 2>&1 &   # Bluetooth PIN / passkey questions, asked inside The Bond (Bond.qml)
 # the shell is the polkit agent (The Seal, Seal.qml); hyprpolkitagent stands in when the shell has not registered
 ( sleep 15; [ -e "${XDG_RUNTIME_DIR:-/tmp}/tenka-seal" ] ||
   for a in /usr/libexec/hyprpolkitagent /usr/lib/hyprpolkitagent/hyprpolkitagent /usr/lib/x86_64-linux-gnu/libexec/hyprpolkitagent; do [ -x "$a" ] && { exec "$a" >/dev/null 2>&1; }; done ) &

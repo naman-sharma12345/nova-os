@@ -8,5 +8,8 @@
   <property name="last-show-hidden" type="bool" value="false"/>
   <property name="misc-single-click" type="bool" value="false"/>
   <!-- window titles read as the folder alone ("Documents"), never "tk - Thunar": the app is called Files everywhere else -->
+  <!-- Thunar 4.20's file-highlight drawing fills a selected item with the full accent colour (a bright jade/red block)
+       and ignores the theme; without it the selection is the theme's quiet tinted pill under the name -->
+  <property name="misc-highlighting-enabled" type="bool" value="false"/>
   <property name="misc-window-title-style" type="string" value="THUNAR_WINDOW_TITLE_STYLE_FOLDER_NAME_WITHOUT_THUNAR_SUFFIX"/>
 </channel>

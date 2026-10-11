@@ -17,8 +17,9 @@ PanelWindow {
     readonly property bool open: flow !== null || sim
     readonly property string message: flow ? flow.message : "Authentication is needed to install software."
     readonly property string prompt: flow ? (flow.inputPrompt || "Password:") : "Password:"
-    readonly property string note: flow ? flow.supplementaryMessage : (Quickshell.env("TENKA_SEAL_SIM") === "wrong" ? "Sorry, that didn't work. Please try again." : "")
-    readonly property bool noteIsError: flow ? flow.supplementaryIsError : note !== ""
+    property bool wrong: false   // a refused word: polkit does not always send its own message, so we say it
+    readonly property string note: flow ? (flow.supplementaryMessage || (wrong ? "That word was not right. Try again." : "")) : (Quickshell.env("TENKA_SEAL_SIM") === "wrong" ? "Sorry, that didn't work. Please try again." : "")
+    readonly property bool noteIsError: flow ? (flow.supplementaryIsError || (wrong && !flow.supplementaryMessage)) : note !== ""
     readonly property bool echo: flow ? flow.responseVisible : false
     readonly property string who: Quickshell.env("USER") || "you"
     visible: open || card.opacity > 0.01
@@ -32,14 +33,14 @@ PanelWindow {
     PolkitAgent { id: agent }
     // tells tenka-session the shell holds the agent, so hyprpolkitagent is not needed
     Process { running: agent.isRegistered; command: ["sh", "-c", "touch \"${XDG_RUNTIME_DIR:-/tmp}/tenka-seal\""] }
-    onOpenChanged: { Theme.hush = open; if (open) { field.text = ""; field.forceActiveFocus() } }
+    onOpenChanged: { Theme.hush = open; wrong = false; if (open) { field.text = ""; field.forceActiveFocus() } }
     onFlowChanged: if (flow) { field.text = ""; field.forceActiveFocus() }
     Connections {
         target: seal.flow
-        function onAuthenticationFailed() { field.text = ""; field.forceActiveFocus() }
+        function onAuthenticationFailed() { seal.wrong = true; field.text = ""; field.forceActiveFocus() }
         function onIsResponseRequiredChanged() { if (seal.flow && seal.flow.isResponseRequired) field.forceActiveFocus() }
     }
-    function give() { if (flow && flow.isResponseRequired) flow.submit(field.text); field.text = "" }
+    function give() { if (flow && flow.isResponseRequired) { wrong = false; flow.submit(field.text) } field.text = "" }
     function refuse() { if (flow) flow.cancelAuthenticationRequest() }
 
     // the desk steps back: one flat wash, no blur needed

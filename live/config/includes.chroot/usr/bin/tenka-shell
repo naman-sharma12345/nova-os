@@ -63,7 +63,11 @@ while :; do
   esac
   pgrep -x qs >/dev/null 2>&1 && { sleep 5; continue; }   # another instance took the desk (-n exit)
   echo "$(date +%T) rung $rung ended (status $st after ${up}s)" >> "$STATE/log"
-  if [ "$up" -lt 120 ]; then
+  # only a death by signal (segfault, abort: status above 128) is a drawing fault worth a safer rung;
+  # a config error (qs exits 1 or 255 at load) would fail on every rung alike, so it waits and retries in place
+  if [ "$st" -le 128 ] || [ "$st" -eq 255 ]; then
+    echo "$(date +%T) not a drawing fault (status $st): staying on rung $rung" >> "$STATE/log"
+  elif [ "$up" -lt 120 ]; then
     fails=$((fails + 1)); now=$(date +%s)
     [ "$first" -eq 0 ] && first=$now
     if [ "$fails" -ge 2 ] && [ $((now - first)) -le 120 ] && [ "$rung" -lt 4 ]; then

@@ -103,17 +103,24 @@ PanelWindow {
         if (sim !== "") return
         busy = true; noteErr = false; note = "Joining " + ssid + " …"
         joinQ.ssid = ssid
-        joinQ.cmd = known({ ssid: ssid }) && word === ""
-            ? ["sh", "-c", "nmcli con up id \"$1\" 2>&1; echo \"@rc $?\"", "sh", ssid]
-            : word === "" ? ["sh", "-c", "nmcli dev wifi connect \"$1\" 2>&1; echo \"@rc $?\"", "sh", ssid]
-            : ["sh", "-c", "nmcli dev wifi connect \"$1\" password \"$2\" 2>&1; echo \"@rc $?\"", "sh", ssid, word]
+        // A password never rides a command line: tenka-air-join reads it from stdin and hands
+        // nmcli a private 0600 file, so it never shows in the process table.
+        const n = nets.find(x => x.ssid === ssid)
+        joinQ.word = word
+        joinQ.cmd = word !== "" ? ["tenka-air-join", ssid, n ? n.sec : ""]
+            : known({ ssid: ssid }) ? ["sh", "-c", "nmcli con up id \"$1\" 2>&1; echo \"@rc $?\"", "sh", ssid]
+            : ["sh", "-c", "nmcli dev wifi connect \"$1\" 2>&1; echo \"@rc $?\"", "sh", ssid]
         joinQ.running = true
     }
     Process {
         id: joinQ
         property string ssid: ""
+        property string word: ""
         property var cmd: []
         command: cmd
+        stdinEnabled: true
+        onStarted: { if (word !== "") write(word + "\n"); word = "" }
+        onExited: word = ""
         stdout: StdioCollector { onStreamFinished: air.joined(text) }
     }
     function joined(t) {

@@ -1,0 +1,36 @@
+#!/bin/sh
+# tenka-air-join SSID [SECURITY] — join a sealed Wi-Fi network for The Air (Wifi.qml).
+# The password arrives on stdin (one line), never on a command line: it is written to a
+# 0600 file in $XDG_RUNTIME_DIR and handed to `nmcli con up ... passwd-file`, so it never
+# shows in the process table. read/printf are shell builtins. The file is removed on exit.
+# A profile this script had to create is deleted again if the join fails.
+# Prints nmcli's own words, then "@rc N".
+S=$1; SEC=${2:-}
+[ -n "$S" ] || { echo "Error: no network named"; echo "@rc 2"; exit 2; }
+IFS= read -r W || true
+D=${XDG_RUNTIME_DIR:-/tmp}
+F=$(umask 077; mktemp "$D/tenka-air.XXXXXX") || { echo "Error: no private place for the word"; echo "@rc 1"; exit 1; }
+trap 'rm -f "$F"' EXIT
+trap 'exit 130' INT TERM HUP
+case $SEC in
+  *WEP*) KM=none; KEY=802-11-wireless-security.wep-key0 ;;
+  *WPA3*) case $SEC in *WPA2*|*WPA1*) KM=wpa-psk ;; *) KM=sae ;; esac; KEY=802-11-wireless-security.psk ;;
+  *) KM=wpa-psk; KEY=802-11-wireless-security.psk ;;
+esac
+printf '%s:%s\n' "$KEY" "$W" > "$F"
+W=
+NEW=0
+if ! nmcli con show id "$S" >/dev/null 2>&1; then
+  if [ "$KM" = none ]; then
+    OUT=$(nmcli con add type wifi con-name "$S" ssid "$S" wifi-sec.key-mgmt none wifi-sec.wep-key-type 2 2>&1)
+  else
+    OUT=$(nmcli con add type wifi con-name "$S" ssid "$S" wifi-sec.key-mgmt "$KM" 2>&1)
+  fi
+  [ $? -eq 0 ] || { printf '%s\n' "$OUT"; echo "@rc 1"; exit 1; }
+  NEW=1
+fi
+nmcli -w 45 con up id "$S" passwd-file "$F" </dev/null 2>&1
+rc=$?
+[ $rc -ne 0 ] && [ $NEW = 1 ] && nmcli con delete id "$S" >/dev/null 2>&1
+echo "@rc $rc"
+exit 0

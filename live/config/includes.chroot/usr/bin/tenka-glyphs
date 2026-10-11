@@ -1,0 +1,94 @@
+#!/usr/bin/python3
+# tenka-glyphs: the shelves behind The Inkstone (Inkstone.qml), our own glyph picker (Super+.), which Linux
+# desktops lack: emoji, marks and ink (CJK punctuation and a few seal characters) found by name.
+#   tenka-glyphs list          JSON {shelves: [...], glyphs: [{g, n, s}], lately: [g...]} on stdout
+#   tenka-glyphs place GLYPH   copy it (wl-copy), type it into the window behind (wtype), remember it
+# Emoji names and groups come from Unicode's emoji-test.txt (Debian: unicode-data); skin-tone variants are
+# left out to keep the shelves calm. Lately lives in ~/.config/tenka/glyphs-lately.json (the last 30).
+import json, os, subprocess, sys, time, unicodedata
+
+LATELY = os.path.join(os.environ.get("XDG_CONFIG_HOME") or os.path.expanduser("~/.config"), "tenka", "glyphs-lately.json")
+TEST = os.environ.get("TENKA_EMOJI_TEST") or "/usr/share/unicode/emoji/emoji-test.txt"
+GROUPS = {"Smileys & Emotion": "faces", "People & Body": "people", "Animals & Nature": "nature", "Food & Drink": "food",
+          "Travel & Places": "places", "Activities": "things", "Objects": "things", "Symbols": "signs", "Flags": "signs"}
+SHELVES = ["lately", "faces", "people", "nature", "food", "places", "things", "signs", "marks", "ink"]
+MARKS = ("← → ↑ ↓ ↔ ↕ ⇐ ⇒ ⇔ ↩ ↪ ⟶ ∞ ≈ ≠ ≤ ≥ ± × ÷ √ ∑ ∏ ∫ ∂ ∆ ∇ π µ Ω ° ′ ″ ‰ ½ ⅓ ¼ ¾ ¹ ² ³ "
+         "€ £ ¥ ₹ ¢ ₩ ₽ ₿ — – … · • ‣ § ¶ † ‡ ※ ™ © ® ℗ № ℃ ℉ ✓ ✗ ★ ☆ ♠ ♣ ♥ ♦ ♪ ♫ ☀ ☁ ☂ ☾ ✦ ✧ ◆ ◇ ○ ● □ ■ △ ▲ ▽ ▼ "
+         "« » ‹ › „ “ ” ‘ ’ ¡ ¿ ⌘ ⌥ ⇧ ⌃ ⏎ ⌫ ⎋ ⇥").split()
+INK = [("、", "ideographic comma"), ("。", "ideographic full stop"), ("・", "middle dot (katakana)"), ("ー", "long vowel mark"),
+       ("〜", "wave dash"), ("「", "corner bracket open"), ("」", "corner bracket close"), ("『", "white corner bracket open"),
+       ("』", "white corner bracket close"), ("【", "lenticular bracket open"), ("】", "lenticular bracket close"),
+       ("《", "double angle bracket open"), ("》", "double angle bracket close"), ("〈", "angle bracket open"),
+       ("〉", "angle bracket close"), ("〃", "ditto mark"), ("々", "iteration mark"), ("〆", "closing mark"), ("〇", "zero"),
+       ("天", "ten · heaven, sky"), ("下", "ka · below, under"), ("力", "ryoku · strength"), ("道", "do · the way"),
+       ("心", "shin · heart, mind"), ("気", "ki · spirit, breath"), ("武", "bu · martial"), ("侍", "samurai"),
+       ("刀", "katana · sword"), ("剣", "ken · blade"), ("仙", "xian · immortal"), ("龍", "long · dragon"),
+       ("風", "kaze · wind"), ("水", "mizu · water"), ("火", "hi · fire"), ("山", "yama · mountain"), ("月", "tsuki · moon"),
+       ("日", "hi · sun, day"), ("花", "hana · flower"), ("雪", "yuki · snow"), ("雲", "kumo · cloud"), ("空", "sora · sky"),
+       ("星", "hoshi · star"), ("夢", "yume · dream"), ("光", "hikari · light"), ("影", "kage · shadow"), ("静", "sei · stillness"),
+       ("和", "wa · harmony"), ("美", "bi · beauty"), ("愛", "ai · love"), ("縁", "en · bond, fate"), ("円", "en · circle, yen"),
+       ("禅", "zen"), ("印", "in · seal"), ("墨", "sumi · ink"), ("筆", "fude · brush")]
+
+
+def lately():
+    try:
+        with open(LATELY) as f:
+            v = json.load(f)
+        return [g for g in v if isinstance(g, str)][:30]
+    except (OSError, ValueError):
+        return []
+
+
+def emoji():
+    out, group = [], ""
+    try:
+        f = open(TEST, encoding="utf-8")
+    except OSError:
+        return out
+    with f:
+        for line in f:
+            if line.startswith("# group:"):
+                group = GROUPS.get(line.split(":", 1)[1].strip(), "")
+                continue
+            if not group or line.startswith("#") or "; fully-qualified" not in line:
+                continue
+            g, _, name = line.partition("#")[2].strip().partition(" ")
+            name = name.partition(" ")[2]                     # drop the version (E1.0)
+            if "skin tone" in name:
+                continue
+            out.append({"g": g, "n": name, "s": group})
+    return out
+
+
+def listing():
+    gl = emoji()
+    for m in MARKS:
+        gl.append({"g": m, "n": unicodedata.name(m, "mark").lower(), "s": "marks"})
+    for g, n in INK:
+        gl.append({"g": g, "n": n, "s": "ink"})
+    print(json.dumps({"shelves": SHELVES, "glyphs": gl, "lately": lately()}, ensure_ascii=False))
+
+
+def place(g):
+    try:
+        subprocess.run(["wl-copy", "--", g], timeout=3)
+    except (OSError, subprocess.SubprocessError):
+        pass
+    time.sleep(0.18)                                   # the picker lets go of the keyboard first
+    try:
+        subprocess.run(["wtype", "--", g], timeout=3)
+    except (OSError, subprocess.SubprocessError):
+        pass
+    v = [g] + [x for x in lately() if x != g]
+    os.makedirs(os.path.dirname(LATELY), exist_ok=True)
+    tmp = LATELY + ".part"
+    with open(tmp, "w") as f:
+        json.dump(v[:30], f, ensure_ascii=False)
+    os.replace(tmp, LATELY)
+
+
+if __name__ == "__main__":
+    if len(sys.argv) > 2 and sys.argv[1] == "place":
+        place(sys.argv[2])
+    else:
+        listing()

@@ -95,7 +95,7 @@ hl.layer_rule({ name = "wallpaper-fade", match = { namespace = "^wallpaper$" }, 
 hl.layer_rule({ name = "launcher-dim", match = { namespace = "^launcher$" }, dim_around = true })
 hl.layer_rule({ name = "logout-anim", match = { namespace = "^logout_dialog$" }, animation = "fade" })
 -- the Tenka shell animates its own surfaces; the compositor only fades them
-hl.layer_rule({ name = "tenka-fade", match = { namespace = "^tenka-(launcher|control|power|cards|osd|overview|switcher|air|bond)$" }, animation = "fade" })
+hl.layer_rule({ name = "tenka-fade", match = { namespace = "^tenka-(launcher|control|power|cards|osd|overview|switcher|air|bond|inkstone)$" }, animation = "fade" })
 hl.layer_rule({ name = "tenka-wall", match = { namespace = "^tenka-wall$" }, animation = "fade" })
 
 -- windows -----------------------------------------------------------------
@@ -140,6 +140,7 @@ hl.bind("ALT + SHIFT + Tab",   hl.dsp.global("tenka:switcher-prev"))
 hl.bind("ALT + Alt_L",         hl.dsp.global("tenka:switcher-commit"), { release = true, transparent = true, non_consuming = true })
 hl.bind("ALT + Alt_R",         hl.dsp.global("tenka:switcher-commit"), { release = true, transparent = true, non_consuming = true })
 hl.bind(M .. " + N",           hl.dsp.global("tenka:slip"))            -- the slip: a note to self on the desk
+hl.bind(M .. " + period",      hl.dsp.global("tenka:glyphs"))          -- the inkstone: find and place a glyph
 hl.bind(M .. " + SHIFT + C",   hl.dsp.exec_cmd("hyprpicker -a"))
 hl.bind("Print",               hl.dsp.exec_cmd("tenka-shot area"))
 hl.bind("SHIFT + Print",       hl.dsp.exec_cmd("tenka-shot screen"))

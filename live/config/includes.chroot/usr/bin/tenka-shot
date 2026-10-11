@@ -1,5 +1,27 @@
 #!/bin/sh
-d="$(xdg-user-dir PICTURES 2>/dev/null || echo $HOME/Pictures)/Screenshots"; mkdir -p "$d"
-f="$d/$(date +%Y-%m-%d_%H-%M-%S).png"
-if [ "$1" = area ]; then grim -g "$(slurp -d -b 00000066 -c ffffffaa)" "$f" || exit 1; else grim "$f"; fi
-wl-copy < "$f"; notify-send -i "$f" "Captured" "$(basename "$f")"
+# tenka-shot: Tenka's screenshot tool, in either session.
+#   tenka-shot area|screen [--raw]
+# The capture is framed by default: laid on the pack's ink with a gold hairline, the seal pressed into
+# its corner and one small-caps line beneath (/usr/share/tenka/shot/Frame.qml, rendered offscreen).
+# --raw (or TENKA_SHOT_FRAME=0) keeps the plain capture. Both files are kept; the one shown is copied.
+mode=${1:-area}; raw=0
+{ [ "${2:-}" = --raw ] || [ "${TENKA_SHOT_FRAME:-1}" = 0 ]; } && raw=1
+d="$(xdg-user-dir PICTURES 2>/dev/null || echo "$HOME/Pictures")/Screenshots"; mkdir -p "$d"
+stamp=$(date +%Y-%m-%d_%H-%M-%S); f="$d/$stamp.png"
+if [ -n "${WAYLAND_DISPLAY:-}" ]; then
+  if [ "$mode" = area ]; then g=$(slurp -d -b 00000066 -c ffffffaa) || exit 1; grim -g "$g" "$f" || exit 1
+  else grim "$f" || exit 1; fi
+else
+  if [ "$mode" = area ]; then xfce4-screenshooter -r -s "$f"; else xfce4-screenshooter -f -s "$f"; fi
+  [ -s "$f" ] || exit 1
+fi
+out="$f"
+if [ $raw = 0 ]; then
+  fr="$d/$stamp-framed.png"
+  if QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software QML_XHR_ALLOW_FILE_READ=1 \
+     timeout 20 /usr/lib/qt6/bin/qml /usr/share/tenka/shot/Frame.qml -- "$f" "$fr" "$HOME/.config/tenka/shell-theme.json" \
+     >/dev/null 2>&1 && [ -s "$fr" ]; then out="$fr"; fi
+fi
+if [ -n "${WAYLAND_DISPLAY:-}" ]; then wl-copy --type image/png < "$out"
+else xclip -selection clipboard -t image/png -i "$out" 2>/dev/null; fi
+notify-send -i "$out" "Captured" "$(basename "$out")"

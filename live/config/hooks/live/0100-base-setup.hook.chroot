@@ -130,5 +130,35 @@ for pair in xfce4-terminal-emulator:Terminal xfce4-file-manager:Files xfce4-web-
   [ -f "$f" ] && sed -i -e "s/^Name=.*/Name=${pair#*:}/" -e 's/^Name\[[^]]*\]=.*//' "$f"
 done
 
+# One short name per app, the same in the dock's tooltips, the launcher and the menus: Terminal, Files, Editor,
+# Player (the dock showed "Xfce Terminal", "Thunar File Manager", "mpv Media Player"). Only the main entry's
+# Name changes; the old name moves into Keywords so typing "thunar" or "mousepad" still finds it. The XFCE
+# wrapper entries that already said Terminal and Files are hidden so each app is listed once, and the desktop
+# menu's top three point at the real apps.
+for pair in xfce4-terminal:Terminal thunar:Files org.xfce.mousepad:Editor mpv:Player; do
+  f=/usr/share/applications/${pair%%:*}.desktop; [ -f "$f" ] || continue
+  grep -qx "Name=${pair#*:}" "$f" && continue
+  awk -v new="${pair#*:}" '
+    /^\[/ { main = ($0 == "[Desktop Entry]") }
+    main && /^Name=/ { old = substr($0, 6); lines[++n] = "Name=" new; next }
+    main && /^Name\[/ { next }
+    main && /^Keywords=/ { kw = 1 }
+    { lines[++n] = $0 }
+    END { for (i = 1; i <= n; i++) { l = lines[i]
+            if (l ~ /^Keywords=/ && !done) { sub(/^Keywords=/, "Keywords=" old ";", l); done = 1 }
+            print l
+            if (l == "[Desktop Entry]" && !kw) { print "Keywords=" old ";"; done = 1 } } }' "$f" > "$f.new" && mv "$f.new" "$f"
+done
+for w in xfce4-terminal-emulator xfce4-file-manager; do
+  f=/usr/share/applications/$w.desktop
+  [ -f "$f" ] && ! grep -q '^NoDisplay=' "$f" && sed -i '0,/^\[Desktop Entry\]/s//[Desktop Entry]\nNoDisplay=true/' "$f"
+done
+m=/etc/xdg/menus/xfce-applications.menu
+if [ -f "$m" ] && ! grep -q '<Filename>thunar.desktop</Filename>' "$m"; then
+  sed -i -e 's|<Category>X-Xfce-Toplevel</Category>|&\n        <Filename>xfce4-terminal.desktop</Filename>\n        <Filename>thunar.desktop</Filename>|' \
+         -e 's|<Filename>xfce4-terminal-emulator.desktop</Filename>|<Filename>xfce4-terminal.desktop</Filename>|' \
+         -e 's|<Filename>xfce4-file-manager.desktop</Filename>|<Filename>thunar.desktop</Filename>|' "$m"
+fi
+
 fc-cache -f >/dev/null 2>&1 || true
 update-initramfs -u -k all || true

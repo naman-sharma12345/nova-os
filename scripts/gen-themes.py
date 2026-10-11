@@ -326,6 +326,9 @@ def gen(name, T):
     window.background:not(.xfce4-panel), .thunar .sidebar, .sidebar {{ background-color: {p['base']}; color: {p['text']}; }}
     headerbar, .titlebar {{ background-color: {p['surface']}; color: {p['text']}; box-shadow: none; }}
     selection {{ background-color: {rgba(p['accent'], 0.35)}; color: {p['text']}; }}
+    /* tooltips speak in the UI face too. This has to live here: GTK applies the xsettings font above the theme,
+       so a tooltip rule in the theme's gtk.css loses; the user sheet sits above both. */
+    tooltip label {{ font-family: Marcellus; font-size: 12px; letter-spacing: 0.3px; }}
     /* ---- the file manager, "glass" (Naman: more translucent, in line with the theme): one sheet of ink glass
        over the art (Hyprland blurs what is behind it), a clear content area, a gold hairline between the panes,
        the chosen place marked by a short accent rule (the ledger's mark), a hairline path bar, ledger corners,

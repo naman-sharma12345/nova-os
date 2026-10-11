@@ -2,8 +2,12 @@
 # First-login welcome and theme picker.
 mkdir -p "$HOME/.config/tenka"
 set --
-if [ "$(cat /run/tenka/mode 2>/dev/null)" = lite ] || [ "${XDG_CURRENT_DESKTOP:-}" = XFCE ]; then
+# performance mode already on (Hyprland on a software renderer turns it on at login): the switch starts ticked and
+# the note says why, instead of showing an unticked box over a desktop that is already in performance mode
+perfon=; [ -e "$HOME/.config/tenka/perf" ] && perfon=1
+if [ "$(cat /run/tenka/mode 2>/dev/null)" = lite ] || [ "${XDG_CURRENT_DESKTOP:-}" = XFCE ] || { [ "${XDG_CURRENT_DESKTOP:-}" = Hyprland ] && [ -n "$perfon" ]; }; then
   r=$(sed -n 's/^reason: //p' /run/tenka-hwdetect.reason 2>/dev/null)
+  case "$(sed -n 's/^renderer: //p' /run/tenka-hwdetect.reason 2>/dev/null)" in *llvmpipe*|*softpipe*|none) r="no 3D graphics" ;; esac
   case "$r" in
     *3D*|*3d*|*llvmpipe*|*software*) r="no 3D graphics" ;;
     *RAM*|*memory*|*Memory*) r="under 4 GB of memory" ;;
@@ -24,6 +28,8 @@ case $rc in
   0|10|11|20|21) touch "$HOME/.config/tenka/welcomed" ;;
   *) echo "tenka-welcome: qml exited $rc" >>"$HOME/.cache/tenka/welcome.log"; exit "$rc" ;;
 esac
+# unticking the switch over a desktop that started in performance mode turns it off
+[ -n "$perfon" ] && [ "${XDG_CURRENT_DESKTOP:-}" = Hyprland ] && case $rc in 10|11) tenka-perf off ;; esac
 case $rc in
   10) tenka-theme samurai ;; 11) tenka-theme xianxia ;;
   20) tenka-perf on; tenka-theme samurai ;; 21) tenka-perf on; tenka-theme xianxia ;;

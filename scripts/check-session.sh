@@ -8,6 +8,7 @@
 #  4. tenka-air-join never puts the Wi-Fi password on a command line; its file is 0600 and removed,
 #     and a profile it created is deleted again when the join fails
 #  5. tenka-bond-agent carries BlueZ's PIN / passkey / yes-no questions to The Bond and its answers back
+#  6. tenka-lantern reads the battery facts (charge, time, health, devices) and sets the power profile
 set -u
 ROOT=$(cd "$(dirname "$0")/.." && pwd); BIN="$ROOT/live/config/includes.chroot/usr/bin"
 fail=0; T=$(mktemp -d); trap 'rm -rf "$T"' EXIT
@@ -115,6 +116,32 @@ EOF
   kill $AP $FP 2>/dev/null; kill "$(cat "$B/dpid")" 2>/dev/null
 else
   echo "check-session: bond agent test skipped (no python3-gi / dbus-daemon)"
+fi
+# 6. tenka-lantern reads the kernel's power_supply ledger (a made-up one here): the charge, the time left from
+#    energy or from charge x voltage, health against design, a mouse's own charge, AC, and the profile it sets
+if command -v python3 >/dev/null 2>&1; then
+  P="$T/ps"; mkdir -p "$P/AC" "$P/BAT0" "$P/BAT1" "$P/hid0" "$T/ppd"
+  w() { d=$1; shift; while [ $# -gt 1 ]; do printf '%s\n' "$2" > "$P/$d/$1"; shift 2; done; }
+  w AC type Mains online 0
+  w BAT0 type Battery present 1 status Discharging capacity 72 energy_now 41040000 energy_full 57000000 energy_full_design 60000000 power_now 10600000 cycle_count 214
+  w BAT1 type Battery present 1 status Charging capacity 50 charge_now 2000000 charge_full 4000000 charge_full_design 5000000 current_now 1000000 voltage_now 12000000
+  w hid0 type Battery scope Device capacity 41 model_name Mouse
+  printf '#!/bin/sh\n[ "$1" = set ] && { echo "$2" > "%s/ppd/cur"; exit 0; }\nprintf "  performance:\\n    Driver: x\\n\\n* balanced:\\n    Driver: x\\n\\n  power-saver:\\n    Driver: x\\n"\n' "$T" > "$T/stub/powerprofilesctl"; chmod +x "$T/stub/powerprofilesctl"
+  out=$(TENKA_POWER_ROOT="$P" PATH="$T/stub:$PATH" python3 "$BIN/tenka-lantern")
+  printf '%s' "$out" | python3 -c '
+import json, sys
+g = json.load(sys.stdin); a, b = g["batteries"]; bad = []
+if g["ac"]: bad.append("ac should be off")
+if (a["pct"], a["left"], a["health"], a["cycles"], a["watts"]) != (72, 13938, 95, 214, 10.6): bad.append("BAT0 %r" % a)
+if (b["state"], b["full"], b["health"], b["watts"]) != ("charging", 7200, 80, 12.0): bad.append("BAT1 %r" % b)
+if g["devices"] != [{"name": "Mouse", "pct": 41, "kind": "device"}]: bad.append("devices %r" % g["devices"])
+if (g["profile"], g["profiles"]) != ("balanced", ["performance", "balanced", "power-saver"]): bad.append("profiles")
+print("FAIL: tenka-lantern " + "; ".join(bad)) if bad else None
+sys.exit(1 if bad else 0)' || fail=1
+  [ "$(TENKA_POWER_ROOT="$P" PATH="$T/stub:$PATH" python3 "$BIN/tenka-lantern" word)" = "72%  ·  3 h 52 min" ] || { echo "FAIL: tenka-lantern word"; fail=1; }
+  PATH="$T/stub:$PATH" python3 "$BIN/tenka-lantern" profile power-saver && [ "$(cat "$T/ppd/cur")" = power-saver ] || { echo "FAIL: tenka-lantern profile"; fail=1; }
+  PATH="$T/stub:$PATH" python3 "$BIN/tenka-lantern" profile turbo 2>/dev/null && { echo "FAIL: tenka-lantern took a profile that does not exist"; fail=1; }
+  [ "$(TENKA_POWER_ROOT="$T/none" python3 "$BIN/tenka-lantern" word)" = "On AC power" ] || { echo "FAIL: tenka-lantern without a battery"; fail=1; }
 fi
 [ "$fail" = 0 ] && echo "check-session: ok"
 exit $fail

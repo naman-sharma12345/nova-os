@@ -311,7 +311,9 @@ PanelWindow {
                        onHit: { cc.open = false; Theme.askWifi() } }
                 Row2 { k: "Bluetooth"; v: cc.btWord; on: cc.btOn; toggle: true
                        onHit: { cc.open = false; Theme.askBluetooth() } }
-                Row2 { k: "Uptime"; v: cc.up.replace(" hours", "h").replace(" hour", "h").replace(" minutes", "m").replace(" minute", "m").replace(",", ""); last: true }
+                // the power row opens The Lantern (Lantern.qml): the charge, the time left, the profile
+                Row2 { k: "Power"; v: Theme.powerWord; on: Theme.powerWord !== "" && Theme.powerWord !== "On AC power"; last: true
+                       onHit: { cc.open = false; Theme.askPower() } }
             }
             Box {
                 num: "02"; label: "SOUND"

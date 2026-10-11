@@ -1,0 +1,117 @@
+#!/usr/bin/python3
+# tenka-lantern: the facts behind The Lantern (Lantern.qml, Tianxia: The Ember), our own battery and power card.
+# Reads the kernel's own power_supply ledger (/sys/class/power_supply), so it needs no daemon, and the power
+# profile from power-profiles-daemon (powerprofilesctl) when it runs.
+#   tenka-lantern                 JSON {ac, batteries:[{name, pct, state, watts, left, full, health, cycles, model}],
+#                                       devices:[{name, pct, kind}], profile, profiles} (left/full in seconds, or -1)
+#   tenka-lantern word            one short line for the ledger: "72%  ·  3 h 40 min" or "On AC power"
+#   tenka-lantern profile NAME    power-saver | balanced | performance
+# TENKA_POWER_ROOT points it at another power_supply tree (the renders' and the tests' stand-in).
+import json, os, subprocess, sys
+
+ROOT = os.environ.get("TENKA_POWER_ROOT") or "/sys/class/power_supply"
+
+
+def rd(d, k):
+    try:
+        with open(os.path.join(d, k)) as f:
+            return f.read().strip()
+    except OSError:
+        return ""
+
+
+def num(d, k):
+    v = rd(d, k)
+    try:
+        return float(v)
+    except ValueError:
+        return None
+
+
+def battery(d, name):
+    st = rd(d, "status").lower() or "unknown"          # charging | discharging | full | not charging | unknown
+    pct = num(d, "capacity")
+    # energy (µWh, power in µW) or charge (µAh, current in µA) with the voltage to turn it into watts
+    now, full, design, rate = num(d, "energy_now"), num(d, "energy_full"), num(d, "energy_full_design"), num(d, "power_now")
+    if now is None:
+        v = (num(d, "voltage_now") or num(d, "voltage_min_design") or 0) / 1e6
+        cn, cf, cd, cur = num(d, "charge_now"), num(d, "charge_full"), num(d, "charge_full_design"), num(d, "current_now")
+        now = cn * v if cn is not None else None
+        full = cf * v if cf is not None else None
+        design = cd * v if cd is not None else None
+        rate = abs(cur) * v if cur is not None else None
+    if pct is None and now is not None and full:
+        pct = 100.0 * now / full
+    watts = abs(rate) / 1e6 if rate else 0.0
+    left = full_in = -1
+    if watts > 0.05 and now is not None:
+        if st == "discharging":
+            left = int(now / 1e6 / watts * 3600)
+        elif st == "charging" and full:
+            full_in = int(max(0.0, full - now) / 1e6 / watts * 3600)
+    health = round(100.0 * full / design) if full and design else -1
+    cyc = num(d, "cycle_count")
+    model = " ".join(x for x in (rd(d, "manufacturer"), rd(d, "model_name")) if x)
+    return {"name": name, "pct": round(pct) if pct is not None else -1, "state": st, "watts": round(watts, 1),
+            "left": left, "full": full_in, "health": min(health, 100), "cycles": int(cyc) if cyc else -1, "model": model}
+
+
+def gather():
+    out = {"ac": False, "batteries": [], "devices": [], "profile": "", "profiles": []}
+    try:
+        names = sorted(os.listdir(ROOT))
+    except OSError:
+        names = []
+    for n in names:
+        d = os.path.join(ROOT, n)
+        kind = rd(d, "type").lower()
+        if kind in ("mains", "usb") and rd(d, "online") == "1":
+            out["ac"] = True
+        elif kind == "battery":
+            if rd(d, "scope").lower() == "device":         # a mouse, a pad, a headset reporting its own charge
+                c = num(d, "capacity")
+                if c is not None:
+                    out["devices"].append({"name": rd(d, "model_name") or n, "pct": round(c), "kind": "device"})
+            elif rd(d, "present") != "0":
+                out["batteries"].append(battery(d, n))
+    try:
+        r = subprocess.run(["powerprofilesctl", "list"], capture_output=True, text=True, timeout=3)
+        for line in r.stdout.splitlines():
+            t = line.strip()
+            if t.endswith(":") and not t.startswith(("Driver", "Degraded")):
+                p = t.lstrip("* ").rstrip(":")
+                out["profiles"].append(p)
+                if t.startswith("*"):
+                    out["profile"] = p
+    except (OSError, subprocess.SubprocessError):
+        pass
+    return out
+
+
+def span(s):
+    m = max(0, s) // 60
+    return f"{m // 60} h {m % 60} min" if m >= 60 else f"{m} min"
+
+
+def word(g):
+    if not g["batteries"]:
+        return "On AC power"
+    b = g["batteries"][0]
+    w = f"{b['pct']}%"
+    if b["left"] > 0:
+        w += "  ·  " + span(b["left"])
+    elif b["full"] > 0:
+        w += "  ·  full in " + span(b["full"])
+    elif b["state"] in ("full", "not charging") or g["ac"]:
+        w += "  ·  plugged in"
+    return w
+
+
+if __name__ == "__main__":
+    a = sys.argv[1:]
+    if a[:1] == ["profile"] and len(a) > 1:
+        if a[1] not in ("power-saver", "balanced", "performance"):
+            sys.exit("tenka-lantern: profile is power-saver, balanced or performance")
+        sys.exit(subprocess.run(["powerprofilesctl", "set", a[1]]).returncode)
+    g = gather()
+    print(word(g) if a[:1] == ["word"] else json.dumps(g))

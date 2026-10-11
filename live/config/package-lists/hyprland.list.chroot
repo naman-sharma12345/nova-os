@@ -46,3 +46,5 @@ mpv
 mpv-mpris
 hyprsunset
 curl
+# --- The Lantern (battery and power card): the three power profiles
+power-profiles-daemon

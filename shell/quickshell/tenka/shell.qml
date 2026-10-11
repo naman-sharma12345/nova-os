@@ -31,6 +31,7 @@ ShellRoot {
     Seal {}
     Wifi {}
     Bond {}
+    Lantern {}
     Inkstone {}
     ControlCenter {}
     Notifications {}

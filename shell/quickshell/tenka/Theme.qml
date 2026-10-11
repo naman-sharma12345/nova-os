@@ -59,6 +59,8 @@ Singleton {
     signal arrive(string kind)
     signal askWifi()                     // Control Center asks the shell's own Wi-Fi picker (Wifi.qml)
     signal askBluetooth()                // Control Center asks the shell's own Bluetooth card (Bond.qml)
+    signal askPower()                    // Control Center asks the shell's own battery and power card (Lantern.qml)
+    property string powerWord: ""        // the Lantern's one line for the ledger: "72%  ·  3 h 40 min" or "On AC power"
     Process {
         id: perfQ; command: ["sh", "-c", "test -e \"$HOME/.config/tenka/perf\" && echo on || echo off"]
         stdout: StdioCollector { onStreamFinished: root.perf = text.trim() === "on" }

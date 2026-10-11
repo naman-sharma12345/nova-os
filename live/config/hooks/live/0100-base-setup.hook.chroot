@@ -83,6 +83,12 @@ GRUB_CMDLINE_LINUX_DEFAULT="quiet splash loglevel=0 rd.systemd.show_status=false
 GRUB_TIMEOUT=5
 GRUB_TIMEOUT_STYLE=menu
 EOF
+# the text console wears the theme too: Samurai's 16 colours (gen-themes.py) + a larger bold Terminus
+VT=$(cat /usr/share/tenka/themes/samurai/console.vt 2>/dev/null || true)
+[ -n "$VT" ] && sed -i "s|vt.global_cursor_default=0|vt.global_cursor_default=0 $VT|" /etc/default/grub.d/90-tenka.cfg
+if [ -f /etc/default/console-setup ]; then
+  sed -i -e 's/^FONTFACE=.*/FONTFACE="TerminusBold"/' -e 's/^FONTSIZE=.*/FONTSIZE="12x24"/' /etc/default/console-setup
+fi
 
 # ---------------------------------------------------------------- installer
 if [ -f /etc/calamares/settings.conf ]; then

@@ -151,15 +151,15 @@ def sddm_assets(theme, d):
 LIVE_CFG = """source /boot/grub/config.cfg
 
 menuentry "Tenka" --class tenka --hotkey=t {
-    linux @KERNEL_LIVE@ @APPEND_LIVE@ tenka.theme=samurai
+    linux @KERNEL_LIVE@ @APPEND_LIVE@ tenka.theme=samurai @VT_SAMURAI@
     initrd @INITRD_LIVE@
 }
 menuentry "Tianxia" --class tianxia --hotkey=x {
-    linux @KERNEL_LIVE@ @APPEND_LIVE@ tenka.theme=xianxia plymouth.splash=tenka-xianxia
+    linux @KERNEL_LIVE@ @APPEND_LIVE@ tenka.theme=xianxia plymouth.splash=tenka-xianxia @VT_XIANXIA@
     initrd @INITRD_LIVE@
 }
 menuentry "Tenka Lite" --class lite --hotkey=l {
-    linux @KERNEL_LIVE@ @APPEND_LIVE@ tenka.session=lite
+    linux @KERNEL_LIVE@ @APPEND_LIVE@ tenka.session=lite @VT_SAMURAI@
     initrd @INITRD_LIVE@
 }
 menuentry "Safe graphics" --class safe --hotkey=s {
@@ -193,7 +193,11 @@ def live():
         terminal_output gfxterm
         source /boot/grub/theme.cfg
         """))
-    with open(os.path.join(lb, "grub.cfg"), "w") as f: f.write(LIVE_CFG)
+    cfg = LIVE_CFG
+    for t in ("samurai", "xianxia"):   # TTY colours from gen-themes.py (themes/<t>/console.vt)
+        vtf = os.path.join(ROOT, "themes", t, "console.vt")
+        cfg = cfg.replace(f"@VT_{t.upper()}@", open(vtf).read().strip() if os.path.exists(vtf) else "")
+    with open(os.path.join(lb, "grub.cfg"), "w") as f: f.write(cfg)
 
 
 if __name__ == "__main__":

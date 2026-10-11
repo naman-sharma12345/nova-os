@@ -242,4 +242,21 @@ Item {
             }
         }
     }
+
+    // the gate: the lock opens through the login screen's last frame (seal pressed, then it falls away
+    // over the face in the same 1.4 s ease), so locking reads as a return to the threshold. An unlock
+    // hands the same gate to the arrival overlay. Performance mode skips it.
+    Gate {
+        id: gateIn
+        anchors.fill: parent
+        visible: opacity > 0
+        opacity: Theme.perf ? 0 : 1
+        readonly property real k: Number(Quickshell.env("TENKA_MOTION_SCALE") || "1")
+        SequentialAnimation {
+            running: !Theme.perf
+            ScriptAction { script: gateIn.stamp() }
+            PauseAnimation { duration: 620 * gateIn.k }
+            NumberAnimation { target: gateIn; property: "opacity"; to: 0; duration: 1400 * gateIn.k; easing.type: Easing.OutCubic }
+        }
+    }
 }

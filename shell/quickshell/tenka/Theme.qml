@@ -49,6 +49,8 @@ Singleton {
     Component.onCompleted: { perfQ.running = true; if ((Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE") || "") !== "") wsQ.running = true }
     // Performance mode (tenka-perf): its flag file is ~/.config/tenka/perf. The shell's own motion rests with it.
     property bool perf: false
+    // the arrival overlay (Threshold.qml) plays when this fires: "arrive" (session start) or "unlock"
+    signal arrive(string kind)
     Process {
         id: perfQ; command: ["sh", "-c", "test -e \"$HOME/.config/tenka/perf\" && echo on || echo off"]
         stdout: StdioCollector { onStreamFinished: root.perf = text.trim() === "on" }

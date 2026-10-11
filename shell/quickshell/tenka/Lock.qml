@@ -22,7 +22,7 @@ Scope {
         onPamMessage: { if (responseRequired) respond(root.typed) }
         onCompleted: result => {
             root.busy = false;
-            if (result === PamResult.Success) { lk.locked = false; root.typed = ""; root.status = "" }
+            if (result === PamResult.Success) { lk.locked = false; root.typed = ""; root.status = ""; Theme.arrive("unlock") }
             else { root.status = Theme.xia ? "The seal holds. Try again." : "The gate stays shut. Try again."; root.typed = "" }
         }
     }

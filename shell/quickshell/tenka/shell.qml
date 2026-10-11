@@ -19,6 +19,7 @@ ShellRoot {
             Notch { screen: perScreen.modelData }
             Dock { screen: perScreen.modelData }
             Cards { screen: perScreen.modelData }
+            Threshold { screen: perScreen.modelData }
         }
     }
     Launcher {}

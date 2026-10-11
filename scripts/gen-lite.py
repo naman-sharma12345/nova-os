@@ -206,6 +206,14 @@ def gtk_theme(name, T, d):
     dialog combobox > box.linked > button.combo:only-child:hover {{ border-bottom-color: {p['accent']}; }}
     button.combo:only-child:focus, button.combo:only-child:checked {{ box-shadow: inset 0 0 0 1px {A(p['accent2'], 0.45)}; }}
     dialog combobox button.combo:only-child:focus, dialog combobox button.combo:only-child:checked {{ box-shadow: none; background-color: transparent; }}
+    /* places lists (file pickers, open/save dialogs): plain rows; the chosen place in gold with a short accent rule
+       at its left edge, as in Files; no blue pill */
+    placessidebar row, placessidebar list row {{ border-radius: 0; margin: 0; }}
+    placessidebar row:selected, placessidebar.sidebar row:selected, placessidebar row:selected:focus, placessidebar.sidebar row:selected:hover, stacksidebar.sidebar row:selected {{ background-color: {A(p['text'], 0.06)};
+        background-image: linear-gradient({p['accent']}, {p['accent']}); background-size: 2px 16px; background-position: left center;
+        background-repeat: no-repeat; border-radius: 0; box-shadow: none; color: {p['accent2']}; }}
+    placessidebar.sidebar row:selected label, placessidebar.sidebar row:selected image, placessidebar.sidebar row:selected image.sidebar-icon, stacksidebar.sidebar row:selected label {{ color: {p['accent2']}; }}
+    placessidebar row:hover {{ background-color: {A(p['text'], 0.04)}; border-radius: 0; }}
     /* ticks and choices (menus, dialogs, settings): a quiet outline, the chosen one marked in gold; no filled
        discs from the base theme */
     check, radio, menu menuitem check, menu menuitem radio {{ min-width: 14px; min-height: 14px; margin: 0 6px 0 0; padding: 0;

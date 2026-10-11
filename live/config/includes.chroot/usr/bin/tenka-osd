@@ -1,6 +1,7 @@
 #!/bin/sh
 # tenka-osd: change the volume or the brightness and show Tenka's one OSD, in either session.
 #   tenka-osd volume up|down|mute     tenka-osd brightness up|down     tenka-osd volume|brightness show
+#   tenka-osd caps|num                show the Caps Lock / Num Lock state (bound to the keys themselves)
 # Flagship (Hyprland): the shell draws it (volume follows PipeWire by itself; brightness is handed over).
 # Lite (XFCE, X11): a tiny Qt window (/usr/share/tenka/osd/LiteOsd.qml) that quits 2 s after the last key.
 kind=${1:-volume}; act=${2:-show}
@@ -11,9 +12,20 @@ case "$kind:$act" in
   brightness:up)   brightnessctl -q set 5%+ ;;
   brightness:down) brightnessctl -q set 5%- ;;
   *:show) ;;
-  *) echo "usage: tenka-osd volume up|down|mute|show | brightness up|down|show" >&2; exit 2 ;;
+  caps:*|num:*) ;;
+  *) echo "usage: tenka-osd volume up|down|mute|show | brightness up|down|show | caps | num" >&2; exit 2 ;;
 esac
-if [ "$kind" = volume ]; then
+if [ "$kind" = caps ] || [ "$kind" = num ]; then
+  sleep 0.08                                                         # the key has just toggled the lock: read it after
+  if [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
+    f=capsLock; [ "$kind" = num ] && f=numLock
+    on=$(hyprctl devices -j 2>/dev/null | jq -r "[.keyboards[] | select(.main == true) | .$f][0] // false" 2>/dev/null)
+  else
+    w="Caps Lock"; [ "$kind" = num ] && w="Num Lock"
+    on=$(xset q 2>/dev/null | grep -o "$w: *[a-z]*" | awk '{ print $NF }')
+  fi
+  case "$on" in true|on) v=100 ;; *) v=0 ;; esac; m=0
+elif [ "$kind" = volume ]; then
   out=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null)          # "Volume: 0.45 [MUTED]"
   v=$(printf '%s\n' "$out" | awk '{ printf "%d", $2 * 100 + 0.5 }')
   case "$out" in *MUTED*) m=1 ;; *) m=0 ;; esac
@@ -23,6 +35,7 @@ fi
 [ -n "$v" ] || exit 0
 if [ -n "${WAYLAND_DISPLAY:-}" ] && pgrep -x qs >/dev/null 2>&1; then
   [ "$kind" = brightness ] && qs -c tenka ipc call osd brightness "$v" >/dev/null 2>&1
+  { [ "$kind" = caps ] || [ "$kind" = num ]; } && qs -c tenka ipc call osd lock "$kind" "$([ "$v" -gt 0 ] && echo 1 || echo 0)" >/dev/null 2>&1
   exit 0
 fi
 [ -n "${DISPLAY:-}" ] || exit 0

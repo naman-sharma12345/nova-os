@@ -15,12 +15,13 @@ Item {
     property real radius: 6
     property string face: "Marcellus"
     property bool motion: true
-    property string kind: "volume"      // "volume" | "brightness"
+    property string kind: "volume"      // "volume" | "brightness" | "caps" | "num" (a lock key: on when value > 0)
     property real value: 0              // 0..1
     property bool muted: false
     property bool shown: false
     implicitWidth: 340; implicitHeight: 64
     readonly property real v: Math.max(0, Math.min(1, value))
+    readonly property bool lock: kind === "caps" || kind === "num"
     function al(c, a) { return Qt.rgba(c.r, c.g, c.b, a) }
 
     opacity: shown ? 1 : 0
@@ -34,12 +35,24 @@ Item {
     Text {
         id: word
         x: 22; anchors.verticalCenter: parent.verticalCenter
-        width: 84
-        text: card.kind === "brightness" ? "LIGHT" : (card.muted || card.v <= 0.001 ? "MUTED" : "VOLUME")
+        width: card.lock ? implicitWidth : 84
+        text: card.lock ? (card.kind === "caps" ? "CAPS LOCK" : "NUM LOCK")
+                        : card.kind === "brightness" ? "LIGHT" : (card.muted || card.v <= 0.001 ? "MUTED" : "VOLUME")
         color: card.sub; font.family: card.face; font.pixelSize: 12; font.letterSpacing: 4
+    }
+    // a lock key (Caps Lock, Num Lock): no meter, one small seal-diamond, filled when the lock is on
+    Row {
+        visible: card.lock
+        anchors.right: parent.right; anchors.rightMargin: 24; anchors.verticalCenter: parent.verticalCenter
+        spacing: 14
+        Rectangle { width: 9; height: 9; rotation: 45; antialiasing: true; anchors.verticalCenter: parent.verticalCenter
+                    color: card.v > 0 ? card.accent : "transparent"; border.width: 1; border.color: card.v > 0 ? card.accent : card.sub }
+        Text { text: card.v > 0 ? "on" : "off"; color: card.v > 0 ? card.text : card.sub; font.family: card.face; font.pixelSize: 22
+               anchors.verticalCenter: parent.verticalCenter }
     }
     Item {
         id: track
+        visible: !card.lock
         anchors.left: word.right; anchors.leftMargin: 10
         anchors.right: num.left; anchors.rightMargin: 18
         anchors.verticalCenter: parent.verticalCenter; height: 8
@@ -59,6 +72,7 @@ Item {
     }
     Text {
         id: num
+        visible: !card.lock
         anchors.right: parent.right; anchors.rightMargin: 22; anchors.verticalCenter: parent.verticalCenter
         width: 40; horizontalAlignment: Text.AlignRight
         text: Math.round(card.v * 100); color: card.muted ? card.sub : card.text

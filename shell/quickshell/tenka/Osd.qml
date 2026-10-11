@@ -25,7 +25,8 @@ PanelWindow {
     property string kind: "volume"
     property bool muted: false
     function pop(k, value, m) {
-        if (Theme.barStyle === "notch" && Quickshell.env("TENKA_OSD_CARD") !== "1") {   // the notch carries it: a hairline meter
+        const lock = k === "caps" || k === "num"      // a lock key has no meter for the notch to carry: always the card
+        if (!lock && Theme.barStyle === "notch" && Quickshell.env("TENKA_OSD_CARD") !== "1") {   // the notch carries it: a hairline meter
             Theme.osdKind = k; Theme.osdValue = m ? 0 : value; Theme.osdTick += 1; return
         }
         kind = k; v = value; muted = !!m
@@ -40,6 +41,7 @@ PanelWindow {
         function brightness(p: int): void { osd.pop("brightness", p / 100) }
         function volume(p: int): void { osd.pop("volume", p / 100) }
         function muted(p: int): void { osd.pop("volume", p / 100, true) }
+        function lock(which: string, on: int): void { osd.pop(which === "num" ? "num" : "caps", on ? 1 : 0) }
     }
     PwObjectTracker { objects: Pipewire.defaultAudioSink ? [Pipewire.defaultAudioSink] : [] }
     Connections {

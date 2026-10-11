@@ -21,6 +21,7 @@ KNOWN = [
     (r"global\(\"tenka:switcher-next\"\)", "Windows", "Switch windows"),
     (r"global\(\"tenka:switcher-prev\"\)", "Windows", "Switch windows, backwards"),
     (r"global\(\"tenka:switcher-commit\"\)", None, None),
+    (r"tenka-osd (caps|num)", None, None),            # the lock keys only show their state: not a shortcut to learn
     (r"global\(\"tenka:slip\"\)", "Tenka", "A note to self on the desk"),
     (r"global\(\"tenka:glyphs\"\)", "Tenka", "Find and place a glyph"),
     (r"global\(\"tenka:loupe\"\)", "Tenka", "Pick a colour, measure the screen"),

@@ -26,6 +26,8 @@
       <property name="XF86AudioMute" type="string" value="tenka-osd volume mute"/>
       <property name="XF86MonBrightnessUp" type="string" value="tenka-osd brightness up"/>
       <property name="XF86MonBrightnessDown" type="string" value="tenka-osd brightness down"/>
+      <property name="Caps_Lock" type="string" value="tenka-osd caps"/>
+      <property name="Num_Lock" type="string" value="tenka-osd num"/>
     </property>
   </property>
   <property name="xfwm4" type="empty">

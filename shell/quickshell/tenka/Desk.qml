@@ -146,16 +146,17 @@ PanelWindow {
         Text {
             id: dateText
             anchors.top: clockRow.bottom; anchors.topMargin: -20 * desk.s; x: 8 * desk.s
-            text: Qt.formatDate(Theme.now, "MMMM yyyy").toUpperCase() + "   ·   " + Theme.hourName(Theme.now).toUpperCase()
+            text: Qt.formatDate(Theme.now, "MMMM yyyy").toUpperCase()   // the hour's old name moved to the line below
             color: Theme.alpha(desk.type, desk.lightArt ? 0.9 : 0.82)
             font.family: Theme.display; font.pixelSize: 19 * desk.s; font.letterSpacing: 9 * desk.s
         }
-        Text {   // the season on its own short line, so it never runs into the art at the line's end
+        Text {   // the hour and the season on a short second line, so neither runs into the art at the line's end
             id: seasonText
-            anchors.top: dateText.bottom; anchors.topMargin: Theme.seasonWord ? 12 * desk.s : 0; x: 8 * desk.s
-            visible: !!Theme.seasonWord; height: visible ? implicitHeight : 0
-            text: Theme.seasonWord ? Theme.seasonWord.toUpperCase() + " SEASON" : ""
-            color: desk.lightArt ? Theme.accent : Theme.seasonInk
+            anchors.top: dateText.bottom; anchors.topMargin: 12 * desk.s; x: 8 * desk.s
+            textFormat: Text.StyledText
+            text: Theme.hourName(Theme.now).toUpperCase() + (Theme.seasonWord ? "   ·   <font color=\"" + (desk.lightArt ? Theme.accent : Theme.seasonInk)
+                  + "\">" + Theme.seasonWord.toUpperCase() + " SEASON</font>" : "")
+            color: Theme.alpha(desk.type, desk.lightArt ? 0.85 : 0.72)
             font.family: Theme.display; font.pixelSize: 14 * desk.s; font.letterSpacing: 8 * desk.s
         }
         ProverbPlate {

@@ -254,7 +254,11 @@ def gtk_theme(name, T, d):
     button:checked label, stackswitcher:not(.vertical) > button:checked label {{ color: {p['accent2']}; }}
     entry selection, label selection, textview text selection, textview text selection:focus, spinbutton:not(.vertical) selection, spinbutton.vertical selection {{
         background-color: {A(p['accent'], 0.85)}; color: {ink_on(p['accent'], p)}; }}
-    calendar:selected {{ background-color: {A(p['accent'], 0.85)}; color: {ink_on(p['accent'], p)}; border-radius: 2px; }}
+    /* the calendar: the chosen day is marked the way the chosen tab is, accent words over one short rule, with no
+       filled block; the weekday names sit quiet above the days */
+    calendar:selected {{ background-color: {A(p['text'], 0.05)}; background-image: none; color: {p['accent2']};
+        box-shadow: inset 0 -1px 0 {p['accent']}; border-radius: 0; }}
+    calendar.highlight {{ color: {A(p['text'], 0.45)}; }}
     infobar.question > revealer > box, infobar.question:backdrop > revealer > box, infobar.action > revealer > box, infobar.action:backdrop > revealer > box {{
         background-color: {A(p['accent2'], 0.12)}; color: {p['text']}; box-shadow: inset 2px 0 0 {p['accent2']}; }}
     infobar.question label, infobar.action label {{ color: {p['text']}; }}

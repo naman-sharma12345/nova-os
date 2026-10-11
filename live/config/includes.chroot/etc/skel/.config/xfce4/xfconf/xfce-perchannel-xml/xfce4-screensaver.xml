@@ -9,7 +9,7 @@
     </property>
     <property name="themes" type="empty">
       <property name="list" type="array">
-        <value type="string" value="screensavers-xfce-personal-slideshow"/>
+        <value type="string" value="screensavers-tenka-drift"/>
       </property>
     </property>
   </property>

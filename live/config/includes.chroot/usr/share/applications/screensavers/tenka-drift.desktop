@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=The Drift
+Comment=The season falling across the desk's own picture, with the hour and the day's proverb (Tenka)
+Exec=/usr/libexec/xfce4-screensaver/tenka-drift
+TryExec=/usr/libexec/xfce4-screensaver/tenka-drift
+StartupNotify=false
+Terminal=false
+Type=Application
+Categories=Screensaver;

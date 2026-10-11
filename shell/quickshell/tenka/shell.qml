@@ -36,6 +36,7 @@ ShellRoot {
     Loupe {}
     Codex {}
     Colophon {}
+    Drift {}
     ControlCenter {}
     Notifications {}
     Osd {}

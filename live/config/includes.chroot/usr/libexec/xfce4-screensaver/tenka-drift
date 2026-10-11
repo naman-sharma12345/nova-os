@@ -1,0 +1,56 @@
+#!/usr/bin/python3
+"""tenka-drift: The Drift (Tianxia: The Falling Blossoms) as Tenka Lite's screensaver.
+
+xfce4-screensaver runs a theme's program with XSCREENSAVER_WINDOW naming the window to draw in. This starts the
+shared view (/usr/share/tenka/drift/LiteDrift.qml, a frameless Qt window) and seats it inside that window at its
+full size, so the screensaver keeps owning the screen, the input and the unlock. It lives beside the stock themes
+(/usr/libexec/xfce4-screensaver/): xfce4-screensaver only runs a theme whose program is there. Without XSCREENSAVER_WINDOW
+(run by hand) it simply opens full screen; any key or click there ends it.
+"""
+import json, os, re, signal, subprocess, sys, time
+
+HOME = os.path.expanduser("~")
+CFG = os.environ.get("XDG_CONFIG_HOME") or os.path.join(HOME, ".config")
+
+def geometry(wid):
+    out = subprocess.run(["xwininfo", "-id", wid], capture_output=True, text=True).stdout
+    w = re.search(r"Width:\s+(\d+)", out); h = re.search(r"Height:\s+(\d+)", out)
+    return (w.group(1), h.group(1)) if w and h else ("", "")
+
+def log(*a):
+    if os.environ.get("TENKA_DRIFT_LOG"):
+        with open(os.environ["TENKA_DRIFT_LOG"], "a") as f:
+            print(*a, file=f)
+
+def main():
+    wid = os.environ.get("XSCREENSAVER_WINDOW", "")
+    if wid.startswith("0x"):
+        wid = str(int(wid, 16))
+    w, h = geometry(wid) if wid else ("", "")
+    log("start: saver window", wid or "(none)", w, h, "args", sys.argv[1:])
+    env = dict(os.environ, QML_XHR_ALLOW_FILE_READ="1", QT_QPA_PLATFORM="xcb", QT_MESSAGE_PATTERN="%{message}")
+    p = subprocess.Popen(["/usr/lib/qt6/bin/qml", "/usr/share/tenka/drift/LiteDrift.qml", "--",
+                          os.path.join(CFG, "tenka", "shell-theme.json"), os.path.join(CFG, "tenka", "hour.json"), w or "0", h or "0"],
+                         stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=env)
+    def stop(*_):
+        try: p.terminate()
+        except OSError: pass
+        sys.exit(0)
+    signal.signal(signal.SIGTERM, stop); signal.signal(signal.SIGINT, stop)
+    if wid:
+        mine = ""
+        for _ in range(100):                          # the view's window, by its process and its title
+            r = subprocess.run(["xdotool", "search", "--pid", str(p.pid), "--name", "^tenka-drift$"], capture_output=True, text=True)
+            mine = r.stdout.split()[0] if r.stdout.split() else ""
+            if mine or p.poll() is not None:
+                break
+            time.sleep(0.1)
+        log("saver window", wid, w, h, "view window", mine)
+        if mine:
+            r = subprocess.run(["xdotool", "windowreparent", mine, wid], capture_output=True, text=True)
+            log("reparent", r.returncode, r.stderr.strip())
+            subprocess.run(["xdotool", "windowmove", mine, "0", "0", "windowsize", mine, w or "100%", h or "100%"])
+    p.wait()
+
+if __name__ == "__main__":
+    main()

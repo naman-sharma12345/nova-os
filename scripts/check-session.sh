@@ -14,6 +14,8 @@
 #  9. tenka-codex reads every key from the live Hyprland / XFCE config, including the user's own user.lua
 # 10. tenka-glance tells a folder, a text and a picture apart, and reads a picture's size from its header
 # 11. tenka-colophon reads the machine (kernel, memory, packages) and names the desk after the active theme
+# 12. The Drift is wired: hypridle opens it (ipc "open", not qs's own word "show"), and Lite's screensaver theme
+#     points at a program in xfce4-screensaver's own dir (it runs no theme from anywhere else)
 set -u
 ROOT=$(cd "$(dirname "$0")/.." && pwd); BIN="$ROOT/live/config/includes.chroot/usr/bin"
 fail=0; T=$(mktemp -d); trap 'rm -rf "$T"' EXIT
@@ -235,5 +237,10 @@ if not t.startswith("Tianxia "): bad.append("text: %r" % t[:40])
 if bad: print("FAIL: tenka-colophon: " + "; ".join(bad)); sys.exit(1)
 EOF
 grep -q '^Exec=tenka-colophon open$' "$ROOT/live/config/includes.chroot/usr/share/applications/tenka-colophon.desktop" || { echo "FAIL: colophon desktop entry"; fail=1; }
+# 12. The Drift's wiring, both sessions
+IC="$ROOT/live/config/includes.chroot"
+grep -q 'ipc call drift open' "$IC/etc/skel/.config/hypr/hypridle.conf" && grep -q 'function open()' "$ROOT/shell/quickshell/tenka/Drift.qml" || { echo "FAIL: hypridle -> drift open"; fail=1; }
+grep -q '^Exec=/usr/libexec/xfce4-screensaver/tenka-drift$' "$IC/usr/share/applications/screensavers/tenka-drift.desktop" && [ -x "$IC/usr/libexec/xfce4-screensaver/tenka-drift" ] &&
+grep -q 'value="screensavers-tenka-drift"' "$IC/etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-screensaver.xml" || { echo "FAIL: Lite screensaver -> tenka-drift"; fail=1; }
 [ "$fail" = 0 ] && echo "check-session: ok"
 exit $fail

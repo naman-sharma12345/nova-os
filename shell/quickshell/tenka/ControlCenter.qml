@@ -333,7 +333,17 @@ PanelWindow {
                        onHit: { Theme.perf = !Theme.perf; Theme.run("tenka-perf " + (Theme.perf ? "on" : "off")) } }
             }
             Box {
-                num: "04"; label: "PATH"
+                num: "04"; label: Theme.xia ? "ARTS" : "TOOLS"
+                // Tenka's own tools, one row each: the Loupe waits for this card to slide away before it freezes the screen
+                Row2 { k: Theme.xia ? "The Mirror" : "The Loupe"; v: "colour  ·  ruler"
+                       onHit: { cc.open = false; Theme.run("sleep 0.45; qs -c tenka ipc call loupe open") } }
+                Row2 { k: Theme.xia ? "The Brush" : "The Inkstone"; v: "glyphs"
+                       onHit: { cc.open = false; Theme.ipc("glyphs", "open") } }
+                Row2 { k: Theme.xia ? "The Scripture" : "The Codex"; v: "every key"; last: true
+                       onHit: { cc.open = false; Theme.ipc("codex", "open") } }
+            }
+            Box {
+                num: "05"; label: "PATH"
                 Item {
                     width: parent.width; height: 40
                     Row {

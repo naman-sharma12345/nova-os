@@ -197,6 +197,11 @@ def gtk_theme(name, T, d):
     window.dialog notebook > stack, dialog scrolledwindow, dialog viewport, dialog frame > border {{ background-color: {p['base']}; background-image: none; }}
     notebook > stack:not(:only-child) {{ background-color: {p['base']}; }}
     notebook > header {{ background-color: transparent; background-image: none; border: none; box-shadow: inset 0 -1px 0 {A(p['accent2'], 0.18)}; }}
+    /* framed tab sets outside dialogs (settings pages, editors): the same ink sheet, a hairline frame, square corners */
+    notebook.frame > header, frame > paned > notebook > header, notebook.frame > header.top, notebook.frame > header.bottom {{ background-color: transparent; border-radius: 0; }}
+    notebook {{ background-color: {p['base']}; }}
+    .XfceHeading {{ background-color: {p['base']}; box-shadow: inset 0 -1px 0 {A(p['accent2'], 0.15)}; }}
+    notebook.frame, notebook.frame > stack, .background.csd notebook.frame, .background.csd notebook.frame > stack {{ border-radius: 2px; border-color: {A(p['accent2'], 0.15)}; }}
     notebook > header tab {{ background: none; border: none; border-radius: 0; box-shadow: none; padding: 6px 14px; margin: 0; min-height: 0; outline: none; }}
     notebook > header tab label {{ font-family: "Marcellus"; font-weight: normal; color: {p['subtext']}; letter-spacing: 0.5px; }}
     notebook > header tab:hover label {{ color: {p['text']}; }}

@@ -100,7 +100,7 @@ def bg_image(name, size, darken=0.55, blur=0, file=None):
 
 # ------------------------------------------------------------------ SDDM
 def button(name, T):
-    """The login button: a vermilion dry-brush stroke (Tenka) or a jade glass pill with a gold edge (Tianxia), at 2x."""
+    """The login button: a vermilion dry-brush stroke (Tenka) or a flat jade pill with a gold edge (Tianxia), at 2x. No glow."""
     import importlib.util as _u
     sp = _u.spec_from_file_location("tenka_art", os.path.join(os.path.dirname(os.path.abspath(__file__)), "tenka_art.py"))
     ta = _u.module_from_spec(sp); sp.loader.exec_module(ta)
@@ -110,11 +110,7 @@ def button(name, T):
         m = Image.new("L", (w, h), 0); m.paste(ta.mask_img(a), (8, 4))
         im = Image.new("RGBA", (w, h), ta.hexc(ta.PAL["samurai"]["acc"])[:3] + (0,)); im.putalpha(m)
         return im
-    im = Image.new("RGBA", (w, h), (0, 0, 0, 0)); d = ImageDraw.Draw(im)
-    g = Image.new("RGBA", (w, h), (0, 0, 0, 0))
-    ImageDraw.Draw(g).rounded_rectangle((10, 10, w - 10, h - 10), radius=(h - 20) // 2, fill=ta.hexc("#5fc9a0", 160))
-    im = Image.alpha_composite(im, g.filter(ImageFilter.GaussianBlur(8)))
-    d = ImageDraw.Draw(im)
+    im = Image.new("RGBA", (w, h), (0, 0, 0, 0)); d = ImageDraw.Draw(im)   # flat: no blurred halo behind the pill
     d.rounded_rectangle((10, 10, w - 10, h - 10), radius=(h - 20) // 2, fill=ta.hexc("#5fc9a0", 235), outline=ta.hexc("#e2bd6b", 230), width=2)
     return im
 

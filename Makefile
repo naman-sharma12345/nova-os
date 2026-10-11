@@ -9,7 +9,7 @@ ISO = $(wildcard $(BUILD)/live/*.iso)
 .PHONY: iso themes assemble run run-bios clean deps
 
 deps:
-	apt-get install -y live-build debootstrap squashfs-tools xorriso grub-pc-bin grub-efi-amd64-bin mtools dosfstools python3-pil rsync librsvg2-bin fonts-inter grub-common
+	apt-get install -y live-build debootstrap squashfs-tools xorriso grub-pc-bin grub-efi-amd64-bin mtools dosfstools python3-pil rsync librsvg2-bin fonts-inter grub-common qt6-declarative-dev-tools
 
 themes:
 	python3 scripts/gen-themes.py && python3 scripts/gen-lite.py && python3 scripts/gen-system.py

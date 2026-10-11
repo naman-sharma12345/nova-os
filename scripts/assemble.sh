@@ -5,6 +5,7 @@ ROOT=$(cd "$(dirname "$0")/.." && pwd)
 BUILD=${BUILD:-$ROOT/build}
 cd "$ROOT"
 sh scripts/check-session.sh   # login-path checks (session scripts parse; no toast before the shell)
+sh scripts/check-qml.sh       # every shipped QML file parses (a slip there is a blank desktop)
 python3 scripts/gen-themes.py
 python3 scripts/gen-lite.py
 python3 scripts/gen-system.py

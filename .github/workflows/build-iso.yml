@@ -32,7 +32,8 @@ jobs:
             apt-get update
             apt-get install -y --no-install-recommends live-build debootstrap squashfs-tools xorriso \
               grub-pc-bin grub-efi-amd64-bin grub-common mtools dosfstools python3 python3-pil rsync \
-              librsvg2-bin ca-certificates make zstd fonts-inter python3-numpy
+              librsvg2-bin ca-certificates make zstd fonts-inter python3-numpy \
+              qt6-declarative-dev-tools
             make iso BUILD=/src/build
           '
           ls -lh build/live/*.iso

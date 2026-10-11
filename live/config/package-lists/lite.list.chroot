@@ -42,3 +42,6 @@ conky-all
 # --- low-end tuning
 zram-tools
 librsvg2-bin
+# --- The Inkstone (Super+.): Unicode names for the shelves, xdotool to type the glyph into the window
+unicode-data
+xdotool

@@ -2,7 +2,10 @@
 # tenka-glyphs: the shelves behind The Inkstone (Inkstone.qml), our own glyph picker (Super+.), which Linux
 # desktops lack: emoji, marks and ink (CJK punctuation and a few seal characters) found by name.
 #   tenka-glyphs list          JSON {shelves: [...], glyphs: [{g, n, s}], lately: [g...]} on stdout
-#   tenka-glyphs place GLYPH   copy it (wl-copy), type it into the window behind (wtype), remember it
+#   tenka-glyphs place GLYPH   copy it, type it into the window behind, remember it
+#                              (Wayland: wl-copy + wtype; X11/Lite: xclip + xdotool)
+#   tenka-glyphs open          Super+. in either session: the flagship shell's card (qs ipc), or on Tenka
+#                              Lite the same card in a small Qt window (/usr/share/tenka/inkstone/LiteInkstone.qml)
 # Emoji names and groups come from Unicode's emoji-test.txt (Debian: unicode-data); skin-tone variants are
 # left out to keep the shelves calm. Lately lives in ~/.config/tenka/glyphs-lately.json (the last 30).
 import json, os, subprocess, sys, time, unicodedata
@@ -60,25 +63,40 @@ def emoji():
     return out
 
 
-def listing():
+def data():
     gl = emoji()
     for m in MARKS:
         gl.append({"g": m, "n": unicodedata.name(m, "mark").lower(), "s": "marks"})
     for g, n in INK:
         gl.append({"g": g, "n": n, "s": "ink"})
-    print(json.dumps({"shelves": SHELVES, "glyphs": gl, "lately": lately()}, ensure_ascii=False))
+    return {"shelves": SHELVES, "glyphs": gl, "lately": lately()}
+
+
+def listing():
+    print(json.dumps(data(), ensure_ascii=False))
+
+
+def wayland():
+    return bool(os.environ.get("WAYLAND_DISPLAY"))
+
+
+def run(cmd, **kw):
+    try:
+        subprocess.run(cmd, timeout=3, **kw)
+    except (OSError, subprocess.SubprocessError):
+        pass
 
 
 def place(g):
-    try:
-        subprocess.run(["wl-copy", "--", g], timeout=3)
-    except (OSError, subprocess.SubprocessError):
-        pass
+    if wayland():
+        run(["wl-copy", "--", g])
+    else:                                              # X11 (Tenka Lite): the clipboard keeps it after we exit
+        run(["xclip", "-selection", "clipboard"], input=g.encode())
     time.sleep(0.18)                                   # the picker lets go of the keyboard first
-    try:
-        subprocess.run(["wtype", "--", g], timeout=3)
-    except (OSError, subprocess.SubprocessError):
-        pass
+    if wayland():
+        run(["wtype", "--", g])
+    else:
+        run(["xdotool", "type", "--clearmodifiers", "--delay", "12", "--", g])
     v = [g] + [x for x in lately() if x != g]
     os.makedirs(os.path.dirname(LATELY), exist_ok=True)
     tmp = LATELY + ".part"
@@ -87,8 +105,54 @@ def place(g):
     os.replace(tmp, LATELY)
 
 
+def open_card():
+    if wayland() and subprocess.run(["pgrep", "-x", "qs"], capture_output=True).returncode == 0:
+        run(["qs", "-c", "tenka", "ipc", "call", "glyphs", "toggle"], capture_output=True)
+        return
+    if not os.environ.get("DISPLAY"):
+        return
+    rt = os.environ.get("XDG_RUNTIME_DIR") or "/tmp"
+    lock = os.path.join(rt, "tenka-inkstone.pid")
+    try:                                               # Super+. again while it is open: leave the one there
+        with open(lock) as f:
+            os.kill(int(f.read().strip()), 0)
+        return
+    except (OSError, ValueError):
+        pass
+    d = data()
+    for k in ("QUERY", "SHELF", "SEL"):                # the renders' honest stand-ins, as on the flagship
+        if os.environ.get("TENKA_GLYPH_SIM_" + k):
+            d["sim" + k.title()] = os.environ["TENKA_GLYPH_SIM_" + k]
+    shelves = os.path.join(rt, "tenka-inkstone.json")
+    fd = os.open(shelves + ".part", os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "w") as f:
+        json.dump(d, f, ensure_ascii=False)
+    os.replace(shelves + ".part", shelves)
+    theme = os.path.join(os.environ.get("XDG_CONFIG_HOME") or os.path.expanduser("~/.config"), "tenka", "shell-theme.json")
+    env = dict(os.environ, QML_XHR_ALLOW_FILE_READ="1", QT_QPA_PLATFORM="xcb", QT_MESSAGE_PATTERN="%{message}")
+    p = subprocess.Popen(["/usr/lib/qt6/bin/qml", "/usr/share/tenka/inkstone/LiteInkstone.qml", "--", shelves, theme],
+                         stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, env=env)
+    with open(lock, "w") as f:
+        f.write(str(p.pid))
+    chosen = ""
+    for line in p.stderr:                              # one "TENKA-GLYPH <glyph>" line, then it quits
+        t = line.decode("utf-8", "replace").rstrip("\n")
+        if t.startswith("TENKA-GLYPH "):
+            chosen = t[len("TENKA-GLYPH "):]
+    p.wait()
+    for x in (lock, shelves):
+        try:
+            os.remove(x)
+        except OSError:
+            pass
+    if chosen:
+        place(chosen)
+
+
 if __name__ == "__main__":
     if len(sys.argv) > 2 and sys.argv[1] == "place":
         place(sys.argv[2])
+    elif len(sys.argv) > 1 and sys.argv[1] == "open":
+        open_card()
     else:
         listing()

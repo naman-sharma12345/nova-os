@@ -29,6 +29,7 @@ ShellRoot {
     Switcher {}
     Slip {}
     Seal {}
+    Wifi {}
     ControlCenter {}
     Notifications {}
     Osd {}

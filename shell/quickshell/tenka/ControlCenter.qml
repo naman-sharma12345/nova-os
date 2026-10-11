@@ -128,7 +128,7 @@ PanelWindow {
                                     if (a === "still") Theme.stillness = !Theme.stillness;
                                     if (a === "night") { Theme.nightInk = !Theme.nightInk; Theme.run(Theme.nightInk ? "pkill hyprsunset; setsid hyprsunset -t 4200 >/dev/null 2>&1 &" : "pkill hyprsunset") }
                                     if (a === "perf") { Theme.perf = !Theme.perf; Theme.run("tenka-perf " + (Theme.perf ? "on" : "off")) }
-                                    if (a === "net") { cc.open = false; Theme.run("setsid nm-connection-editor >/dev/null 2>&1 &") }
+                                    if (a === "net") { cc.open = false; Theme.askWifi() }
                                     if (a === "lock") { cc.open = false; Theme.run("loginctl lock-session") } } }
                     }
                 }
@@ -300,7 +300,7 @@ PanelWindow {
                 // the network row opens the connection editor (network-manager-gnome ships it); no Bluetooth row,
                 // because no Bluetooth stack ships and a switch that does nothing is a lie
                 Row2 { k: cc.netKind === "wifi" ? "Wi-Fi" : "Network"; v: cc.net; on: cc.net !== "Offline"; toggle: true
-                       onHit: { cc.open = false; Theme.run("setsid nm-connection-editor >/dev/null 2>&1 &") } }
+                       onHit: { cc.open = false; Theme.askWifi() } }
                 Row2 { k: "Uptime"; v: cc.up.replace(" hours", "h").replace(" hour", "h").replace(" minutes", "m").replace(" minute", "m").replace(",", ""); last: true }
             }
             Box {

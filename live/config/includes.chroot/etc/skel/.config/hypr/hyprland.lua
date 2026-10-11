@@ -95,7 +95,7 @@ hl.layer_rule({ name = "wallpaper-fade", match = { namespace = "^wallpaper$" }, 
 hl.layer_rule({ name = "launcher-dim", match = { namespace = "^launcher$" }, dim_around = true })
 hl.layer_rule({ name = "logout-anim", match = { namespace = "^logout_dialog$" }, animation = "fade" })
 -- the Tenka shell animates its own surfaces; the compositor only fades them
-hl.layer_rule({ name = "tenka-fade", match = { namespace = "^tenka-(launcher|control|power|cards|osd|overview)$" }, animation = "fade" })
+hl.layer_rule({ name = "tenka-fade", match = { namespace = "^tenka-(launcher|control|power|cards|osd|overview|switcher)$" }, animation = "fade" })
 hl.layer_rule({ name = "tenka-wall", match = { namespace = "^tenka-wall$" }, animation = "fade" })
 
 -- windows -----------------------------------------------------------------
@@ -133,6 +133,8 @@ hl.bind(M .. " + T",           hl.dsp.exec_cmd("tenka-theme-menu"))
 hl.bind(M .. " + W",           hl.dsp.exec_cmd("tenka-wallpaper next"))
 hl.bind(M .. " + SHIFT + V",   hl.dsp.exec_cmd("tenka-clipboard"))
 hl.bind(M .. " + Tab",         hl.dsp.exec_cmd("qs -c tenka ipc call overview toggle"))   -- the field: every desk at once
+hl.bind("ALT + Tab",           hl.dsp.exec_cmd("qs -c tenka ipc call switcher next"))   -- the turn: our own window switcher
+hl.bind("ALT + SHIFT + Tab",   hl.dsp.exec_cmd("qs -c tenka ipc call switcher prev"))
 hl.bind(M .. " + SHIFT + C",   hl.dsp.exec_cmd("hyprpicker -a"))
 hl.bind("Print",               hl.dsp.exec_cmd("tenka-shot area"))
 hl.bind("SHIFT + Print",       hl.dsp.exec_cmd("tenka-shot screen"))

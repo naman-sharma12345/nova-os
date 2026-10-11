@@ -12,3 +12,4 @@ live/config/includes.chroot/etc/calamares/branding/tenka-*/
 live/config/includes.chroot/usr/share/themes/Tenka-*/
 live/config/includes.chroot/usr/share/tenka/themes/
 live/config/includes.chroot/usr/share/icons/Tenka-*-Cursors/
+live/config/includes.chroot/usr/share/locale/en/LC_MESSAGES/xfce4-screensaver.mo

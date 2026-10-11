@@ -467,7 +467,31 @@ def lock_art(name):
     c.convert("RGB").save(os.path.join(d, "lock.jpg"), quality=92)
 
 
+def write_mo(path, pairs):
+    """A tiny GNU .mo writer (no gettext tools needed at build time)."""
+    import struct
+    keys = sorted(pairs); ids = b""; strs = b""; offs = []
+    for k in keys:
+        kb, vb = k.encode(), pairs[k].encode()
+        offs.append((len(ids), len(kb), len(strs), len(vb))); ids += kb + b"\0"; strs += vb + b"\0"
+    n = len(keys); ko = 28; vo = ko + 8 * n; base = vo + 8 * n
+    out = struct.pack("<7I", 0x950412de, 0, n, ko, vo, 0, 0)
+    out += b"".join(struct.pack("<2I", l, base + o) for o, l, _, _ in offs)
+    out += b"".join(struct.pack("<2I", l, base + len(ids) + o) for _, _, o, l in offs)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    open(path, "wb").write(out + ids + strs)
+
+def lock_labels():
+    """The lock dialog runs as a GtkPlug, where GTK keeps mnemonics visible, so "_Unlock" showed a stray underline
+    under the U (and the C of Cancel). English is the only language Tenka ships, so an English catalogue gives the
+    dialog its labels without the mnemonic marks. Enter still unlocks; Escape still cancels."""
+    write_mo(os.path.join(IC, "usr/share/locale/en/LC_MESSAGES/xfce4-screensaver.mo"),
+             {"": "Content-Type: text/plain; charset=UTF-8\n",
+              **{s: s.replace("_", "", 1) for s in ("_Unlock", "_Cancel", "_Switch User", "_Log Out")}})
+
+
 if __name__ == "__main__":
+    lock_labels()
     for n, T in gt.THEMES.items():
         lock_art(n)
         d = os.path.join(IC, f"usr/share/themes/Tenka-{n.capitalize()}")

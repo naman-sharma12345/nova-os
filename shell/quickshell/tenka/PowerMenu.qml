@@ -75,7 +75,7 @@ PanelWindow {
                         readonly property bool on: pm.sel === index
                         y: index * 66; width: list.width; height: 62
                         Text { x: 36; anchors.verticalCenter: parent.verticalCenter; text: parent.modelData[1]
-                               color: parent.on ? "#fff8ec" : "#948a7d"; font.family: Theme.display; font.pixelSize: 34
+                               color: parent.on ? "#fff8ec" : Theme.alpha(Theme.t.text, 0.56)   // the off rites in each pack's own text tone (the warm grey was Tenka-only); font.family: Theme.display; font.pixelSize: 34
                                Behavior on color { ColorAnimation { duration: 180 } } }
                         Text { anchors.right: parent.right; anchors.rightMargin: 8; anchors.verticalCenter: parent.verticalCenter
                                text: parent.modelData[2].toUpperCase(); color: Theme.alpha(Theme.t.text, parent.on ? 0.6 : 0.28)

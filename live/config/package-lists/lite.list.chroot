@@ -45,3 +45,5 @@ librsvg2-bin
 # --- The Inkstone (Super+.): Unicode names for the shelves, xdotool to type the glyph into the window
 unicode-data
 xdotool
+# --- The Lantern on Lite (Super+P, XF86Battery): the three power profiles, as on the flagship
+power-profiles-daemon

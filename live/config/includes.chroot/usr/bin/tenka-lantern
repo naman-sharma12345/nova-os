@@ -6,8 +6,10 @@
 #                                       devices:[{name, pct, kind}], profile, profiles} (left/full in seconds, or -1)
 #   tenka-lantern word            one short line for the ledger: "72%  ·  3 h 40 min" or "On AC power"
 #   tenka-lantern profile NAME    power-saver | balanced | performance
+#   tenka-lantern open            show the card: the flagship shell's Lantern (qs ipc) on Hyprland, or on Tenka Lite
+#                                 the same card (LanternCard.qml) in a small Qt window that this keeps fed while open
 # TENKA_POWER_ROOT points it at another power_supply tree (the renders' and the tests' stand-in).
-import json, os, subprocess, sys
+import json, os, signal, subprocess, sys, threading, time
 
 ROOT = os.environ.get("TENKA_POWER_ROOT") or "/sys/class/power_supply"
 
@@ -107,8 +109,72 @@ def word(g):
     return w
 
 
+def put(path, g):                                       # the window's facts: private, swapped in whole
+    fd = os.open(path + ".part", os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "w") as f:
+        json.dump(g, f)
+    os.replace(path + ".part", path)
+
+
+def open_card():
+    if os.environ.get("WAYLAND_DISPLAY") and subprocess.run(["pgrep", "-x", "qs"], capture_output=True).returncode == 0:
+        subprocess.run(["qs", "-c", "tenka", "ipc", "call", "lantern", "toggle"], capture_output=True)
+        return 0
+    if not os.environ.get("DISPLAY"):
+        return 1
+    rt = os.environ.get("XDG_RUNTIME_DIR") or "/tmp"
+    lock = os.path.join(rt, "tenka-lantern.pid")
+    try:                                                # pressed again while open: close it, like the flagship
+        with open(lock) as f:
+            pid = int(f.read().strip())
+        with open(f"/proc/{pid}/cmdline", "rb") as f:     # only our own window, never a pid reused since
+            if b"LiteLantern.qml" not in f.read():
+                raise ValueError
+        os.kill(pid, signal.SIGTERM)
+        os.remove(lock)
+        return 0
+    except (OSError, ValueError):
+        pass
+    facts = os.path.join(rt, "tenka-lantern.json")
+    note = {"v": ""}
+    put(facts, gather())
+    theme = os.path.join(os.environ.get("XDG_CONFIG_HOME") or os.path.expanduser("~/.config"), "tenka", "shell-theme.json")
+    env = dict(os.environ, QML_XHR_ALLOW_FILE_READ="1", QT_QPA_PLATFORM="xcb", QT_MESSAGE_PATTERN="%{message}")
+    p = subprocess.Popen(["/usr/lib/qt6/bin/qml", "/usr/share/tenka/lantern/LiteLantern.qml", "--", facts, theme],
+                         stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, env=env)
+    with open(lock, "w") as f:
+        f.write(str(p.pid))
+
+    def feed():                                         # every two seconds while open, as on the flagship
+        while p.poll() is None:
+            g = gather()
+            g["note"] = note["v"]
+            put(facts, g)
+            time.sleep(2)
+    threading.Thread(target=feed, daemon=True).start()
+    for line in p.stderr:                               # "TENKA-POWER <profile>": the card asks, this sets it
+        t = line.decode("utf-8", "replace").strip()
+        if t.startswith("TENKA-POWER "):
+            want = t.split(" ", 1)[1]
+            ok = want in ("power-saver", "balanced", "performance") and subprocess.run(
+                ["powerprofilesctl", "set", want], capture_output=True).returncode == 0
+            note["v"] = "" if ok else "The profile did not change. Is power-profiles-daemon running?"
+            g = gather()
+            g["note"] = note["v"]
+            put(facts, g)
+    p.wait()
+    for x in (lock, facts):
+        try:
+            os.remove(x)
+        except OSError:
+            pass
+    return 0
+
+
 if __name__ == "__main__":
     a = sys.argv[1:]
+    if a[:1] == ["open"]:
+        sys.exit(open_card())
     if a[:1] == ["profile"] and len(a) > 1:
         if a[1] not in ("power-saver", "balanced", "performance"):
             sys.exit("tenka-lantern: profile is power-saver, balanced or performance")

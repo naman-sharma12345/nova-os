@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=The Lantern
+GenericName=Battery and power
+Comment=The charge, the time left, the battery's health and the power profile
+Exec=tenka-lantern open
+Icon=battery
+OnlyShowIn=XFCE;
+Categories=Settings;HardwareSettings;
+Keywords=battery;power;charge;profile;lantern;ember;

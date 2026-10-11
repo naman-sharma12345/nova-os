@@ -103,3 +103,66 @@
   .top-site-outer .tile, .top-site-outer .top-site-icon { background-color: #1b1816 !important; box-shadow: none !important; }
   .top-site-outer:hover .tile { background-color: #2a2522 !important; }
 }
+/* Firefox's own PDF viewer (pdf.js): the document keeps the PDF's own address, so the viewer is found by its <html> */
+html[mozdisallowselectionprint] {
+    --main-color: #efe6d6 !important;
+    --body-bg-color: #0a0908 !important;
+    --scrollbar-color: #2a2522 !important;
+    --scrollbar-bg-color: #0a0908 !important;
+    --toolbar-bg-color: #0f0d0c !important;
+    --toolbar-border-color: #3a3430 !important;
+    --toolbar-box-shadow: none !important;
+    --toolbar-border-bottom: 1px solid #3a3430 !important;
+    --sidebar-narrow-bg-color: #0a0908 !important;
+    --sidebar-toolbar-bg-color: #0f0d0c !important;
+    --toolbar-icon-bg-color: #b8ab96 !important;
+    --toolbar-icon-hover-bg-color: #efe6d6 !important;
+    --button-hover-color: #2a2522 !important;
+    --toggled-btn-color: #efe6d6 !important;
+    --toggled-btn-bg-color: #54241e !important;
+    --toggled-hover-active-btn-color: #efe6d6 !important;
+    --dropdown-btn-bg-color: #1b1816 !important;
+    --separator-color: #3a3430 !important;
+    --field-color: #efe6d6 !important;
+    --field-bg-color: #1b1816 !important;
+    --field-border-color: #3a3430 !important;
+    --doorhanger-bg-color: #0a0908 !important;
+    --doorhanger-border-color: #3a3430 !important;
+    --doorhanger-hover-color: #efe6d6 !important;
+    --doorhanger-hover-bg-color: #2a2522 !important;
+    --doorhanger-separator-color: #3a3430 !important;
+    --dialog-button-bg-color: #1b1816 !important;
+    --dialog-button-hover-bg-color: #2a2522 !important;
+    --progress-bar-color: #d8412f !important;
+    --color-accent-primary: #d8412f !important;
+}
+html[mozdisallowselectionprint] body { background-color: #0a0908 !important; }
+html[mozdisallowselectionprint] .page { box-shadow: 0 0 0 1px #3a3430 !important; border: none !important; }
+/* Reader View: the light and dark readings take the pack's ink (sepia, gray and contrast stay the reader's own choice);
+   titles in Marcellus, the body in the reader's chosen face */
+@-moz-document url-prefix("about:reader") {
+  body.light, body.dark, body:not(.sepia, .gray, .contrast) {
+    --main-background: #0f0d0c !important;
+    --main-foreground: #efe6d6 !important;
+    --primary-color: #d8412f !important;
+    --link-foreground: #d8412f !important;
+    --visited-link-foreground: #c87662 !important;
+    --text-selected-background: #54241e !important;
+    --text-selected-foreground: #efe6d6 !important;
+    --selected-background: #54241e !important;
+    --toolbar-border: #3a3430 !important;
+    --icon-fill: #b8ab96 !important;
+    --popup-background: #0a0908 !important;
+    --popup-foreground: #efe6d6 !important;
+    --popup-border: #3a3430 !important;
+    --toolbar-button-background-hover: rgba(42, 37, 34, 0.7) !important;
+    --toolbar-button-background-active: #2a2522 !important;
+    --toolbar-button-foreground-active: #d8412f !important;
+    color-scheme: dark !important;
+  }
+  body:not(.sepia, .gray, .contrast) { background-color: #0f0d0c !important; color: #efe6d6 !important; }
+  .reader-title, .moz-reader-content h1, .moz-reader-content h2, .moz-reader-content h3 { font-family: "Marcellus", serif !important; font-weight: 400 !important; letter-spacing: .01em; }
+  .reader-title { border-bottom: 1px solid rgba(216, 65, 47, 0.55); padding-bottom: .4em; }
+  .credits, .meta-data { color: #b8ab96 !important; }
+  .moz-reader-content blockquote { border-inline-start: 2px solid #d8412f !important; }
+}

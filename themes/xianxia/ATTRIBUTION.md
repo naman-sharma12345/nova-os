@@ -24,6 +24,7 @@ Lanczos resize to 3840×2160 where needed, a light unsharp mask and fine film gr
 | `wallpapers/10-frost-sect.jpg` | generated | a text-to-image model | ice-crystal palace on a frozen peak under aurora |
 | `wallpapers/11-imperial-city.jpg` | generated | a text-to-image model | red-walled, gold-roofed palace city under the Milky Way (original, not a depiction of a real site plan) |
 | `wallpapers/12-sword-tomb.jpg` | generated | a text-to-image model | field of swords in the ground at a purple/orange dusk |
+| `wallpapers/00-desktop.jpg` | generated, finished locally | a text-to-image model | moon, ring and pavilion; the jade ring was toned down in its band only (value ×0.62, saturation ×0.55) so it reads as paint, not as a neon light; `wallpapers-blur/` copy re-made (960×540, Gaussian 16) |
 
 `wallpapers/preview-contact.jpg` is a 4×3 contact sheet (1920 px wide) of the above.
 

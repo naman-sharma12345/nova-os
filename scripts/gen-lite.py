@@ -136,14 +136,14 @@ def gtk_theme(name, T, d):
     .background > menu, .background.csd > menu, .background.popup > menu,
     window.popup menu, menu, .menu, .context-menu {{ background-color: {A(p['base'], 0.98)}; background-image: none; border: 1px solid {A(p['accent2'], 0.22)};
         border-top: 1px solid {A(p['accent2'], 0.75)}; border-radius: 2px; padding: 6px 0; box-shadow: none; }}
-    menu menuitem, .menu menuitem, .context-menu menuitem {{ padding: 6px 22px 6px 18px; min-height: 20px; border-radius: 0; background: none; box-shadow: none; }}
+    menu menuitem, .menu menuitem, .context-menu menuitem {{ padding: 6px 20px 6px 20px; min-height: 20px; border-radius: 0; background: none; box-shadow: none; }}
     menu menuitem label, .menu menuitem label {{ font-family: "Marcellus"; font-weight: normal; font-size: 13px; color: {p['text']}; letter-spacing: 0.3px; }}
     menu menuitem accelerator {{ color: {A(p['text'], 0.40)}; font-family: "Marcellus"; }}
     menu menuitem:hover, .menu menuitem:hover, .context-menu menuitem:hover {{ background-color: {A(p['text'], 0.05)}; box-shadow: inset 2px 0 0 {p['accent']}; }}
     menu menuitem:hover label, .menu menuitem:hover label {{ color: {p['text']}; }}
     menu menuitem:disabled label {{ color: {A(p['text'], 0.32)}; }}
     menu menuitem arrow {{ color: {A(p['text'], 0.45)}; min-width: 10px; min-height: 10px; }}
-    menu separator, .menu separator {{ background-color: {A(p['accent2'], 0.18)}; min-height: 1px; margin: 5px 18px; }}
+    menu separator, .menu separator {{ background-color: {A(p['accent2'], 0.18)}; min-height: 1px; margin: 5px 20px; }}
     menu > separator:first-child, menu > menuitem.separator:first-child, menu > separator:last-child {{ min-height: 0; margin: 0; background: none; }}
     /* app menubars (editor, viewer, terminal): Marcellus words on the window's ink, the open one marked by a short
        accent rule under it instead of a filled block */
@@ -220,6 +220,10 @@ def gtk_theme(name, T, d):
         background-color: transparent; background-image: none; border: 1px solid {A(p['text'], 0.32)}; box-shadow: none;
         color: {p['accent2']}; -gtk-icon-source: none; -gtk-icon-shadow: none; transition: none; }}
     check, menu menuitem check {{ border-radius: 2px; }}
+    /* menus without ticks (Files' right-click menu, the desktop menu) keep no empty tick column: GTK reserves it from a
+       loose check item that sits in no menu (CSS path "menuitem > check"), so that loose probe is sized to nothing;
+       real ticks inside menus match "menu menuitem check" above and keep their size */
+    menuitem > check, menuitem > radio {{ min-width: 0.5px; margin: 0 -1px 0 0; padding: 0; border-width: 0; }}
     radio, menu menuitem radio {{ border-radius: 99px; }}
     check:hover, radio:hover, menu menuitem:hover check, menu menuitem:hover radio {{ border-color: {A(p['accent2'], 0.7)}; }}
     check:checked, check:indeterminate, radio:checked, radio:indeterminate, menu menuitem check:checked, menu menuitem radio:checked {{

@@ -7,4 +7,6 @@
   <property name="last-separator-position" type="int" value="230"/>
   <property name="last-show-hidden" type="bool" value="false"/>
   <property name="misc-single-click" type="bool" value="false"/>
+  <!-- window titles read as the folder alone ("Documents"), never "tk - Thunar": the app is called Files everywhere else -->
+  <property name="misc-window-title-style" type="string" value="THUNAR_WINDOW_TITLE_STYLE_FOLDER_NAME_WITHOUT_THUNAR_SUFFIX"/>
 </channel>

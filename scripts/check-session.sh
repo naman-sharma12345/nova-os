@@ -178,6 +178,10 @@ f=$(HOME="$T/lhome" XDG_CONFIG_HOME= XDG_RUNTIME_DIR="$T" TENKA_LOUPE_SIM_SHOT="
 for c in '#C9A35A' '#112233' 'hello' '#c9a35a'; do
   HOME="$T/lhome" XDG_CONFIG_HOME= WAYLAND_DISPLAY=x PATH="$T/lstub:$PATH" sh "$BIN/tenka-loupe" copy "$c"
 done
+# on Tenka Lite (X11, no Wayland) the screen is frozen by xfce4-screenshooter, into the same private file
+printf '#!/bin/sh\nwhile [ $# -gt 0 ]; do [ "$1" = -s ] && { echo x11 > "$2"; exit 0; }; shift; done\nexit 1\n' > "$T/lstub/xfce4-screenshooter"; chmod +x "$T/lstub/xfce4-screenshooter"
+f=$(env -u WAYLAND_DISPLAY DISPLAY=:9 HOME="$T/lhome" XDG_RUNTIME_DIR="$T" PATH="$T/lstub:$PATH" sh "$BIN/tenka-loupe" shot)
+[ "$f" = "$T/tenka-loupe.png" ] && [ "$(cat "$f")" = x11 ] && [ "$(stat -c %a "$f")" = 600 ] || { echo "FAIL: tenka-loupe shot on X11 ($f)"; fail=1; }
 [ "$(cat "$T/clip")" = "#c9a35a" ] || { echo "FAIL: tenka-loupe copy did not reach the clipboard"; fail=1; }
 [ "$(HOME="$T/lhome" XDG_CONFIG_HOME= sh "$BIN/tenka-loupe" lately)" = '["#c9a35a","#112233"]' ] || { echo "FAIL: tenka-loupe lately: $(HOME="$T/lhome" XDG_CONFIG_HOME= sh "$BIN/tenka-loupe" lately)"; fail=1; }
 # 9. tenka-codex reads the keys from the live config: the shipped Hyprland and Lite keys both list Super + /,

@@ -3,6 +3,9 @@
 #   tenka-loupe shot [OUTPUT]   freeze the screen (grim, one output when named) into a private file; prints its path
 #   tenka-loupe copy TEXT       put TEXT on the clipboard (wl-copy, or xclip on X11); a colour also joins LATELY
 #   tenka-loupe lately          the last colours picked, newest first, as a JSON list ("#c9a35a", ...)
+#   tenka-loupe open            Super+Shift+C: the flagship's Loupe (qs ipc) on Hyprland; on Tenka Lite the screen is
+#                               frozen first (xfce4-screenshooter) and the same view (loupe/LoupeView.qml) opens over it
+#                               in a full-screen Qt window; a colour it copies comes back as one "TENKA-COPY" line
 # TENKA_LOUPE_SIM_SHOT names a picture to use instead of the screen (the tests' stand-in).
 set -u
 RT=${XDG_RUNTIME_DIR:-/tmp}
@@ -12,6 +15,7 @@ shot)
     umask 077
     f="$RT/tenka-loupe.png"; rm -f "$f"
     if [ -n "${TENKA_LOUPE_SIM_SHOT:-}" ]; then cp "$TENKA_LOUPE_SIM_SHOT" "$f"
+    elif [ -z "${WAYLAND_DISPLAY:-}" ] && [ -n "${DISPLAY:-}" ]; then xfce4-screenshooter -f -s "$f" >/dev/null 2>&1   # Tenka Lite (X11)
     elif [ -n "${2:-}" ]; then grim -o "$2" "$f" 2>/dev/null || grim "$f"
     else grim "$f"; fi
     [ -s "$f" ] && echo "$f" ;;
@@ -32,5 +36,23 @@ lately)
         for c in $(grep -x '#[0-9a-f]\{6\}' "$LATELY" | head -n 12); do printf '%s"%s"' "$s" "$c"; s=","; done
     fi
     printf ']\n' ;;
-*)  echo "usage: tenka-loupe shot [OUTPUT] | copy TEXT | lately" >&2; exit 2 ;;
+open)
+    if [ -n "${WAYLAND_DISPLAY:-}" ] && pgrep -x qs >/dev/null 2>&1; then exec qs -c tenka ipc call loupe toggle; fi
+    [ -n "${DISPLAY:-}" ] || exit 1
+    lock="$RT/tenka-loupe.pid"
+    if [ -f "$lock" ] && pid=$(cat "$lock") && grep -qa LiteLoupe.qml "/proc/$pid/cmdline" 2>/dev/null; then
+        kill "$pid"; rm -f "$lock"; exit 0          # pressed again while open: close it, like the flagship
+    fi
+    f=$("$0" shot) || exit 1
+    "$0" lately > "$RT/tenka-loupe-lately.json"
+    theme=${XDG_CONFIG_HOME:-$HOME/.config}/tenka/shell-theme.json
+    { QML_XHR_ALLOW_FILE_READ=1 QT_QPA_PLATFORM=xcb QT_MESSAGE_PATTERN='%{message}' \
+        /usr/lib/qt6/bin/qml /usr/share/tenka/loupe/LiteLoupe.qml -- "$f" "$RT/tenka-loupe-lately.json" "$theme" 2>&1 >/dev/null &
+      echo $! > "$lock"; wait; } |
+    while IFS= read -r line; do
+        case "$line" in "TENKA-COPY "*) "$0" copy "${line#TENKA-COPY }" ;; esac
+    done
+    rm -f "$f" "$lock" "$RT/tenka-loupe-lately.json"
+    exit 0 ;;
+*)  echo "usage: tenka-loupe shot [OUTPUT] | copy TEXT | lately | open" >&2; exit 2 ;;
 esac

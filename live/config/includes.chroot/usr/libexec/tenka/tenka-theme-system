@@ -20,8 +20,21 @@ printf '[Theme]\nCurrent=tenka-%s\nCursorTheme=%s\nCursorSize=24\nFont=Marcellus
 # GRUB (installed systems)
 if [ -d /boot/grub ] && command -v update-grub >/dev/null && [ ! -d /run/live ]; then
   mkdir -p /etc/default/grub.d
-  printf 'GRUB_THEME="/usr/share/grub/themes/tenka-%s/theme.txt"\nGRUB_GFXMODE=1920x1080,1280x720,auto\nGRUB_DISTRIBUTOR="%s"\n' "$T" "$THEME_DISPLAY" > /etc/default/grub.d/90-tenka.cfg
+  F=/etc/default/grub.d/90-tenka.cfg
+  # edit in place: keep the quiet/splash kernel line and timeout the installer wrote
+  [ -f "$F" ] || printf 'GRUB_GFXMODE=1920x1080,1280x720,auto\n' > "$F"
+  sed -i -e '/^GRUB_THEME=/d' -e '/^GRUB_DISTRIBUTOR=/d' "$F"
+  printf 'GRUB_THEME="/usr/share/grub/themes/tenka-%s/theme.txt"\nGRUB_DISTRIBUTOR="%s"\n' "$T" "$THEME_DISPLAY" >> "$F"
+  VT=$(cat "$D/console.vt" 2>/dev/null)
+  if [ -n "$VT" ] && grep -q '^GRUB_CMDLINE_LINUX_DEFAULT=' "$F"; then
+    sed -i -e '/^GRUB_CMDLINE_LINUX_DEFAULT=/{s/ *vt\.default_\(red\|grn\|blu\)=[0-9,]*//g' -e "s/\"\$/ $VT\"/}" "$F"
+  fi
   update-grub >/dev/null 2>&1
+fi
+
+# text console colours, now (the GRUB line above carries them from the next boot)
+if [ -f "$D/console.vt" ] && command -v setvtrgb >/dev/null; then
+  tr ' ' '\n' < "$D/console.vt" | sed -n 's/^vt\.default_[a-z]*=//p' > /run/tenka-vtrgb && setvtrgb /run/tenka-vtrgb 2>/dev/null
 fi
 
 # Plymouth (rebuilds the initramfs on installed systems)

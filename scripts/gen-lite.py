@@ -17,6 +17,11 @@ def solid(c1, c2, a):
     """c1 mixed toward c2 by a, as an opaque hex colour (for widgets that drop alpha)."""
     c1, c2 = c1.lstrip("#"), c2.lstrip("#")
     return "#" + "".join(f"{round(int(c1[i:i+2], 16) * (1 - a) + int(c2[i:i+2], 16) * a):02x}" for i in (0, 2, 4))
+DANGER = "#d8412f"  # seal red for destructive buttons, the same on both themes
+def ink_on(c, p):
+    """text colour for words on a filled accent: the page ink on light fills, the light text on dark ones."""
+    r, g_, b = rgb(c)[:3]
+    return p['base'] if (0.2126 * r + 0.7152 * g_ + 0.0722 * b) > 140 else p['text']
 def W(path, s):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     open(path, "w").write(s)
@@ -125,7 +130,12 @@ def gtk_theme(name, T, d):
     *:selected, selection, row:selected, .view:selected {{ background-color: {A(p['accent'], 0.85)}; color: {p['text']}; }}
     entry {{ background-color: {p['mantle']}; color: {p['text']}; border-color: {A(p['subtext'], 0.3)}; border-radius: {max(6, r - 4)}px; }}
     entry:focus {{ border-color: {p['accent']}; box-shadow: inset 0 0 0 1px {p['accent']}; }}
-    button.suggested-action {{ background-color: {p['accent']}; color: {p['text']}; }}
+    button.suggested-action {{ background-color: {p['accent']}; color: {ink_on(p['accent'], p)}; box-shadow: none; }}
+    button.suggested-action label {{ color: {ink_on(p['accent'], p)}; }}
+    /* the destructive button in words, seal red on a hairline, instead of the base theme's material-red slab */
+    button.destructive-action {{ background-color: transparent; background-image: none; color: {DANGER}; border: 1px solid {A(DANGER, 0.5)}; box-shadow: none; }}
+    button.destructive-action label {{ color: {DANGER}; }}
+    button.destructive-action:hover {{ background-color: {A(DANGER, 0.12)}; }}
     scale highlight, progressbar progress, switch:checked {{ background-color: {p['accent']}; }}
     menu, .menu, .context-menu, popover, popover.background {{ background-color: {p['surface']}; color: {p['text']}; border: 1px solid {A(p['accent2'], 0.25)}; border-radius: {r}px; }}
     menuitem:hover, menu menuitem:hover {{ background-color: {A(p['accent'], 0.30)}; }}
@@ -231,6 +241,10 @@ def gtk_theme(name, T, d):
     check:checked, menu menuitem check:checked {{ -gtk-icon-source: -gtk-icontheme("object-select-symbolic"); }}
     check:indeterminate {{ -gtk-icon-source: -gtk-icontheme("list-remove-symbolic"); }}
     radio:checked, menu menuitem radio:checked {{ background-color: {p['accent2']}; box-shadow: inset 0 0 0 3px {p['base']}; }}
+    /* sliders: a small gold dot drawn by the theme; the base theme's knob is a blue picture no recolour reaches */
+    scale slider, scale slider:hover, scale slider:active, scale slider:focus {{ background-image: none; background-color: {p['accent2']};
+        min-width: 12px; min-height: 12px; margin: -5px; border: 2px solid {p['base']}; border-radius: 50%; box-shadow: none; transition: none; }}
+    scale slider:disabled {{ background-image: none; background-color: {A(p['text'], 0.3)}; }}
     check:disabled, radio:disabled {{ border-color: {A(p['text'], 0.14)}; color: {A(p['accent2'], 0.4)}; }}
     tooltip, tooltip.background, tooltip.background.csd {{ background-color: {A(p['base'], 0.97)}; color: {p['text']}; border: 1px solid {A(p['accent2'], 0.22)};
         border-top: 1px solid {A(p['accent2'], 0.6)}; border-radius: 2px; box-shadow: none; }}
@@ -388,7 +402,7 @@ def gtk_theme(name, T, d):
     messagedialog.background buttonbox > button.text-button.image-button:hover, messagedialog.background buttonbox > button.text-button.image-button:focus {{
         border: none; border-bottom: 1px solid {p['accent']}; border-radius: 0; box-shadow: none; outline: none;
         background-color: transparent; background-image: none; }}
-    messagedialog.background button.destructive-action label {{ color: {p['accent']}; }}
+    messagedialog.background button.destructive-action label {{ color: {DANGER}; }}
     messagedialog.background button image {{ color: {A(p['accent2'], 0.8)}; }}
     """)
     W(os.path.join(d, "gtk-3.0/gtk.css"), css)

@@ -289,6 +289,19 @@ def gtk_theme(name, T, d):
     button.link, button.link:hover, button.link:active, button.link:checked, button.link:focus {{ background-color: transparent; background-image: none;
         border-color: transparent; box-shadow: none; transition: none; }}
     button.link:hover > label {{ color: {p['text']}; }}
+    /* list column headers (Files' detail view, settings lists): quiet words over a single hairline on the list's own
+       colour, not a grey #2C2C2C bar with cell dividers */
+    treeview.view header button, treeview.view header button:disabled, treeview.view header button:hover, treeview.view header button:active {{
+        background-color: {p['mantle']}; background-image: none; border-style: none none solid none; border-width: 1px;
+        border-color: {A(p['accent2'], 0.18)}; box-shadow: none; padding: 4px 10px; }}
+    treeview.view header button:not(:focus):not(:hover):not(:active) {{ color: {A(p['text'], 0.55)}; }}
+    treeview.view header button:hover, treeview.view header button:active {{ color: {p['text']}; }}
+    /* chosen list rows: a faint accent tint with page text, the same as chosen icons in Files (the base theme left a flat
+       grey overlay) */
+    treeview.view:selected, treeview.view:selected:focus {{ background-color: {A(p['accent'], 0.22)}; background-image: none; color: {p['text']}; }}
+    treeview.view:selected:backdrop {{ background-color: {A(p['text'], 0.08)}; color: {p['text']}; }}
+    /* scrollbars: the slider alone on the page's colour, no grey #2C2C2C column behind it */
+    scrollbar, scrollbar:backdrop {{ background-color: transparent; border-color: transparent; }}
 
     /* ---- Tenka Lite panels, mirroring the Tenka shell: the top bar is bare (its colour comes from
        the panel's own transparent background); the dock's glass is its background-rgba, rounded here ---- */

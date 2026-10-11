@@ -310,6 +310,9 @@ PanelWindow {
             }
             Box {
                 num: "03"; label: "QUIET"
+                // Focus (tenka-focus): 25 minutes, the desk dims, notes wait and come back as one card
+                Row2 { k: "Focus"; v: Theme.focus ? (Theme.focusLeft >= 0 ? Theme.focusLeft + " min" : "on") : ""; on: Theme.focus; toggle: true
+                       onHit: Theme.focusCmd(["toggle"]) }
                 Row2 { k: Theme.t.stillWord; v: Theme.stillness ? "silent" : ""; on: Theme.stillness; toggle: true; onHit: Theme.stillness = !Theme.stillness }
                 Row2 { k: "Night ink"; v: Theme.nightInk ? "warm" : ""; on: Theme.nightInk; toggle: true
                        onHit: { Theme.nightInk = !Theme.nightInk; Theme.run(Theme.nightInk ? "pkill hyprsunset; setsid hyprsunset -t 4200 >/dev/null 2>&1 &" : "pkill hyprsunset") } }

@@ -34,7 +34,7 @@ PanelWindow {
 
     // ---- life: a few petals (Tenka) or rising qi motes (Tianxia)
     // they rest in Performance mode, and pause (faded out) while windows cover the desk or an overlay is up
-    ParticleSystem { id: ps; running: !Theme.perf; paused: Theme.working || Theme.hush }
+    ParticleSystem { id: ps; running: !Theme.perf; paused: Theme.working || Theme.hush || Theme.focus }
     Emitter {
         system: ps
         x: Theme.xia ? 0 : desk.width * 0.3; y: Theme.xia ? desk.height : -40
@@ -50,7 +50,7 @@ PanelWindow {
         alpha: Theme.xia ? 0.5 : 0.75; alphaVariation: 0.3
         rotationVariation: Theme.xia ? 0 : 180; rotationVelocityVariation: Theme.xia ? 0 : 60
         entryEffect: ImageParticle.Fade
-        opacity: Theme.working || Theme.hush ? 0 : 1
+        opacity: Theme.working || Theme.hush || Theme.focus ? 0 : 1
         Behavior on opacity { NumberAnimation { duration: 260 } }
     }
 
@@ -58,7 +58,7 @@ PanelWindow {
         id: title
         visible: Theme.deskStyle === "blade"
         x: 136 * desk.s; y: 150 * desk.s
-        opacity: Theme.hush || Theme.working ? 0 : 1
+        opacity: Theme.hush || Theme.working ? 0 : Theme.focus ? 0.38 : 1
         Behavior on opacity { NumberAnimation { duration: 260 } }
         width: 900 * desk.s; height: 600 * desk.s
 
@@ -121,7 +121,7 @@ PanelWindow {
         id: film
         visible: Theme.deskStyle === "film"
         anchors.fill: parent
-        opacity: Theme.hush || Theme.working ? 0 : 1
+        opacity: Theme.hush || Theme.working ? 0 : Theme.focus ? 0.38 : 1
         Behavior on opacity { NumberAnimation { duration: 260 } }
         Rectangle {   // the lower letterbox: ink that fades up into the art
             anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom
@@ -178,7 +178,7 @@ PanelWindow {
         visible: Theme.deskStyle === "scroll"
         x: 120 * desk.s; y: 0
         width: 156 * desk.s; height: 900 * desk.s
-        opacity: Theme.hush || Theme.working ? 0 : 1
+        opacity: Theme.hush || Theme.working ? 0 : Theme.focus ? 0.38 : 1
         Behavior on opacity { NumberAnimation { duration: 260 } }
         Rectangle {   // the cord
             anchors.horizontalCenter: parent.horizontalCenter; y: 0; width: 1; height: 64 * desk.s

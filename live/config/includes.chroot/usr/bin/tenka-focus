@@ -1,0 +1,69 @@
+#!/bin/bash
+# tenka-focus: Focus mode. The desk sinks under a flat ink, a 2px hairline holds the screen's edge,
+# notifications wait (critical ones still come) and return as one quiet card, Hyprland dims the windows
+# you are not in. On Tenka Lite it is xfce4-notifyd's do-not-disturb.
+#   tenka-focus [MIN]          focus for MIN minutes (default 25)
+#   tenka-focus on [MIN|open]  the same; "open" (or 0) has no end
+#   tenka-focus off            end it now
+#   tenka-focus toggle [MIN]   on for MIN (default 25) or off
+#   tenka-focus status         on [N min left] | off
+S="${XDG_CONFIG_HOME:-$HOME/.config}/tenka"; J="$S/focus.json"; H="$HOME/.config/hypr/focus.lua"
+mkdir -p "$S"
+now_ms() { echo $(( $(date +%s%N) / 1000000 )); }
+field() { sed -n "s/.*\"$1\": *\([0-9a-z]*\).*/\1/p" "$J" 2>/dev/null | head -1; }
+state() {
+  [ "$(field on)" = true ] || { echo off; return; }
+  u=$(field until); u=${u:-0}
+  if [ "$u" -gt 0 ] && [ "$u" -le "$(now_ms)" ]; then echo off; else echo on; fi
+}
+write() { echo "$1" > "$J.new" && mv "$J.new" "$J"; }
+hypr() {   # Hyprland: dim the windows you are not in (a pcall'd file, like tenka-perf's)
+  [ -d "$HOME/.config/hypr" ] || return 0
+  if [ "$1" = on ]; then
+    printf -- '-- written by tenka-focus: focus mode\nhl.config({ decoration = { dim_inactive = true, dim_strength = 0.28 } })\n' > "$H"
+  else
+    printf -- '-- written by tenka-focus (empty = no focus)\n' > "$H"
+  fi
+  [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ] && hyprctl reload >/dev/null 2>&1
+  return 0
+}
+lite() {   # Tenka Lite (XFCE): the notification daemon's own do-not-disturb
+  command -v xfconf-query >/dev/null || return 0
+  xfconf-query -c xfce4-notifyd -p /do-not-disturb -s "$1" 2>/dev/null || xfconf-query -c xfce4-notifyd -p /do-not-disturb -n -t bool -s "$1" 2>/dev/null
+  return 0
+}
+end_timer() { timeout 5 systemctl --user stop tenka-focus-end.timer tenka-focus-end.service >/dev/null 2>&1; return 0; }
+start() {
+  m="${1:-25}"; [ "$m" = open ] && m=0
+  case "$m" in ''|*[!0-9]*) echo "tenka-focus: minutes must be a number" >&2; exit 2 ;; esac
+  n=$(now_ms); u=0; [ "$m" -gt 0 ] && u=$(( n + m * 60000 ))
+  write "{ \"on\": true, \"until\": $u, \"since\": $n }"
+  hypr on; lite true; end_timer
+  if [ "$m" -gt 0 ]; then
+    # the end, kept by the user manager so it survives this shell; a plain sleep if there is none
+    timeout 5 systemd-run --user --quiet --collect --unit=tenka-focus-end --on-active="${m}m" /usr/bin/tenka-focus expire "$u" >/dev/null 2>&1 \
+      || setsid sh -c "sleep $(( m * 60 )); exec /usr/bin/tenka-focus expire $u" >/dev/null 2>&1 < /dev/null &
+  fi
+  [ "$u" -gt 0 ] && echo "focus on for $m min" || echo "focus on"
+}
+stop() {
+  s=$(field since); s=${s:-0}
+  write "{ \"on\": false, \"until\": 0, \"since\": 0 }"
+  hypr off; lite false; [ "${1:-}" = timer ] || end_timer
+  if [ "${1:-}" = timer ] && command -v notify-send >/dev/null; then
+    mins=$(( ( $(now_ms) - s ) / 60000 ))
+    notify-send -a Tenka -i tenka "Focus complete" "$mins minutes, undisturbed." >/dev/null 2>&1
+  fi
+  echo "focus off"
+}
+case "${1:-}" in
+  on) start "${2:-25}" ;;
+  off) stop ;;
+  toggle) [ "$(state)" = on ] && stop || start "${2:-25}" ;;
+  status) if [ "$(state)" = on ]; then u=$(field until); [ "${u:-0}" -gt 0 ] && echo "on $(( (u - $(now_ms) + 59999) / 60000 )) min left" || echo on; else echo off; fi ;;
+  expire) [ "$(field until)" = "${2:-x}" ] && [ "$(field on)" = true ] && stop timer ;;   # only the timer that set it
+  '') start 25 ;;
+  *[!0-9]*) sed -n '2,10s/^# \{0,1\}//p' "$0"; exit 2 ;;
+  *) start "$1" ;;
+esac
+exit 0

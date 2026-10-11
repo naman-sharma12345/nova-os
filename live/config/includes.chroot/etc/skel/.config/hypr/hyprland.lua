@@ -137,6 +137,7 @@ hl.bind("Print",               hl.dsp.exec_cmd("tenka-shot area"))
 hl.bind("SHIFT + Print",       hl.dsp.exec_cmd("tenka-shot screen"))
 hl.bind(M .. " + SHIFT + E",   hl.dsp.exec_cmd("tenka-power"))
 hl.bind(M .. " + SHIFT + P",   hl.dsp.exec_cmd("tenka-perf toggle"))
+hl.bind(M .. " + Z",           hl.dsp.exec_cmd("tenka-focus toggle"))   -- focus: 25 min, desk dims, notes wait
 
 for _, d in ipairs({ "left", "right", "up", "down" }) do
     hl.bind(M .. " + " .. d,            hl.dsp.focus({ direction = d }))
@@ -165,6 +166,8 @@ hl.bind("XF86AudioPrev",         hl.dsp.exec_cmd("playerctl previous"), { locked
 
 -- performance mode (tenka-perf on): no blur, shadows or motion; same art
 pcall(dofile, HOME .. "/.config/hypr/perf.lua")
+-- focus mode (tenka-focus on): the windows you are not in dim a little
+pcall(dofile, HOME .. "/.config/hypr/focus.lua")
 
 -- local overrides survive theme switches
 pcall(dofile, HOME .. "/.config/hypr/user.lua")

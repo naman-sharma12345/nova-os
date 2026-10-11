@@ -42,6 +42,12 @@ PanelWindow {
         Behavior on opacity { enabled: !Theme.perf; NumberAnimation { duration: 30000; easing.type: Easing.InOutSine } }
         Behavior on color { enabled: !Theme.perf; ColorAnimation { duration: 30000 } }
     }
+    // focus (tenka-focus): the desk sinks under a flat wash of the pack's ink; no blur, no vignette
+    Rectangle {
+        anchors.fill: parent
+        color: Theme.t.base; opacity: Theme.focus ? 0.55 : 0
+        Behavior on opacity { enabled: !Theme.perf; NumberAnimation { duration: 600; easing.type: Easing.InOutSine } }
+    }
     // the stroke: a flat band of ink with dry-brush edges, painted once per pack
     Canvas {
         id: brush

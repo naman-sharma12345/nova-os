@@ -13,6 +13,7 @@
       <property name="&lt;Super&gt;Escape" type="string" value="xfce4-session-logout"/>
       <property name="Print" type="string" value="tenka-shot area"/>
       <property name="&lt;Shift&gt;Print" type="string" value="tenka-shot screen"/>
+      <property name="&lt;Super&gt;z" type="string" value="tenka-focus toggle"/>
       <property name="XF86AudioRaiseVolume" type="string" value="tenka-osd volume up"/>
       <property name="XF86AudioLowerVolume" type="string" value="tenka-osd volume down"/>
       <property name="XF86AudioMute" type="string" value="tenka-osd volume mute"/>

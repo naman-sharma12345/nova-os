@@ -98,6 +98,27 @@ Singleton {
     readonly property color veil: ({ dawn: "#f2c9a0", day: adapter.base, dusk: "#b8662a", night: adapter.base })[phase] || adapter.base
     readonly property real veilAmount: ({ dawn: 0.08, day: 0, dusk: 0.12, night: 0.30 })[phase] || 0
 
+    // Focus (tenka-focus): ~/.config/tenka/focus.json { "on": true, "until": <epoch ms, 0 = open-ended>, "since": <epoch ms> }.
+    // The desk dims to a flat ink, a 2px hairline holds the screen's edge, notifications wait and come back
+    // as one quiet card when it ends. Hyprland dims the windows you are not in.
+    FileView {
+        path: Quickshell.env("HOME") + "/.config/tenka/focus.json"
+        watchChanges: true
+        onFileChanged: reload()
+        JsonAdapter { id: focusCfg; property bool on: false; property real until: 0; property real since: 0 }
+    }
+    readonly property bool focus: Quickshell.env("TENKA_FOCUS") === "1" || (focusCfg.on && (focusCfg.until <= 0 || now.getTime() < focusCfg.until))
+    readonly property int focusLeft: focusCfg.until > 0 ? Math.max(0, Math.ceil((focusCfg.until - now.getTime()) / 60000)) : -1   // minutes, -1 = open-ended
+    readonly property real focusSince: focusCfg.since
+    Process { id: focusQ; property var args: []; command: ["tenka-focus"].concat(args) }
+    function focusCmd(a) { focusQ.args = a; focusQ.running = true }
+    IpcHandler {
+        target: "focus"
+        function toggle(): void { root.focusCmd(["toggle"]) }
+        function on(): void { root.focusCmd(["on"]) }
+        function off(): void { root.focusCmd(["off"]) }
+    }
+
     SystemClock { id: clock; precision: SystemClock.Seconds }
     IpcHandler {
         target: "desk"

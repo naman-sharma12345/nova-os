@@ -38,6 +38,7 @@ if command -v gsettings >/dev/null; then
   gsettings set org.gnome.desktop.interface cursor-size 24 2>/dev/null
   gsettings set org.gnome.desktop.interface font-name "Inter 11" 2>/dev/null
   gsettings set org.gnome.desktop.interface color-scheme prefer-dark 2>/dev/null
+  gsettings set org.xfce.mousepad.preferences.view color-scheme tenka 2>/dev/null   # the editor's ink page (themes/*/home)
 fi
 
 # 3. live reload of the Hyprland session

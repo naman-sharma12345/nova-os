@@ -2,6 +2,14 @@
 export XDG_CURRENT_DESKTOP=Hyprland XDG_SESSION_DESKTOP=Hyprland XDG_SESSION_TYPE=wayland
 # software GL is allowed (slow) so a VM without 3D still gets a desktop
 export WLR_RENDERER_ALLOW_SOFTWARE=1
-[ "$(cat /run/tenka/mode 2>/dev/null)" = lite ] && [ ! -e "$HOME/.config/tenka/perf" ] && tenka-perf on >/dev/null 2>&1
+# performance mode on software rendering: when the machine was judged lite, and also when Hyprland was
+# chosen at boot (tenka.session=hyprland skips the probe) on a machine whose only renderer is llvmpipe
+soft=0
+[ "$(cat /run/tenka/mode 2>/dev/null)" = lite ] && soft=1
+if [ "$soft" = 0 ] && grep -q 'chosen at boot' /run/tenka-hwdetect.reason 2>/dev/null; then
+  r=$(timeout 5 eglinfo -B -p gbm 2>/dev/null | grep -i -m1 'renderer')
+  case "$r" in *llvmpipe*|*softpipe*|*lavapipe*) soft=1 ;; esac
+fi
+[ "$soft" = 1 ] && [ ! -e "$HOME/.config/tenka/perf" ] && tenka-perf on >/dev/null 2>&1
 command -v start-hyprland >/dev/null && exec start-hyprland
 exec Hyprland

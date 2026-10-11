@@ -27,6 +27,7 @@ ShellRoot {
     Clipboard {}
     Overview {}
     Switcher {}
+    Slip {}
     ControlCenter {}
     Notifications {}
     Osd {}

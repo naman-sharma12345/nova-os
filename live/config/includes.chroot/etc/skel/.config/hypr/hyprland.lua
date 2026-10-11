@@ -134,6 +134,7 @@ hl.bind(M .. " + W",           hl.dsp.exec_cmd("tenka-wallpaper next"))
 hl.bind(M .. " + SHIFT + V",   hl.dsp.exec_cmd("tenka-clipboard"))
 hl.bind(M .. " + Tab",         hl.dsp.exec_cmd("qs -c tenka ipc call overview toggle"))   -- the field: every desk at once
 hl.bind("ALT + Tab",           hl.dsp.exec_cmd("qs -c tenka ipc call switcher next"))   -- the turn: our own window switcher
+hl.bind(M .. " + N",           hl.dsp.exec_cmd("qs -c tenka ipc call slip edit"))   -- the slip: a note to self on the desk
 hl.bind("ALT + SHIFT + Tab",   hl.dsp.exec_cmd("qs -c tenka ipc call switcher prev"))
 hl.bind(M .. " + SHIFT + C",   hl.dsp.exec_cmd("hyprpicker -a"))
 hl.bind("Print",               hl.dsp.exec_cmd("tenka-shot area"))

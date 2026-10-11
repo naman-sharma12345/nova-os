@@ -135,10 +135,10 @@ done
 # Name changes; the old name moves into Keywords so typing "thunar" or "mousepad" still finds it. The XFCE
 # wrapper entries that already said Terminal and Files are hidden so each app is listed once, and the desktop
 # menu's top three point at the real apps.
-for pair in xfce4-terminal:Terminal thunar:Files firefox-esr:Firefox org.xfce.mousepad:Editor mpv:Player; do
-  f=/usr/share/applications/${pair%%:*}.desktop; [ -f "$f" ] || continue
-  grep -qx "Name=${pair#*:}" "$f" && continue
-  awk -v new="${pair#*:}" '
+rename_app() {   # $1 desktop id, $2 the new name; the old name moves into Keywords
+  f=/usr/share/applications/$1.desktop; [ -f "$f" ] || return 0
+  grep -qx "Name=$2" "$f" && return 0
+  awk -v new="$2" '
     /^\[/ { main = ($0 == "[Desktop Entry]") }
     main && /^Name=/ { old = substr($0, 6); lines[++n] = "Name=" new; next }
     main && /^Name\[/ { next }
@@ -148,6 +148,28 @@ for pair in xfce4-terminal:Terminal thunar:Files firefox-esr:Firefox org.xfce.mo
             if (l ~ /^Keywords=/ && !done) { sub(/^Keywords=/, "Keywords=" old ";", l); done = 1 }
             print l
             if (l == "[Desktop Entry]" && !kw) { print "Keywords=" old ";"; done = 1 } } }' "$f" > "$f.new" && mv "$f.new" "$f"
+}
+for pair in xfce4-terminal:Terminal thunar:Files firefox-esr:Firefox org.xfce.mousepad:Editor mpv:Player; do
+  rename_app "${pair%%:*}" "${pair#*:}"
+done
+# The rest of the menus in the same voice: no "Xfce", "Thunar", "Ristretto" or "btop++" left in a name
+rename_app org.xfce.ristretto "Images"
+rename_app btop "System Monitor"
+rename_app nm-connection-editor "Network"
+rename_app xfce4-screensaver-preferences "Lock Screen"
+rename_app xfce4-terminal-settings "Terminal Settings"
+rename_app thunar-settings "Files Settings"
+rename_app org.xfce.mousepad-settings "Editor Settings"
+# Not apps a person opens from Lite's menus: conky (the desk widget daemon) and vim (Editor is the editor) everywhere;
+# the Hyprland session's own terminal and Qt/GTK tools stay out of the XFCE menus
+for w in conky vim; do
+  f=/usr/share/applications/$w.desktop
+  [ -f "$f" ] && ! grep -q '^NoDisplay=' "$f" && sed -i '0,/^\[Desktop Entry\]/s//[Desktop Entry]\nNoDisplay=true/' "$f"
+done
+for w in kitty nwg-look qt6ct kvantummanager; do
+  f=/usr/share/applications/$w.desktop; [ -f "$f" ] || continue
+  if grep -q '^NotShowIn=' "$f"; then grep -q '^NotShowIn=.*XFCE' "$f" || sed -i 's/^NotShowIn=/NotShowIn=XFCE;/' "$f"
+  else sed -i '0,/^\[Desktop Entry\]/s//[Desktop Entry]\nNotShowIn=XFCE;/' "$f"; fi
 done
 for w in xfce4-terminal-emulator xfce4-file-manager; do
   f=/usr/share/applications/$w.desktop

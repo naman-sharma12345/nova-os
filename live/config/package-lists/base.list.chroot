@@ -84,3 +84,10 @@ xdg-user-dirs
 xdg-utils
 # SVG loader for GTK: without it every SVG icon (the gold Tenka set, Papirus) falls back to stock PNGs
 librsvg2-common
+# themed terminal + reader tools (configs from scripts/gen-themes.py)
+neovim
+bat
+fzf
+tmux
+zathura
+zathura-pdf-poppler

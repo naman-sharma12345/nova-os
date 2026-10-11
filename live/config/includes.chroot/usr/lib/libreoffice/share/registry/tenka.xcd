@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Tenka: LibreOffice is not on the ISO, but if it is installed it starts in dark mode and its
+     window chrome follows the Tenka GTK theme (LibreOffice draws with GTK on this desktop).
+     Pages stay paper-white: ink on paper. -->
+<oor:data xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:oor="http://openoffice.org/2001/registry">
+  <dependency file="main"/>
+  <oor:component-data oor:name="Common" oor:package="org.openoffice.Office">
+    <node oor:name="Misc">
+      <prop oor:name="ApplicationAppearance" oor:op="fuse"><value>2</value></prop>
+    </node>
+  </oor:component-data>
+</oor:data>

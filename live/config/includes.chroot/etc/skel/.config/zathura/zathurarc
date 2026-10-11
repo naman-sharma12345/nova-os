@@ -1,0 +1,5 @@
+# Tenka zathura: yours to edit; the theme's colours live in tenka-theme
+include tenka-theme
+set recolor true
+set recolor-keephue true
+set selection-clipboard clipboard

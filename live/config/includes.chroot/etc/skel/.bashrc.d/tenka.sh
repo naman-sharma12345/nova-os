@@ -4,6 +4,8 @@ alias ls='eza --icons=auto --group-directories-first'
 alias ll='eza -l --icons=auto --git --group-directories-first'
 alias la='eza -la --icons=auto --group-directories-first'
 alias ff='fastfetch'
+command -v batcat >/dev/null && alias bat='batcat'   # Debian names it batcat
+command -v fzf >/dev/null && eval "$(fzf --bash 2>/dev/null)"   # Ctrl-R / Ctrl-T / Alt-C, coloured by tenka-theme.sh
 # in kitty the crest is drawn as an image (kitty graphics); elsewhere the ink-text crest
 [ -n "$KITTY_PID" ] && alias ff='fastfetch -c ~/.config/fastfetch/kitty.jsonc'
 # greet once per terminal window: kitty draws the crest as an image, any other terminal (Lite's) the ink-text crest

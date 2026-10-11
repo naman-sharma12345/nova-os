@@ -1,0 +1,3 @@
+# Tenka: bat follows the terminal's own (themed) colours
+--theme="ansi"
+--style="numbers,changes,header-filename"

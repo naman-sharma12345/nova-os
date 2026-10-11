@@ -10,3 +10,5 @@ export LESS_TERMCAP_us=$'\e[3;38;2;201;163;90m' LESS_TERMCAP_ue=$'\e[0m'
 export LESS_TERMCAP_so=$'\e[38;2;239;230;214;48;2;84;36;30m' LESS_TERMCAP_se=$'\e[0m'
 export GREP_COLORS='mt=1;38;2;216;65;47:fn=38;2;201;163;90:ln=38;2;125;116;102:bn=38;2;125;116;102:se=38;2;91;85;79'
 case $- in *i*) bind 'set colored-stats on' 2>/dev/null; bind 'set colored-completion-prefix on' 2>/dev/null;; esac
+# whiptail / newt dialogs (dpkg-reconfigure, installers): the terminal's own palette, so the page's ink, gold and accent
+export NEWT_COLORS='root=white,black roottext=brown,black helpline=gray,black window=lightgray,black shadow=black,black border=gray,black title=brown,black textbox=lightgray,black acttextbox=black,brown label=lightgray,black button=lightgray,black actbutton=black,brown compactbutton=lightgray,black checkbox=lightgray,black actcheckbox=black,brown entry=white,black disentry=gray,black listbox=lightgray,black actlistbox=black,brown sellistbox=red,black actsellistbox=black,brown emptyscale=,black fullscale=,brown'

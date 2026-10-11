@@ -52,6 +52,8 @@
   <property name="plugins" type="empty">
     <property name="plugin-1" type="string" value="whiskermenu">
       <property name="show-button-title" type="bool" value="false"/>
+      <!-- categories as words only: the 16 px category icons mixed line glyphs with a full folder (Favorites) -->
+      <property name="category-icon-size" type="int" value="-1"/>
       <property name="favorites" type="array">
         <value type="string" value="firefox-esr.desktop"/>
         <value type="string" value="thunar.desktop"/>

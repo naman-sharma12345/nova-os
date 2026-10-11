@@ -107,8 +107,52 @@ def write(style, out_root=None):
                 for n in names:
                     open(os.path.join(d, n + ".svg"), "w").write(s)
 
+# file types (mimetypes): a dark ink page with a deeper folded corner, one gold hairline under a tiny gold glyph;
+# the same quiet language as the folders, so the file view stops mixing in Papirus' grey and coloured pages
+PAGE = "M12 5h17l9 9v27a2 2 0 0 1-2 2H12a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"
+FOLD = "M29 5v7a2 2 0 0 0 2 2h7z"
+MG = {
+    "text": "M7 8h10M7 11h10M7 14h6",
+    "code": "M9 8l-4 4 4 4M15 8l4 4-4 4M13 7l-2 10",
+    "image": G["pictures"], "video": G["videos"], "audio": G["music"],
+    "document": "M7 7h10M7 10h10M7 13h10M7 16h6",
+    "archive": "M12 4v2M12 8v2M12 12v2M10 16h4v4h-4z",
+    "exec": "M8 8h8v8H8zM12 5v3M12 16v3M5 12h3M16 12h3",
+    "blank": "",
+}
+MNAMES = {
+    "text": ["text-x-generic", "text-plain", "text-x-readme", "text-markdown", "text-x-log", "text-x-changelog"],
+    "code": ["text-x-script", "application-x-shellscript", "text-x-python", "text-x-csrc", "text-x-chdr", "text-x-c++src",
+             "application-javascript", "text-html", "application-json", "application-xml", "text-css", "text-x-makefile"],
+    "image": ["image-x-generic", "image-png", "image-jpeg", "image-svg+xml", "image-gif", "image-webp"],
+    "video": ["video-x-generic", "video-mp4", "video-x-matroska", "video-webm"],
+    "audio": ["audio-x-generic", "audio-mpeg", "audio-x-wav", "audio-flac", "audio-ogg"],
+    "document": ["application-pdf", "x-office-document", "application-vnd.oasis.opendocument.text", "application-msword"],
+    "archive": ["package-x-generic", "application-zip", "application-x-tar", "application-x-compressed-tar", "application-x-archive",
+                "application-x-7z-compressed", "application-vnd.debian.binary-package"],
+    "exec": ["application-x-executable", "application-x-sharedlib"],
+    "blank": ["unknown", "application-octet-stream", "text-x-generic-template"],
+}
+
+def mime_svg(kind, p):
+    g = MG[kind]
+    glyph = (f'<g transform="translate(16 18) scale(.67)" fill="none" stroke="{p["gold"]}" stroke-opacity=".8" stroke-width="2.4" '
+             f'stroke-linecap="round" stroke-linejoin="round"><path d="{g}"/></g>') if g else ""
+    return (f'<path d="{PAGE}" fill="{p["inkb"]}"/><path d="{FOLD}" fill="{p["inkb2"]}"/>'
+            f'<path d="M14 37h20" stroke="{p["gold"]}" stroke-width="1.1" stroke-opacity=".85"/>' + glyph)
+
+def write_mimes():
+    for name, p in PAL.items():
+        d = os.path.join(ROOT, "live/config/includes.chroot/usr/share/icons", p["theme"], "scalable/mimetypes")
+        os.makedirs(d, exist_ok=True)
+        for kind, names in MNAMES.items():
+            s = doc(mime_svg(kind, p))
+            for n in names:
+                open(os.path.join(d, n + ".svg"), "w").write(s)
+
 if __name__ == "__main__":
     style = (sys.argv[1] if len(sys.argv) > 1 else os.environ.get("FOLDER_STYLE", "edge"))
     out = sys.argv[2] if len(sys.argv) > 2 else None
     write(style, out)
+    if out is None: write_mimes()
     print("folders:", style)

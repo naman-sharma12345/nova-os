@@ -2,7 +2,7 @@
 Name=Tenka-Xianxia
 Comment=Tenka's hand-drawn gold line icons over Papirus-Dark
 Inherits=Papirus-Dark,hicolor
-Directories=scalable/apps,scalable/places
+Directories=scalable/apps,scalable/places,scalable/mimetypes
 
 [scalable/apps]
 Size=48
@@ -17,3 +17,10 @@ MinSize=16
 MaxSize=512
 Type=Scalable
 Context=Places
+
+[scalable/mimetypes]
+Size=48
+MinSize=16
+MaxSize=512
+Type=Scalable
+Context=MimeTypes

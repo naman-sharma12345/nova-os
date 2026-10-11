@@ -9,6 +9,7 @@
 #     and a profile it created is deleted again when the join fails
 #  5. tenka-bond-agent carries BlueZ's PIN / passkey / yes-no questions to The Bond and its answers back
 #  6. tenka-lantern reads the battery facts (charge, time, health, devices) and sets the power profile
+#  7. the Inkstone's search puts whole words and word starts ahead of matches inside a word (needs node)
 set -u
 ROOT=$(cd "$(dirname "$0")/.." && pwd); BIN="$ROOT/live/config/includes.chroot/usr/bin"
 fail=0; T=$(mktemp -d); trap 'rm -rf "$T"' EXIT
@@ -142,6 +143,27 @@ sys.exit(1 if bad else 0)' || fail=1
   PATH="$T/stub:$PATH" python3 "$BIN/tenka-lantern" profile power-saver && [ "$(cat "$T/ppd/cur")" = power-saver ] || { echo "FAIL: tenka-lantern profile"; fail=1; }
   PATH="$T/stub:$PATH" python3 "$BIN/tenka-lantern" profile turbo 2>/dev/null && { echo "FAIL: tenka-lantern took a profile that does not exist"; fail=1; }
   [ "$(TENKA_POWER_ROOT="$T/none" python3 "$BIN/tenka-lantern" word)" = "On AC power" ] || { echo "FAIL: tenka-lantern without a battery"; fail=1; }
+fi
+# 7. The Inkstone's search order (inkstone/rank.js, pure JS): "tea" finds bubble tea, teapot and teacup before
+#    "face with tears of joy" and "steaming bowl"; every word of the query must match. Needs node; skipped without.
+if command -v node >/dev/null 2>&1; then
+  node -e '
+const fs = require("fs")
+eval(fs.readFileSync(process.argv[1], "utf8").replace(".pragma library", ""))
+const all = ["face with tears of joy", "steaming bowl", "teacup without handle", "bubble tea", "teapot", "Star of David", "star"]
+  .map(n => ({ n: n }))
+const got = q => rank(all, q).map(x => x.n)
+const bad = []
+const t = got("tea")
+if (t[0] !== "bubble tea" || t.indexOf("teapot") > 2 || t.indexOf("teacup without handle") > 2) bad.push("tea: " + t.join(" | "))
+if (t.indexOf("face with tears of joy") < 3 || t[t.length - 1] !== "steaming bowl") bad.push("tea tail: " + t.join(" | "))
+if (got("david").join() !== "Star of David") bad.push("case: " + got("david"))
+if (got("star")[0] !== "star") bad.push("whole name first: " + got("star"))
+if (got("tea xyz").length !== 0 || got("tea joy").join() !== "face with tears of joy") bad.push("every word must match")
+if (bad.length) { console.log("FAIL: inkstone rank: " + bad.join("; ")); process.exit(1) }
+' "$ROOT/shell/quickshell/tenka/inkstone/rank.js" || fail=1
+else
+  echo "check-session: node not installed, Inkstone rank check skipped"
 fi
 [ "$fail" = 0 ] && echo "check-session: ok"
 exit $fail

@@ -4,6 +4,7 @@
 // window around it fetches the shelves (tenka-glyphs list), and places what `placed` hands it.
 import QtQuick
 import QtQuick.Controls
+import "rank.js" as Rank
 
 Item {
     id: card
@@ -26,8 +27,7 @@ Item {
     readonly property string query: field.text.trim().toLowerCase()
     readonly property var shown: {
         if (query !== "") {
-            const w = query.split(/\s+/)
-            return all.filter(x => w.every(t => x.n.indexOf(t) >= 0)).slice(0, 360)
+            return Rank.rank(all, query, 360)   // whole words and word starts first: "tea" finds teapot before tears
         }
         const s = shelves[shelf]
         if (s === "lately") return lately.map(g => all.find(x => x.g === g) || { g: g, n: "", s: "lately" })

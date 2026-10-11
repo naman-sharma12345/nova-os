@@ -136,7 +136,9 @@ def gtk_theme(name, T, d):
     button.destructive-action {{ background-color: transparent; background-image: none; color: {DANGER}; border: 1px solid {A(DANGER, 0.5)}; box-shadow: none; }}
     button.destructive-action label {{ color: {DANGER}; }}
     button.destructive-action:hover {{ background-color: {A(DANGER, 0.12)}; }}
-    scale highlight, progressbar progress, switch:checked {{ background-color: {p['accent']}; }}
+    /* value fills (sliders, progress) in the gold of the knob, the level bars and the notification bar: one colour per widget */
+    scale highlight, progressbar progress {{ background-color: {p['accent2']}; background-image: none; border-color: {p['accent2']}; }}
+    switch:checked {{ background-color: {p['accent']}; }}
     menu, .menu, .context-menu, popover, popover.background {{ background-color: {p['surface']}; color: {p['text']}; border: 1px solid {A(p['accent2'], 0.25)}; border-radius: {r}px; }}
     menuitem:hover, menu menuitem:hover {{ background-color: {A(p['accent'], 0.30)}; }}
     /* context menus (desktop, panel, files) in the ledger language: an ink sheet with one gold rule on top, square

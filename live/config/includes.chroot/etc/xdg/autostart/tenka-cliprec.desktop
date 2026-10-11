@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Tenka Recall keeper
+Comment=Keeps the clipboard history for Recall (Super+Shift+V)
+Exec=tenka-cliprec
+OnlyShowIn=XFCE;
+NoDisplay=true

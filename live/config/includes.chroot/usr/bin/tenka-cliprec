@@ -1,0 +1,64 @@
+#!/usr/bin/python3
+# tenka-cliprec: Tenka Lite's clipboard keeper (X11). It sleeps until the clipboard changes hands
+# (XFixes selection events, no polling), then files the new item into cliphist, the same store the
+# flagship's Recall reads, so `tenka-clipboard` shows one history in either session.
+# Skips items a password manager marks as secret, empty text, and anything over 16 MB.
+import ctypes, ctypes.util, hashlib, subprocess, sys
+
+def lib(name, so):
+    return ctypes.CDLL(ctypes.util.find_library(name) or so)
+
+x11, xf = lib("X11", "libX11.so.6"), lib("Xfixes", "libXfixes.so.3")
+x11.XOpenDisplay.restype = ctypes.c_void_p
+x11.XOpenDisplay.argtypes = [ctypes.c_char_p]
+x11.XDefaultRootWindow.restype = ctypes.c_ulong
+x11.XDefaultRootWindow.argtypes = [ctypes.c_void_p]
+x11.XInternAtom.restype = ctypes.c_ulong
+x11.XInternAtom.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_int]
+x11.XNextEvent.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+xf.XFixesSelectSelectionInput.argtypes = [ctypes.c_void_p, ctypes.c_ulong, ctypes.c_ulong, ctypes.c_ulong]
+
+SECRET = ("x-kde-passwordManagerHint", "x-keepassxc-secret")
+TEXT = ("UTF8_STRING", "text/plain;charset=utf-8", "text/plain", "STRING")
+
+def xclip(*args):
+    r = subprocess.run(["xclip", "-o", "-selection", "clipboard", *args], capture_output=True, timeout=3)
+    return r.stdout if r.returncode == 0 else b""
+
+def keep(last):
+    try:
+        targets = xclip("-t", "TARGETS").decode(errors="ignore").split()
+        if not targets or any(t in targets for t in SECRET):
+            return last
+        if "image/png" in targets:
+            data = xclip("-t", "image/png")
+        elif any(t in targets for t in TEXT):
+            data = xclip()
+            if not data.strip():
+                return last
+        else:
+            return last
+        if not data or len(data) > 16 << 20:
+            return last
+        h = hashlib.sha1(data).digest()
+        if h != last:
+            subprocess.run(["cliphist", "store"], input=data, timeout=5)
+        return h
+    except Exception:
+        return last
+
+def main():
+    dpy = x11.XOpenDisplay(None)
+    if not dpy:
+        sys.exit(0)
+    root = x11.XDefaultRootWindow(dpy)
+    clip = x11.XInternAtom(dpy, b"CLIPBOARD", 0)
+    xf.XFixesSelectSelectionInput(dpy, root, clip, 1)   # XFixesSetSelectionOwnerNotifyMask
+    ev = ctypes.create_string_buffer(256)
+    last = keep(None)
+    while True:
+        x11.XNextEvent(dpy, ev)                         # only selection-owner changes are selected
+        last = keep(last)
+
+if __name__ == "__main__":
+    main()

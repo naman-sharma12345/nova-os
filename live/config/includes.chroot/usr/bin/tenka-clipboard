@@ -1,4 +1,39 @@
 #!/bin/sh
-# tenka-clipboard: Recall, the clipboard history (cliphist) in the Tenka shell; fuzzel where the shell is not running.
-if pgrep -x qs >/dev/null 2>&1; then exec qs -c tenka ipc call clipboard toggle; fi
-cliphist list | fuzzel --dmenu --prompt 'recall  ' | cliphist decode | wl-copy
+# tenka-clipboard: Recall, the clipboard history (cliphist), in either session.
+#   Flagship: the Tenka shell's Recall card.  Lite (X11): the same card in a small Qt window
+#   (/usr/share/tenka/clip/LiteClip.qml), fed by tenka-cliprec.  fuzzel where neither applies.
+if [ -n "${WAYLAND_DISPLAY:-}" ]; then
+  if pgrep -x qs >/dev/null 2>&1; then exec qs -c tenka ipc call clipboard toggle; fi
+  cliphist list | fuzzel --dmenu --prompt 'recall  ' | cliphist decode | wl-copy
+  exit 0
+fi
+[ -n "${DISPLAY:-}" ] || exit 0
+d=${XDG_RUNTIME_DIR:-/tmp}/tenka-recall-lite
+pid=$(cat "$d/pid" 2>/dev/null)
+if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then kill "$pid"; exit 0; fi   # the key again closes it
+mkdir -p "$d"; chmod 700 "$d"; rm -f "$d/act"
+tab=$(printf '\t')
+cliphist list 2>/dev/null | head -80 > "$d/list"
+# decode each item once: pictures for the preview, words in full (first 4000 bytes)
+while IFS="$tab" read -r id rest; do
+  case "$rest" in
+    '[[ binary data'*) e=$(echo "$rest" | awk '{print $6}')    # [[ binary data 344 KiB png 768x432 ]]
+       f="$d/$id.$e"; [ -s "$f" ] || printf '%s\t\n' "$id" | cliphist decode > "$f" 2>/dev/null ;;
+    *) f="$d/$id.txt"; [ -s "$f" ] || printf '%s\t\n' "$id" | cliphist decode 2>/dev/null | head -c 4000 > "$f" ;;
+  esac
+done < "$d/list"
+QML_XHR_ALLOW_FILE_READ=1 QML_XHR_ALLOW_FILE_WRITE=1 QT_QPA_PLATFORM=xcb \
+  ${TENKA_CLIP_QML:-/usr/lib/qt6/bin/qml} /usr/share/tenka/clip/LiteClip.qml -- "$d" "$HOME/.config/tenka/shell-theme.json" >/dev/null 2>&1 &
+echo $! > "$d/pid"; wait $!; rm -f "$d/pid"
+[ -s "$d/act" ] || exit 0
+while read -r verb id; do
+  case "$verb" in
+    del)  printf '%s\t\n' "$id" | cliphist delete; rm -f "$d/$id".* ;;
+    pick) f=$(ls "$d/$id".* 2>/dev/null | head -1)
+          case "$f" in
+            *.txt) printf '%s\t\n' "$id" | cliphist decode | xclip -selection clipboard ;;
+            *.png|*.jpg|*.jpeg|*.webp|*.gif|*.bmp) t="image/${f##*.}"; [ "$t" = image/jpg ] && t=image/jpeg
+                   printf '%s\t\n' "$id" | cliphist decode | xclip -selection clipboard -t "$t" ;;
+          esac ;;
+  esac
+done < "$d/act"

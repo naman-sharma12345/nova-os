@@ -216,6 +216,21 @@ def gtk_theme(name, T, d):
     #buttonbox_frame button#login_button {{ border-bottom: 1px solid {A(p['accent2'], 0.55)}; }}
     #buttonbox_frame button#login_button:hover, #buttonbox_frame button#login_button:focus {{ border-bottom-color: {p['accent']}; }}
     """)
+    css += textwrap.dedent(f"""\
+    /* Log out (xfce4-session's dialog): the same small ledger card as the lock, actions as gold line glyphs over
+       plain words; the one under the pointer or keyboard gets the accent rule. No tiles, no colour icons, no glow. */
+    window.xfsm-logout-dialog, dialog.xfsm-logout-dialog {{ background-color: {A(p['base'], 0.97)}; background-image: none;
+        border: 1px solid {A(p['accent2'], 0.22)}; border-top: 1px solid {A(p['accent2'], 0.75)}; border-radius: 3px; box-shadow: none; }}
+    .xfsm-logout-dialog decoration {{ border-radius: 3px; box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45); border: none; }}
+    .xfsm-logout-dialog label {{ font-family: "{disp}"; font-weight: normal; color: {p['text']}; }}
+    .xfsm-logout-dialog button {{ background: none; border: none; border-radius: 0; box-shadow: none; outline: none;
+        padding: 12px 14px 8px 14px; margin: 0 4px; border-bottom: 1px solid transparent; }}
+    .xfsm-logout-dialog button:hover, .xfsm-logout-dialog button:focus {{ background-color: {A(p['text'], 0.05)}; border-bottom: 1px solid {p['accent']}; }}
+    .xfsm-logout-dialog button label {{ font-size: 13px; color: {p['subtext']}; letter-spacing: 0.8px; }}
+    .xfsm-logout-dialog button:hover label, .xfsm-logout-dialog button:focus label {{ color: {p['text']}; }}
+    .xfsm-logout-dialog checkbutton label {{ font-size: 12px; color: {p['subtext']}; }}
+    .xfsm-logout-dialog checkbutton check {{ border-radius: 0; }}
+    """)
     W(os.path.join(d, "gtk-3.0/gtk.css"), css)
     W(os.path.join(d, "gtk-3.0/gtk-dark.css"), css)
     W(os.path.join(d, "index.theme"), textwrap.dedent(f"""\

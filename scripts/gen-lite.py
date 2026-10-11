@@ -127,7 +127,7 @@ def gtk_theme(name, T, d):
         background-position: left center; background-repeat: no-repeat; }}
     headerbar, .titlebar, menubar, toolbar {{ background-color: {p['surface']}; color: {p['text']}; box-shadow: none; }}
     .sidebar, placessidebar, placessidebar list {{ background-color: {p['base']}; }}
-    *:selected, selection, row:selected, .view:selected {{ background-color: {A(p['accent'], 0.85)}; color: {p['text']}; }}
+    *:selected, selection, row:selected, .view:selected {{ background-color: {A(p['accent'], 0.85)}; color: {ink_on(p['accent'], p)}; }}
     entry {{ background-color: {p['mantle']}; color: {p['text']}; border-color: {A(p['subtext'], 0.3)}; border-radius: {max(6, r - 4)}px; }}
     entry:focus {{ border-color: {p['accent']}; box-shadow: inset 0 0 0 1px {p['accent']}; }}
     button.suggested-action {{ background-color: {p['accent']}; color: {ink_on(p['accent'], p)}; box-shadow: none; }}
@@ -241,6 +241,19 @@ def gtk_theme(name, T, d):
     check:checked, menu menuitem check:checked {{ -gtk-icon-source: -gtk-icontheme("object-select-symbolic"); }}
     check:indeterminate {{ -gtk-icon-source: -gtk-icontheme("list-remove-symbolic"); }}
     radio:checked, menu menuitem radio:checked {{ background-color: {p['accent2']}; box-shadow: inset 0 0 0 3px {p['base']}; }}
+    /* the base theme's blue fills became gold under the recolour but kept their white words, which barely read on gold:
+       pressed toggles, the chosen day, notice bars and desktop icons get the quiet treatment the rest of the theme uses */
+    button:checked, button.toggle:checked, actionbar > revealer > box .linked > button:checked:not(.suggested-action):not(.destructive-action),
+    stackswitcher:not(.vertical) > button:not(.suggested-action):not(.destructive-action):checked {{ background-color: {A(p['text'], 0.08)};
+        background-image: none; color: {p['accent2']}; box-shadow: none; }}
+    button:checked label, stackswitcher:not(.vertical) > button:checked label {{ color: {p['accent2']}; }}
+    entry selection, label selection, textview text selection, textview text selection:focus, spinbutton:not(.vertical) selection, spinbutton.vertical selection {{
+        background-color: {A(p['accent'], 0.85)}; color: {ink_on(p['accent'], p)}; }}
+    calendar:selected {{ background-color: {A(p['accent'], 0.85)}; color: {ink_on(p['accent'], p)}; border-radius: 2px; }}
+    infobar.question > revealer > box, infobar.question:backdrop > revealer > box, infobar.action > revealer > box, infobar.action:backdrop > revealer > box {{
+        background-color: {A(p['accent2'], 0.12)}; color: {p['text']}; box-shadow: inset 2px 0 0 {p['accent2']}; }}
+    infobar.question label, infobar.action label {{ color: {p['text']}; }}
+    XfdesktopIconView.view:selected, XfdesktopIconView.view:active, XfdesktopIconView.view:checked {{ background-color: {A(p['accent'], 0.30)}; color: {p['text']}; border-radius: 2px; }}
     /* sliders: a small gold dot drawn by the theme; the base theme's knob is a blue picture no recolour reaches */
     scale slider, scale slider:hover, scale slider:active, scale slider:focus {{ background-image: none; background-color: {p['accent2']};
         min-width: 12px; min-height: 12px; margin: -5px; border: 2px solid {p['base']}; border-radius: 50%; box-shadow: none; transition: none; }}

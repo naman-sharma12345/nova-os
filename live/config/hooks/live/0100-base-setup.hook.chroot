@@ -113,5 +113,13 @@ pref("browser.theme.toolbar-theme", 0);
 pref("layout.css.prefers-color-scheme.content-override", 0);
 EOF
 
+# The Lite dock groups a running window with its pinned launcher by WM_CLASS. Mousepad and Ristretto ship
+# reverse-DNS desktop ids (org.xfce.*) with no StartupWMClass, so an open editor showed up as a second, unpinned
+# pencil beside its own launcher. Name the class they actually set.
+for pair in org.xfce.mousepad:mousepad org.xfce.ristretto:ristretto; do
+  f=/usr/share/applications/${pair%%:*}.desktop
+  [ -f "$f" ] && ! grep -q '^StartupWMClass=' "$f" && sed -i "0,/^\[Desktop Entry\]/s//[Desktop Entry]\nStartupWMClass=${pair#*:}/" "$f"
+done
+
 fc-cache -f >/dev/null 2>&1 || true
 update-initramfs -u -k all || true

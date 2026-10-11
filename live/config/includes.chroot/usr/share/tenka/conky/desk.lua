@@ -118,5 +118,29 @@ function conky_tenka_desk()
         end
         if line ~= '' then text(cr, line, X + 9, yy + 1.5, 22, 0, 0, 0, 0.5); text(cr, line, X + 8, yy, 22, tr, tg, tb, 0.75) end
     end
+    -- the slip (the flagship's note to self, ~/.config/tenka/slip.txt; Super+N): a flat ink plate under the proverb
+    local sf = io.open(os.getenv('HOME') .. '/.config/tenka/slip.txt')
+    if sf then
+        local note = (sf:read('*a') or ''):gsub('%s+', ' '):gsub('^ ', ''):gsub(' $', '')
+        sf:close()
+        if note ~= '' then
+            local lines, line = {}, ''
+            for w in note:gmatch('%S+') do
+                local try = (line == '' and w) or (line .. ' ' .. w)
+                if width(cr, try, 18) > 420 and line ~= '' then table.insert(lines, line); line = w else line = try end
+            end
+            if line ~= '' then table.insert(lines, line) end
+            while #lines > 4 do table.remove(lines) end
+            local px, py, pw = X + 8, Y + 470, 468
+            local ph = 58 + #lines * 25
+            local br, bg, bb = hex(t.base or '#14110f')
+            cairo_rectangle(cr, px + 0.5, py + 0.5, pw - 1, ph - 1)
+            cairo_set_source_rgba(cr, br, bg, bb, 0.74); cairo_fill_preserve(cr)
+            cairo_set_source_rgba(cr, gr, gg, gb, 0.3); cairo_set_line_width(cr, 1); cairo_stroke(cr)
+            local lw2 = text(cr, 'A NOTE TO SELF', px + 22, py + 30, 10, gr, gg, gb, 1, 4)
+            cairo_rectangle(cr, px + 34 + lw2, py + 26, 48, 1); cairo_set_source_rgba(cr, gr, gg, gb, 0.45); cairo_fill(cr)
+            for i, l in ipairs(lines) do text(cr, l, px + 22, py + 36 + i * 25, 18, tr, tg, tb, 0.92) end
+        end
+    end
     cairo_destroy(cr); cairo_surface_destroy(cs)
 end

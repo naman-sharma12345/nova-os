@@ -114,6 +114,23 @@ def gtk_theme(name, T, d):
     check:checked, radio:checked {{ background-color: {p['accent']}; color: {p['text']}; }}
     menu, .menu, .context-menu, popover, popover.background {{ background-color: {p['surface']}; color: {p['text']}; border: 1px solid {A(p['accent2'], 0.25)}; border-radius: {r}px; }}
     menuitem:hover, menu menuitem:hover {{ background-color: {A(p['accent'], 0.30)}; }}
+    /* context menus (desktop, panel, files) in the ledger language: an ink sheet with one gold rule on top, square
+       corners, Marcellus words; the item under the pointer gets a faint lift and a short accent rule at its left edge */
+    .background.popup {{ border-radius: 2px; }}
+    .csd.popup decoration, window.popup decoration, menu decoration {{ border-radius: 2px; box-shadow: 0 8px 22px rgba(0, 0, 0, 0.42); border: none; }}
+    .background > menu, .background.csd > menu, .background.popup > menu,
+    window.popup menu, menu, .menu, .context-menu {{ background-color: {A(p['base'], 0.98)}; background-image: none; border: 1px solid {A(p['accent2'], 0.22)};
+        border-top: 1px solid {A(p['accent2'], 0.75)}; border-radius: 2px; padding: 6px 0; box-shadow: none; }}
+    menu menuitem, .menu menuitem, .context-menu menuitem {{ padding: 6px 22px 6px 18px; min-height: 20px; border-radius: 0; background: none; box-shadow: none; }}
+    menu menuitem label, .menu menuitem label {{ font-family: "Marcellus"; font-weight: normal; font-size: 13px; color: {p['text']}; letter-spacing: 0.3px; }}
+    menu menuitem accelerator {{ color: {A(p['text'], 0.40)}; font-family: "Marcellus"; }}
+    menu menuitem:hover, .menu menuitem:hover, .context-menu menuitem:hover {{ background-color: {A(p['text'], 0.05)}; box-shadow: inset 2px 0 0 {p['accent']}; }}
+    menu menuitem:hover label, .menu menuitem:hover label {{ color: {p['text']}; }}
+    menu menuitem:disabled label {{ color: {A(p['text'], 0.32)}; }}
+    menu menuitem arrow {{ color: {A(p['text'], 0.45)}; min-width: 10px; min-height: 10px; }}
+    menu separator, .menu separator {{ background-color: {A(p['accent2'], 0.18)}; min-height: 1px; margin: 5px 18px; }}
+    menu > separator:first-child, menu > menuitem.separator:first-child, menu > separator:last-child {{ min-height: 0; margin: 0; background: none; }}
+    menu menuitem image, menu menuitem check, menu menuitem radio {{ color: {p['accent2']}; }}
     tooltip, tooltip.background {{ background-color: {A(p['base'], 0.95)}; color: {p['text']}; border: 1px solid {A(p['accent2'], 0.35)}; border-radius: {r}px; }}
     link, *:link {{ color: {p['accent2']}; }}
 

@@ -3,6 +3,10 @@
 // brush stroke, and on the right a still of it (when the compositor can copy it) with its desk's numeral.
 // Alt+Tab opens it on the window before this one; Tab / Shift+Tab walk, letting go of Alt (or ENTER) goes
 // there, ESC stays. qs ipc call switcher next|prev|commit|hide. Flat: ink, one gold rule, no glow.
+// The keys come from the compositor as global shortcuts (tenka:switcher-next|prev|commit), not by spawning a
+// qs ipc client per key: no process start on a slow machine, and press and Alt-release arrive in order. A quick
+// tap (Alt let go before the list is read) still goes to the window before this one; the card only shows when
+// Alt is held past a beat, so a tap never flashes it.
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
@@ -17,6 +21,11 @@ PanelWindow {
     readonly property bool onHypr: (Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE") || "") !== ""
     readonly property string sim: Quickshell.env("TENKA_OVERVIEW_SIM") || ""
     property int pendingStep: 1
+    property bool loaded: false        // the window list has been read for this opening
+    property bool commitPending: false // Alt was let go before the list was read
+    property bool shown: false         // the card shows only once Alt is held past a beat
+    property double lastGo: 0
+    property double lateRelease: 0     // an Alt-release that arrived before the opening (ipc race only)
     visible: open || card.opacity > 0.01
     anchors { top: true; bottom: true; left: true; right: true }
     color: "transparent"
@@ -29,13 +38,26 @@ PanelWindow {
         target: "switcher"
         function next(): void { sw.step(1) }
         function prev(): void { sw.step(-1) }
-        function commit(): void { if (sw.open) sw.go() }
+        function commit(): void { sw.letGo() }
         function hide(): void { sw.open = false }
+        function state(): string { return (sw.open ? "open" : "closed") + (sw.shown ? " shown" : "") + (sw.loaded ? " loaded" : "") + " sel=" + sw.sel + " wins=" + sw.wins.length }
     }
-    onOpenChanged: Theme.hush = open
+    GlobalShortcut { appid: "tenka"; name: "switcher-next"; description: "The Turn: next window"; onPressed: sw.step(1) }
+    GlobalShortcut { appid: "tenka"; name: "switcher-prev"; description: "The Turn: previous window"; onPressed: sw.step(-1) }
+    GlobalShortcut { appid: "tenka"; name: "switcher-commit"; description: "The Turn: go (Alt let go)"
+                     onPressed: sw.letGo(); onReleased: sw.letGo() }
+    onOpenChanged: { Theme.hush = open; if (!open) { shown = false; commitPending = false } }
+    Timer { interval: 140; running: sw.open && !sw.shown; onTriggered: sw.shown = true }
     function step(d) {
-        if (!open) { pendingStep = d; readQ.running = true; open = true; keys.forceActiveFocus(); return }
+        if (!open) {
+            pendingStep = d; loaded = false; commitPending = (Date.now() - lateRelease) < 1500; lateRelease = 0
+            readQ.running = true; open = true; keys.forceActiveFocus(); return
+        }
         if (wins.length) sel = (sel + d + wins.length) % wins.length
+    }
+    function letGo() {
+        if (open) { if (loaded) go(); else commitPending = true }
+        else if (Date.now() - lastGo > 400) lateRelease = Date.now()
     }
     Process {
         id: readQ
@@ -49,6 +71,8 @@ PanelWindow {
         wins = (d.c || []).filter(c => c.workspace && c.workspace.id > 0 && c.mapped !== false && !c.hidden)
                           .sort((a, b) => (a.focusHistoryID || 0) - (b.focusHistoryID || 0))
         sel = wins.length > 1 ? (pendingStep > 0 ? 1 : wins.length - 1) : 0
+        loaded = true
+        if (commitPending && open) go()
     }
     readonly property var cur: wins.length ? wins[Math.min(sel, wins.length - 1)] : null
     readonly property var numerals: ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"]
@@ -60,7 +84,8 @@ PanelWindow {
     }
     Process { id: actQ; property var cmd: []; command: cmd }
     function go() {
-        const c = cur; open = false
+        if (!open) return
+        const c = cur; open = false; lastGo = Date.now()
         if (!c || sim !== "") return
         actQ.cmd = ["sh", "-c", "hyprctl dispatch \"$1\" | grep -qx ok || hyprctl dispatch focuswindow address:$2", "sh",
                     "hl.dsp.focus({ window = \"address:" + c.address + "\" })", c.address]
@@ -76,7 +101,7 @@ PanelWindow {
         radius: Theme.ledgerR
         color: Theme.alpha(Theme.t.base, 0.96)
         border.width: 1; border.color: Theme.alpha(Theme.gold, 0.35)
-        opacity: sw.open ? 1 : 0
+        opacity: sw.open && sw.shown ? 1 : 0
         scale: sw.open || Theme.perf ? 1 : 0.985
         Behavior on opacity { NumberAnimation { duration: Theme.perf ? 0 : 160; easing.type: Easing.OutCubic } }
         Behavior on scale { NumberAnimation { duration: Theme.perf ? 0 : 160; easing.type: Easing.OutCubic } }
@@ -190,6 +215,6 @@ PanelWindow {
             else return
             e.accepted = true
         }
-        Keys.onReleased: e => { if (e.key === Qt.Key_Alt || e.key === Qt.Key_Meta) { sw.go(); e.accepted = true } }
+        Keys.onReleased: e => { if (e.key === Qt.Key_Alt || e.key === Qt.Key_Meta) { sw.letGo(); e.accepted = true } }
     }
 }

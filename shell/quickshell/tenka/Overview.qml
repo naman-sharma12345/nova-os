@@ -27,6 +27,8 @@ PanelWindow {
     WlrLayershell.namespace: "tenka-overview"
     WlrLayershell.keyboardFocus: open ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
+    GlobalShortcut { appid: "tenka"; name: "overview"; description: "The Field: every desk at once"
+                     onPressed: ov.open ? ov.hide() : ov.reveal() }
     IpcHandler {
         target: "overview"
         function toggle(): void { ov.open ? ov.hide() : ov.reveal() }

@@ -132,10 +132,14 @@ hl.bind(M .. " + Escape",      hl.dsp.exec_cmd("tenka-power"))
 hl.bind(M .. " + T",           hl.dsp.exec_cmd("tenka-theme-menu"))
 hl.bind(M .. " + W",           hl.dsp.exec_cmd("tenka-wallpaper next"))
 hl.bind(M .. " + SHIFT + V",   hl.dsp.exec_cmd("tenka-clipboard"))
-hl.bind(M .. " + Tab",         hl.dsp.exec_cmd("qs -c tenka ipc call overview toggle"))   -- the field: every desk at once
-hl.bind("ALT + Tab",           hl.dsp.exec_cmd("qs -c tenka ipc call switcher next"))   -- the turn: our own window switcher
+-- the shell's own surfaces take their keys as global shortcuts (straight to the shell, in order, no process
+-- start per key); `qs -c tenka ipc call overview|switcher|slip ...` still works from scripts
+hl.bind(M .. " + Tab",         hl.dsp.global("tenka:overview"))        -- the field: every desk at once
+hl.bind("ALT + Tab",           hl.dsp.global("tenka:switcher-next"))   -- the turn: our own window switcher
+hl.bind("ALT + SHIFT + Tab",   hl.dsp.global("tenka:switcher-prev"))
+hl.bind("ALT + Alt_L",         hl.dsp.global("tenka:switcher-commit"), { release = true, transparent = true, non_consuming = true })
+hl.bind("ALT + Alt_R",         hl.dsp.global("tenka:switcher-commit"), { release = true, transparent = true, non_consuming = true })
 hl.bind(M .. " + N",           hl.dsp.exec_cmd("qs -c tenka ipc call slip edit"))   -- the slip: a note to self on the desk
-hl.bind("ALT + SHIFT + Tab",   hl.dsp.exec_cmd("qs -c tenka ipc call switcher prev"))
 hl.bind(M .. " + SHIFT + C",   hl.dsp.exec_cmd("hyprpicker -a"))
 hl.bind("Print",               hl.dsp.exec_cmd("tenka-shot area"))
 hl.bind("SHIFT + Print",       hl.dsp.exec_cmd("tenka-shot screen"))

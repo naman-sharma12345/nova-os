@@ -92,6 +92,16 @@ for f in /usr/share/applications/calamares-install-debian.desktop /etc/skel/Desk
   [ -f "$f" ] && sed -i -e 's/^Name=.*/Name=Install Tenka/' -e 's/^Name\[[^]]*\]=.*//' -e 's/^Icon=.*/Icon=tenka/' -e 's/^Comment=.*/Comment=Put Tenka on this computer/' "$f"
 done
 
+# ---------------------------------------------------------------- Qt look for root apps
+# The installer runs as root through pkexec (no qt6ct there), so give root the same
+# Kvantum theme the desk uses and ask for it by name.
+for t in /usr/share/tenka/themes/*/home/.config/Kvantum/Tenka-*; do
+  [ -d "$t" ] && mkdir -p "/usr/share/Kvantum/$(basename "$t")" && cp -rT "$t" "/usr/share/Kvantum/$(basename "$t")"
+done
+install -d /root/.config/Kvantum
+printf '[General]\ntheme=Tenka-Samurai\n' > /root/.config/Kvantum/kvantum.kvconfig
+[ -f /usr/bin/calamares-install-debian ] && sed -i 's/^pkexec calamares$/pkexec env QT_STYLE_OVERRIDE=kvantum calamares/' /usr/bin/calamares-install-debian
+
 # ---------------------------------------------------------------- user defaults
 grep -q 'bashrc.d' /etc/skel/.bashrc || cat >> /etc/skel/.bashrc <<'EOF'
 

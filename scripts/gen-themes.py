@@ -7,7 +7,9 @@ one palette + wording table, so both packs stay cohesive.
 
     python3 scripts/gen-themes.py        # regenerate themes/<t>/home and system themes
 """
-import os, json, textwrap
+import os, sys, json, textwrap
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import tenka_kvantum
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 THEMES = {
@@ -390,15 +392,22 @@ def gen(name, T):
     W(f"{H}/.config/qt6ct/qt6ct.conf", textwrap.dedent(f"""\
     [Appearance]
     color_scheme_path=$HOME/.config/qt6ct/colors/tenka-{name}.conf
-    custom_palette=true
+    custom_palette=false
     icon_theme={T['icons']}
     standard_dialogs=default
-    style=Fusion
+    style=kvantum
 
     [Fonts]
     fixed="JetBrains Mono,11,-1,5,400,0,0,0,0,0,0,0,0,0,0,1"
     general="Inter,11,-1,5,400,0,0,0,0,0,0,0,0,0,0,1"
     """).replace("$HOME", "~"))
+    # ---------- Kvantum (every Qt widget: polkit prompt, installer, qt6ct...) ----------
+    # qt6ct picks style=kvantum above; Kvantum's own colours come from the same palette, so
+    # custom_palette is off (two palettes fighting is how Qt apps end up half-themed).
+    kv_svg, kv_conf = tenka_kvantum.build(name, T)
+    W(f"{H}/.config/Kvantum/{T['gtk']}/{T['gtk']}.svg", kv_svg)
+    W(f"{H}/.config/Kvantum/{T['gtk']}/{T['gtk']}.kvconfig", kv_conf)
+    W(f"{H}/.config/Kvantum/kvantum.kvconfig", f"[General]\ntheme={T['gtk']}\n")
     # ---------- Hyprland per-theme look (Lua; Hyprland 0.55 config) ----------
     a = lambda c, al="ff": f"rgba({hx(c)}{al})"
     if name == "samurai":

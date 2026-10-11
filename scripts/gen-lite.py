@@ -174,7 +174,9 @@ def gtk_theme(name, T, d):
     dialog entry.search:focus {{ border-bottom: 1px solid {p['accent']}; }}
     dialog entry.search image {{ color: {A(p['text'], 0.5)}; }}
     menu menuitem image, menu menuitem check, menu menuitem radio {{ color: {p['accent2']}; }}
-    tooltip, tooltip.background {{ background-color: {A(p['base'], 0.95)}; color: {p['text']}; border: 1px solid {A(p['accent2'], 0.35)}; border-radius: {r}px; }}
+    tooltip, tooltip.background, tooltip.background.csd {{ background-color: {A(p['base'], 0.97)}; color: {p['text']}; border: 1px solid {A(p['accent2'], 0.22)};
+        border-top: 1px solid {A(p['accent2'], 0.6)}; border-radius: 2px; box-shadow: none; }}
+    tooltip decoration {{ border-radius: 2px; box-shadow: none; }}
     link, *:link {{ color: {p['accent2']}; }}
 
     /* ---- Tenka Lite panels, mirroring the Tenka shell: the top bar is bare (its colour comes from
@@ -212,8 +214,10 @@ def gtk_theme(name, T, d):
        search, categories as plain words with a short accent rule on the chosen one. Orchis styles the
        visible sheet as `window#whiskermenu-window > frame > border`, so these match it selector for selector. ---- */
     window#whiskermenu-window {{ background-color: transparent; border: none; }}
-    window#whiskermenu-window > frame > border {{ background-color: {A(p['base'], 0.97)}; border: 1px solid {A(p['accent2'], 0.45)};
-        border-radius: {r}px; box-shadow: none; margin: 6px; padding: 12px 14px; }}
+    window#whiskermenu-window > frame > border {{ background-color: {A(p['base'], 0.97)}; border: 1px solid {A(p['accent2'], 0.22)};
+        border-top: 1px solid {A(p['accent2'], 0.75)}; border-radius: 2px; box-shadow: none; margin: 6px; padding: 12px 14px; }}
+    /* app names in Marcellus like every other menu (the launcher's bold markup maps to Marcellus' one weight) */
+    window#whiskermenu-window treeview.view, window#whiskermenu-window iconview {{ font-family: Marcellus; font-weight: normal; font-size: 13px; }}
     window#whiskermenu-window label {{ color: {p['text']}; font-family: Marcellus; }}
     window#whiskermenu-window entry.search {{ background-color: transparent; border: none; border-bottom: 1px solid {A(p['accent2'], 0.45)};
         border-radius: 0; box-shadow: none; padding: 6px 4px; font-family: Marcellus; }}
@@ -228,7 +232,8 @@ def gtk_theme(name, T, d):
         border-radius: 0; padding: 3px 3px 3px 10px; }}
     window#whiskermenu-window scrolledwindow.frame treeview.view, window#whiskermenu-window scrolledwindow.frame iconview {{ border-radius: 0; background: none; }}
     window#whiskermenu-window scrolledwindow.frame treeview.view:selected, window#whiskermenu-window scrolledwindow.frame treeview.view:selected:hover {{
-        background-color: {A(p['accent'], 0.18)}; color: {p['text']}; }}
+        background-color: {A(p['text'], 0.06)}; color: {p['text']}; background-image: linear-gradient({p['accent']}, {p['accent']});
+        background-size: 2px 16px; background-position: left center; background-repeat: no-repeat; }}
     window#whiskermenu-window .title-area > .commands-area > button.flat.command-button {{ border-radius: 0; }}
     window#whiskermenu-window .title-area > .commands-area > button.flat.command-button:hover {{ background-color: {A(p['text'], 0.06)}; }}
 

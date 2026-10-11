@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=The Incense
+GenericName=Timer
+Comment=A stick of incense that burns down with the time, then a soft bell (Super + I)
+Exec=tenka-incense open
+Icon=alarm-symbolic
+Categories=Utility;
+Keywords=timer;countdown;alarm;pomodoro;clock;incense;joss;stick;minutes;

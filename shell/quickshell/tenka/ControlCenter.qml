@@ -341,6 +341,8 @@ PanelWindow {
                        onHit: { cc.open = false; Theme.ipc("glyphs", "open") } }
                 Row2 { k: Theme.xia ? "The Scripture" : "The Codex"; v: "every key"
                        onHit: { cc.open = false; Theme.ipc("codex", "open") } }
+                Row2 { k: Theme.xia ? "The Joss Stick" : "The Incense"; v: "a timer"
+                       onHit: { cc.open = false; Theme.ipc("incense", "open") } }
                 Row2 { k: Theme.xia ? "The Lineage" : "The Colophon"; v: "this machine"; last: true
                        onHit: { cc.open = false; Theme.ipc("colophon", "open") } }
             }

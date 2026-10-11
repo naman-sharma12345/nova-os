@@ -20,6 +20,7 @@
       <property name="XF86Battery" type="string" value="tenka-lantern open"/>
       <property name="&lt;Shift&gt;&lt;Super&gt;c" type="string" value="tenka-loupe open"/>
       <property name="&lt;Super&gt;slash" type="string" value="tenka-codex open"/>
+      <property name="&lt;Super&gt;i" type="string" value="tenka-incense open"/>
       <property name="&lt;Super&gt;n" type="string" value="sh -c 'mkdir -p ~/.config/tenka; touch ~/.config/tenka/slip.txt; exec mousepad ~/.config/tenka/slip.txt'"/>
       <property name="XF86AudioRaiseVolume" type="string" value="tenka-osd volume up"/>
       <property name="XF86AudioLowerVolume" type="string" value="tenka-osd volume down"/>

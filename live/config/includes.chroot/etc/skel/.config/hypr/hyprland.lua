@@ -145,6 +145,7 @@ hl.bind(M .. " + N",           hl.dsp.global("tenka:slip"))            -- the sl
 hl.bind(M .. " + period",      hl.dsp.global("tenka:glyphs"))          -- the inkstone: find and place a glyph
 hl.bind(M .. " + SHIFT + C",   hl.dsp.global("tenka:loupe"))           -- the loupe: pick a colour, measure the screen
 hl.bind(M .. " + slash",       hl.dsp.global("tenka:codex"))           -- the codex: every key this desk answers to
+hl.bind(M .. " + I",           hl.dsp.global("tenka:incense"))         -- the incense: a timer that burns down
 hl.bind("Print",               hl.dsp.exec_cmd("tenka-shot area"))
 hl.bind("SHIFT + Print",       hl.dsp.exec_cmd("tenka-shot screen"))
 hl.bind(M .. " + SHIFT + E",   hl.dsp.exec_cmd("tenka-power"))

@@ -1,0 +1,139 @@
+#!/usr/bin/python3
+"""tenka-incense: The Incense (Tianxia: The Joss Stick), our own timer. A stick of incense burns down; when it is
+gone a soft bell (the theme's own "complete" sound) and one quiet note say so. No daemon: lighting it leaves one
+sleeping process that rings once and exits; putting it out ends that process.
+  tenka-incense light MIN   light a stick of MIN minutes (1..240); a stick already burning is replaced
+  tenka-incense out         put it out
+  tenka-incense state       {"burning", "left", "total", "minutes", "until", "burned"} as JSON (seconds; until in ms)
+  tenka-incense open        the card (Super + I): qs ipc on Hyprland, a small Qt window on Tenka Lite
+State: ~/.config/tenka/incense.json. The card reads it; this program is the only writer.
+"""
+import json, os, signal, subprocess, sys, time
+
+HOME = os.path.expanduser("~")
+S = os.path.join(os.environ.get("XDG_CONFIG_HOME") or os.path.join(HOME, ".config"), "tenka")
+J = os.path.join(S, "incense.json")
+RT = os.environ.get("XDG_RUNTIME_DIR") or "/tmp"
+PID = os.path.join(RT, "tenka-incense.pid")
+
+def now_ms():
+    return int(time.time() * 1000)
+
+def read():
+    try:
+        return json.load(open(J))
+    except (OSError, ValueError):
+        return {}
+
+def write(d):
+    os.makedirs(S, exist_ok=True)
+    with open(J + ".new", "w") as f:
+        json.dump(d, f)
+    os.replace(J + ".new", J)
+
+def xia():
+    try:
+        return json.load(open(os.path.join(S, "shell-theme.json"))).get("name") == "xianxia"
+    except (OSError, ValueError):
+        return False
+
+def stop_sleeper():
+    try:
+        pid = int(open(PID).read().strip())
+        if b"tenka-incense" in open(f"/proc/{pid}/cmdline", "rb").read():
+            os.kill(pid, signal.SIGTERM)
+    except (OSError, ValueError):
+        pass
+    try: os.remove(PID)
+    except OSError: pass
+
+def light(minutes):
+    minutes = max(1, min(240, int(minutes)))
+    stop_sleeper()
+    t = now_ms()
+    write({"start": t, "until": t + minutes * 60000, "total": minutes * 60000, "minutes": minutes})
+    p = subprocess.Popen([sys.executable, os.path.abspath(__file__), "_ring", str(t + minutes * 60000)],
+                         stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+    with open(PID, "w") as f:
+        f.write(str(p.pid))
+
+def out():
+    stop_sleeper()
+    d = read()
+    write({"minutes": d.get("minutes", 15)})
+
+def ring(until):
+    while True:
+        left = until - now_ms()
+        if left <= 0:
+            break
+        time.sleep(min(left / 1000.0, 30))
+    d = read()
+    if d.get("until") != until:                  # put out or relit since: not ours to ring
+        return
+    write({"minutes": d.get("minutes", 15), "burned": now_ms()})
+    try: os.remove(PID)
+    except OSError: pass
+    m = d.get("minutes", 0)
+    subprocess.run(["tenka-sound", "complete"], capture_output=True)
+    title = "The joss stick has burned down" if xia() else "The incense has burned down"
+    subprocess.run(["notify-send", "-a", "Tenka", "-i", "alarm-symbolic", title, f"{m} minute{'s' if m != 1 else ''}"], capture_output=True)
+
+def state():
+    d = read(); t = now_ms()
+    burning = bool(d.get("until")) and d["until"] > t
+    return {"burning": burning, "left": max(0, round((d.get("until", t) - t) / 1000)) if burning else 0,
+            "total": round(d.get("total", 0) / 1000), "minutes": d.get("minutes", 15),
+            "until": d.get("until", 0) if burning else 0, "burned": d.get("burned", 0)}
+
+def open_card():
+    import select
+    if os.environ.get("WAYLAND_DISPLAY") and subprocess.run(["pgrep", "-x", "qs"], capture_output=True).returncode == 0:
+        subprocess.run(["qs", "-c", "tenka", "ipc", "call", "incense", "toggle"], capture_output=True)
+        return 0
+    if not os.environ.get("DISPLAY"):
+        print(json.dumps(state())); return 0
+    lock = os.path.join(RT, "tenka-incense-card.pid")
+    try:                                                # pressed again while open: close it
+        pid = int(open(lock).read().strip())
+        if b"LiteIncense.qml" not in open(f"/proc/{pid}/cmdline", "rb").read():
+            raise ValueError
+        os.kill(pid, signal.SIGTERM); os.remove(lock); return 0
+    except (OSError, ValueError):
+        pass
+    if not os.path.exists(J):
+        write({"minutes": 15})
+    env = dict(os.environ, QML_XHR_ALLOW_FILE_READ="1", QT_QPA_PLATFORM="xcb", QT_MESSAGE_PATTERN="%{message}")
+    p = subprocess.Popen(["/usr/lib/qt6/bin/qml", "/usr/share/tenka/incense/LiteIncense.qml", "--", J, os.path.join(S, "shell-theme.json")],
+                         stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, env=env, text=True)
+    with open(lock, "w") as f:
+        f.write(str(p.pid))
+    for line in p.stderr:                               # the card asks: "LIGHT <min>" or "OUT"
+        w = line.split()
+        if w[:1] == ["LIGHT"] and len(w) > 1 and w[1].isdigit():
+            light(int(w[1]))
+        elif w[:1] == ["OUT"]:
+            out()
+    p.wait()
+    try: os.remove(lock)
+    except OSError: pass
+    return 0
+
+def main():
+    a = sys.argv[1:]
+    c = a[0] if a else "state"
+    if c == "light" and len(a) > 1 and a[1].isdigit():
+        light(int(a[1]))
+    elif c == "out":
+        out()
+    elif c == "_ring" and len(a) > 1:
+        ring(int(a[1]))
+    elif c == "open":
+        sys.exit(open_card())
+    elif c == "state":
+        print(json.dumps(state()))
+    else:
+        print(__doc__.strip()); sys.exit(2)
+
+if __name__ == "__main__":
+    main()

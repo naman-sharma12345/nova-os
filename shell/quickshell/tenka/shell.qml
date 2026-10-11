@@ -37,6 +37,7 @@ ShellRoot {
     Codex {}
     Colophon {}
     Drift {}
+    Incense {}
     ControlCenter {}
     Notifications {}
     Osd {}

@@ -16,6 +16,11 @@
 # 11. tenka-colophon reads the machine (kernel, memory, packages) and names the desk after the active theme
 # 12. The Drift is wired: hypridle opens it (ipc "open", not qs's own word "show"), and Lite's screensaver theme
 #     points at a program in xfce4-screensaver's own dir (it runs no theme from anywhere else)
+# 13. tenka-almanac names the right solar term and moon for known dates (Dec 9 2026 is a new moon, the Mar 2027
+#     equinox, a full moon), and the term's line follows the theme (micro-season on Tenka, saying on Tianxia)
+# 14. tenka-incense lights a stick (state burning, about the minutes asked), puts it out (no sleeper left behind),
+#     and is wired in both sessions; Incense.qml imports Quickshell.Hyprland (its GlobalShortcut needs it, or the
+#     whole shell fails to load)
 set -u
 ROOT=$(cd "$(dirname "$0")/.." && pwd); BIN="$ROOT/live/config/includes.chroot/usr/bin"
 fail=0; T=$(mktemp -d); trap 'rm -rf "$T"' EXIT
@@ -242,5 +247,25 @@ IC="$ROOT/live/config/includes.chroot"
 grep -q 'ipc call drift open' "$IC/etc/skel/.config/hypr/hypridle.conf" && grep -q 'function open()' "$ROOT/shell/quickshell/tenka/Drift.qml" || { echo "FAIL: hypridle -> drift open"; fail=1; }
 grep -q '^Exec=/usr/libexec/xfce4-screensaver/tenka-drift$' "$IC/usr/share/applications/screensavers/tenka-drift.desktop" && [ -x "$IC/usr/libexec/xfce4-screensaver/tenka-drift" ] &&
 grep -q 'value="screensavers-tenka-drift"' "$IC/etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-screensaver.xml" || { echo "FAIL: Lite screensaver -> tenka-drift"; fail=1; }
+# 13. The Almanac: known dates
+A=$(python3 "$BIN/tenka-almanac" line 2026-12-09; python3 "$BIN/tenka-almanac" line 2027-03-22; python3 "$BIN/tenka-almanac" line 2026-10-26)
+echo "$A" | sed -n 1p | grep -q '^Major Snow  ·  .*  ·  New moon$' && echo "$A" | sed -n 2p | grep -q '^Spring Equinox  ·  Sparrows start to nest' &&
+echo "$A" | sed -n 3p | grep -q "^Frost's Descent  ·  First frost  ·  Full moon$" || { echo "FAIL: tenka-almanac dates: $A"; fail=1; }
+mkdir -p "$T/alm/.config/tenka"; echo '{ "name": "xianxia" }' > "$T/alm/.config/tenka/shell-theme.json"
+HOME="$T/alm" python3 "$BIN/tenka-almanac" json 2026-10-12 | python3 -c 'import json,sys; a=json.load(sys.stdin); sys.exit(0 if a["term"]=="Cold Dew" and a["detail_kind"]=="saying" and a["title"]=="The Heavenly Calendar" else 1)' || { echo "FAIL: tenka-almanac theme words"; fail=1; }
+grep -q '"tenka-almanac", "json"' "$ROOT/shell/quickshell/tenka/DeskLedger.qml" && grep -q "tenka-almanac json" "$IC/usr/share/tenka/conky/desk.lua" || { echo "FAIL: almanac not on the desks"; fail=1; }
+# 14. The Incense: light, read, put out; wiring
+mkdir -p "$T/inc/rt"; chmod 700 "$T/inc/rt"
+HOME="$T/inc" XDG_RUNTIME_DIR="$T/inc/rt" python3 "$BIN/tenka-incense" light 2
+S1=$(HOME="$T/inc" XDG_RUNTIME_DIR="$T/inc/rt" python3 "$BIN/tenka-incense" state)
+SP=$(cat "$T/inc/rt/tenka-incense.pid" 2>/dev/null)
+HOME="$T/inc" XDG_RUNTIME_DIR="$T/inc/rt" python3 "$BIN/tenka-incense" out; sleep 0.3
+S2=$(HOME="$T/inc" XDG_RUNTIME_DIR="$T/inc/rt" python3 "$BIN/tenka-incense" state)
+echo "$S1" | python3 -c 'import json,sys; s=json.load(sys.stdin); sys.exit(0 if s["burning"] and 110<=s["left"]<=120 and s["minutes"]==2 else 1)' &&
+echo "$S2" | python3 -c 'import json,sys; s=json.load(sys.stdin); sys.exit(0 if not s["burning"] and s["minutes"]==2 else 1)' &&
+[ -n "$SP" ] && ! kill -0 "$SP" 2>/dev/null || { echo "FAIL: tenka-incense light/out: $S1 / $S2"; fail=1; }
+grep -q '^import Quickshell.Hyprland$' "$ROOT/shell/quickshell/tenka/Incense.qml" && grep -q '"tenka:incense"' "$IC/etc/skel/.config/hypr/hyprland.lua" &&
+grep -q 'value="tenka-incense open"' "$IC/etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml" &&
+[ -f "$IC/usr/share/tenka/incense/LiteIncense.qml" ] && grep -q '^ *Incense {}' "$ROOT/shell/quickshell/tenka/shell.qml" || { echo "FAIL: incense wiring"; fail=1; }
 [ "$fail" = 0 ] && echo "check-session: ok"
 exit $fail

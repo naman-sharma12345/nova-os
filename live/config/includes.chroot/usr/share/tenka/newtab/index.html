@@ -26,6 +26,9 @@
   #seal { width: 46px; height: 46px; opacity: .9; margin-bottom: 18px; }
   #hour { font-size: 112px; line-height: 1; letter-spacing: 6px; font-weight: 400; }
   #day { margin-top: 16px; font-size: 13px; letter-spacing: 5px; color: var(--gold); text-transform: uppercase; }
+  #alm { margin-top: 12px; display: flex; align-items: center; gap: 12px; font-size: 15px; color: var(--soft); min-height: 20px; }
+  #alm b { font-weight: 400; color: var(--text); }
+  #moon { width: 16px; height: 16px; flex: none; }
   form { margin-top: 54px; width: min(560px, 80vw); }
   #q { width: 100%; box-sizing: border-box; background: transparent; border: 0; border-bottom: 1px solid var(--rule);
        color: var(--text); font: 19px "Inter", sans-serif; padding: 10px 2px; outline: none; text-align: center; caret-color: var(--accent); }
@@ -46,6 +49,7 @@
   <img id="seal" alt="">
   <div id="hour"></div>
   <div id="day"></div>
+  <div id="alm"><svg id="moon" viewBox="0 0 20 20"></svg><span id="almt"></span></div>
   <form id="f" autocomplete="off">
     <input id="q" name="q" type="text" spellcheck="false" autofocus>
     <div id="where"></div>
@@ -78,6 +82,41 @@
       d.toLocaleDateString("en-GB", { day: "numeric", month: "long" }) + "  ·  " + SEASON[seasonOf(d)];
     var p = T.proverbs || []; document.getElementById("word").textContent = p.length ? p[dayOfYear(d) % p.length] : "";
   }
+  // The Almanac (Tianxia: The Heavenly Calendar), as tenka-almanac works it out: the solar term from the sun's
+  // longitude, the micro-season (Tenka) or the term's saying (Tianxia), and the moon from its elongation
+  function sunLon(n) {
+    var g = (357.528 + 0.9856003 * n) * Math.PI / 180;
+    return (((280.460 + 0.9856474 * n) + 1.915 * Math.sin(g) + 0.020 * Math.sin(2 * g)) % 360 + 360) % 360;
+  }
+  function moonElong(n) {
+    var r = Math.PI / 180, Mp = (134.963 + 13.064993 * n) * r, M = (357.529 + 0.98560028 * n) * r,
+        D = (297.850 + 12.190749 * n) * r, F = (93.272 + 13.229350 * n) * r;
+    var lam = 218.316 + 13.176396 * n + 6.289 * Math.sin(Mp) - 1.274 * Math.sin(2 * D - Mp) + 0.658 * Math.sin(2 * D)
+              + 0.214 * Math.sin(2 * Mp) - 0.186 * Math.sin(M) - 0.114 * Math.sin(2 * F);
+    return (((lam - sunLon(n)) % 360) + 360) % 360;
+  }
+  function moonPath(e) {   // the lit part of a 20x20 disc: the limb on the lit side, then the terminator back
+    var r = 9, c = 10, side = e < 180 ? 1 : -1, k = Math.cos(e * Math.PI / 180) * side, p = "";
+    for (var i = 0; i <= 24; i++) { var f = -Math.PI / 2 + Math.PI * i / 24; p += (i ? "L" : "M") + (c + side * r * Math.cos(f)).toFixed(2) + " " + (c + r * Math.sin(f)).toFixed(2); }
+    for (i = 24; i >= 0; i--) { f = -Math.PI / 2 + Math.PI * i / 24; p += "L" + (c + k * r * Math.cos(f)).toFixed(2) + " " + (c + r * Math.sin(f)).toFixed(2); }
+    return p + "Z";
+  }
+  var almKey = "";
+  function almanac(d) {
+    var A = T.almanac; if (!A) return;
+    var n = d.getTime() / 86400000 + 2440587.5 - 2451545.0, lam = sunLon(n), e = moonElong(n);
+    var term = Math.floor(lam / 15) % 24, det = A.details.length === 72 ? A.details[Math.floor(lam / 5) % 72] : A.details[term];
+    var key = term + "|" + det + "|" + Math.round(e);
+    if (key === almKey) return; almKey = key;
+    document.getElementById("almt").innerHTML = "";
+    var b = document.createElement("b"); b.textContent = A.terms[term];
+    document.getElementById("almt").append(b, "  \u00b7  " + det.replace(/\.$/, ""));
+    document.getElementById("moon").innerHTML =
+      '<circle cx="10" cy="10" r="9" fill="' + rgba(T.text, .12) + '"/>' +
+      '<path d="' + moonPath(e) + '" fill="' + rgba(T.text, .86) + '"/>' +
+      '<circle cx="10" cy="10" r="9" fill="none" stroke="' + rgba(T.gold, .5) + '" stroke-width="1"/>';
+  }
+  var _tick = tick; tick = function () { _tick(); almanac(window.TENKA_AT ? new Date(window.TENKA_AT) : new Date()); };
   tick(); setInterval(tick, 1000);
   // one line for everything: an address goes there, anything else is searched (DuckDuckGo, nothing stored here)
   function isAddr(s) { return /^[a-z]+:\/\//i.test(s) || (/^[^\s]+\.[a-z]{2,}(\/.*)?$/i.test(s) && !/\s/.test(s)) || /^localhost(:\d+)?(\/.*)?$/.test(s); }

@@ -1,16 +1,13 @@
 #!/bin/sh
-# Tenka Lite workspace indicator (genmon): as minimal as the Tenka shell's bar. The current
-# workspace is a short accent stroke, the others small dots. Clicking cycles to the next one.
+# Tenka Lite workspace indicator (genmon), mirroring the Tenka shell's notch: the current workspace
+# as a Roman numeral in gold Marcellus, nothing else. Clicking cycles to the next one.
 T=$(cat "$HOME/.config/tenka/theme" 2>/dev/null || cat /etc/tenka/theme 2>/dev/null || echo samurai)
-if [ "$T" = xianxia ]; then ON="#5fc9a0"; else ON="#d8412f"; fi
-OFF="#efe6d6"
+if [ "$T" = xianxia ]; then GOLD="#e2bd6b"; else GOLD="#c9a35a"; fi
 cur=$(xprop -root _NET_CURRENT_DESKTOP 2>/dev/null | awk '{print $3}'); n=$(xprop -root _NET_NUMBER_OF_DESKTOPS 2>/dev/null | awk '{print $3}')
-cur=${cur:-0}; n=${n:-4}
+case "$cur" in ''|*[!0-9]*) cur=0 ;; esac
+case "$n" in ''|*[!0-9]*|0) n=4 ;; esac
 if [ "$1" = next ]; then wmctrl -s $(( (cur + 1) % n )) 2>/dev/null || xdotool set_desktop $(( (cur + 1) % n )) 2>/dev/null; exit 0; fi
-out=""
-i=0; while [ $i -lt "$n" ]; do
-  if [ $i -eq "$cur" ]; then out="$out<span foreground='$ON' font='Inter Bold 9'>━━</span> "
-  else out="$out<span foreground='$OFF' alpha='40%' font='Inter 7'>●</span> "; fi
-  i=$((i + 1))
-done
-echo "<txt>$out</txt><txtclick>tenka-workspaces next</txtclick><tool>Workspace $((cur + 1)) of $n</tool>"
+set -- I II III IV V VI VII VIII IX X
+k=$(( cur + 1 )); [ "$k" -gt 10 ] && k=10
+eval "num=\${$k}"
+echo "<txt><span foreground='$GOLD' font='Marcellus 12' letter_spacing='1024'>$num</span></txt><txtclick>tenka-workspaces next</txtclick><tool>Workspace $((cur + 1)) of $n</tool>"

@@ -1,6 +1,6 @@
 // A glass card. Off Hyprland it frosts itself from the pre-blurred wallpaper (ox/oy = where its
 // window sits on the screen); on Hyprland the compositor blurs behind the tenka-* layers.
-// Then an ink tint, a fine gold hairline, a sheen along the top and a soft shadow.
+// Then an ink tint, a fine gold hairline and a soft shadow (the top sheen is opt-in, off by default).
 import QtQuick
 import QtQuick.Effects
 
@@ -14,7 +14,7 @@ Item {
     property color tintColor: Theme.t.base
     property bool shadow: true
     property bool frost: Theme.selfBlur
-    property bool sheen: true
+    property bool sheen: false   // off by default: flat glass, no gloss (a face may still opt in)
     property real innerLine: 0
     default property alias content: inner.data
 

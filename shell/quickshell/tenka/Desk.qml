@@ -33,7 +33,8 @@ PanelWindow {
     }
 
     // ---- life: a few petals (Tenka) or rising qi motes (Tianxia)
-    ParticleSystem { id: ps; running: true }
+    // they rest in Performance mode, and pause (faded out) while windows cover the desk or an overlay is up
+    ParticleSystem { id: ps; running: !Theme.perf; paused: Theme.working || Theme.hush }
     Emitter {
         system: ps
         x: Theme.xia ? 0 : desk.width * 0.3; y: Theme.xia ? desk.height : -40
@@ -49,6 +50,8 @@ PanelWindow {
         alpha: Theme.xia ? 0.5 : 0.75; alphaVariation: 0.3
         rotationVariation: Theme.xia ? 0 : 180; rotationVelocityVariation: Theme.xia ? 0 : 60
         entryEffect: ImageParticle.Fade
+        opacity: Theme.working || Theme.hush ? 0 : 1
+        Behavior on opacity { NumberAnimation { duration: 260 } }
     }
 
     Item {

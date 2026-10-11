@@ -41,9 +41,18 @@ Singleton {
     }
     Connections {
         target: Hyprland
-        function onRawEvent(ev) { if (/^(openwindow|closewindow|movewindow|workspace|focusedmon|activespecial)/.test(ev.name)) wsQ.running = true }
+        function onRawEvent(ev) {
+            if (/^(openwindow|closewindow|movewindow|workspace|focusedmon|activespecial)/.test(ev.name)) wsQ.running = true
+            if (ev.name === "configreloaded") perfQ.running = true   // tenka-perf reloads Hyprland after it flips the mode
+        }
     }
-    Component.onCompleted: if ((Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE") || "") !== "") wsQ.running = true
+    Component.onCompleted: { perfQ.running = true; if ((Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE") || "") !== "") wsQ.running = true }
+    // Performance mode (tenka-perf): its flag file is ~/.config/tenka/perf. The shell's own motion rests with it.
+    property bool perf: false
+    Process {
+        id: perfQ; command: ["sh", "-c", "test -e \"$HOME/.config/tenka/perf\" && echo on || echo off"]
+        stdout: StdioCollector { onStreamFinished: root.perf = text.trim() === "on" }
+    }
     property bool pinOpen: false         // keep them up (desk open via IPC / clock)
     function asset(p) { return Qt.resolvedUrl("assets/" + adapter.name + "/" + p) }
     function icon(n) { return asset("icons/" + n + ".svg") }

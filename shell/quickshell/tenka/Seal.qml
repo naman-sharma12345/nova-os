@@ -8,7 +8,7 @@ import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Services.Polkit
 import QtQuick
-import QtQuick.Controls
+import "seal"
 
 PanelWindow {
     id: seal
@@ -33,14 +33,14 @@ PanelWindow {
     PolkitAgent { id: agent }
     // tells tenka-session the shell holds the agent, so hyprpolkitagent is not needed
     Process { running: agent.isRegistered; command: ["sh", "-c", "touch \"${XDG_RUNTIME_DIR:-/tmp}/tenka-seal\""] }
-    onOpenChanged: { Theme.hush = open; wrong = false; if (open) { field.text = ""; field.forceActiveFocus() } }
-    onFlowChanged: if (flow) { field.text = ""; field.forceActiveFocus() }
+    onOpenChanged: { Theme.hush = open; wrong = false; if (open) card.focusField() }
+    onFlowChanged: if (flow) card.focusField()
     Connections {
         target: seal.flow
-        function onAuthenticationFailed() { seal.wrong = true; field.text = ""; field.forceActiveFocus() }
-        function onIsResponseRequiredChanged() { if (seal.flow && seal.flow.isResponseRequired) field.forceActiveFocus() }
+        function onAuthenticationFailed() { seal.wrong = true; card.clear(); card.focusField() }
+        function onIsResponseRequiredChanged() { if (seal.flow && seal.flow.isResponseRequired) card.focusField() }
     }
-    function give() { if (flow && flow.isResponseRequired) { wrong = false; flow.submit(field.text) } field.text = "" }
+    function give(word) { if (flow && flow.isResponseRequired) { wrong = false; flow.submit(word) } }
     function refuse() { if (flow) flow.cancelAuthenticationRequest() }
 
     // the desk steps back: one flat wash, no blur needed
@@ -48,52 +48,19 @@ PanelWindow {
                 Behavior on color { enabled: !Theme.perf; ColorAnimation { duration: 220 } } }
     MouseArea { anchors.fill: parent; enabled: seal.open }
 
-    Item {
+    // the card itself is seal/SealCard.qml, shared with Tenka Lite
+    SealCard {
         id: card
-        width: 620; height: 352
         anchors.horizontalCenter: parent.horizontalCenter
         y: parent.height * 0.3 + (seal.open ? 0 : 16)
         opacity: seal.open ? 1 : 0
         Behavior on y { enabled: !Theme.perf; NumberAnimation { duration: 260; easing.type: Easing.OutCubic } }
         Behavior on opacity { enabled: !Theme.perf; NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
-        Rectangle { anchors.fill: parent; radius: Theme.ledgerR; color: Theme.alpha(Theme.t.base, 0.94)
-                    border.width: 1; border.color: Theme.alpha(Theme.gold, 0.45) }
-
-        Row {
-            x: 34; y: 30; spacing: 14
-            Image { width: 22; height: 26; source: Theme.asset("seal.png"); smooth: true; anchors.verticalCenter: parent.verticalCenter }
-            Text { text: Theme.xia ? "THE TALISMAN IS ASKED" : "THE SEAL IS ASKED"; color: Theme.gold; font.family: Theme.display
-                   font.pixelSize: 12; font.letterSpacing: 5; anchors.verticalCenter: parent.verticalCenter }
-        }
-        Rectangle { x: 30; y: 74; width: parent.width - 60; height: 1; color: Theme.alpha(Theme.gold, 0.35) }
-
-        Text { x: 34; y: 96; width: parent.width - 68; text: seal.message; wrapMode: Text.WordWrap; maximumLineCount: 3; elide: Text.ElideRight
-               color: Theme.t.text; font.family: Theme.display; font.pixelSize: 21; lineHeight: 1.15 }
-        Text { x: 34; y: 176; text: "AS  " + seal.who.toUpperCase(); color: Theme.alpha(Theme.gold, 0.75)
-               font.family: Theme.display; font.pixelSize: 11; font.letterSpacing: 4 }
-
-        TextField {
-            id: field
-            x: 30; y: 200; width: parent.width - 60; height: 52
-            background: Item { Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1
-                               color: field.activeFocus ? Theme.accent : Theme.alpha(Theme.gold, 0.4) } }
-            placeholderText: seal.prompt.replace(/:\s*$/, "").toLowerCase()
-            placeholderTextColor: Theme.alpha(Theme.t.text, 0.38)
-            echoMode: seal.echo ? TextInput.Normal : TextInput.Password
-            passwordCharacter: "•"
-            color: Theme.t.text; font.family: Theme.display; font.pixelSize: 22; leftPadding: 4
-            selectionColor: Theme.alpha(Theme.accent, 0.5)
-            text: seal.sim && !seal.flow ? "kept word" : ""
-            Keys.onEscapePressed: seal.refuse()
-            onAccepted: seal.give()
-        }
-        Text { x: 34; y: 266; width: parent.width - 68; visible: seal.note !== ""; text: seal.note; elide: Text.ElideRight
-               color: seal.noteIsError ? Theme.accent : Theme.alpha(Theme.t.text, 0.6); font.family: Theme.display; font.pixelSize: 14 }
-
-        Text {
-            x: 34; anchors.bottom: parent.bottom; anchors.bottomMargin: 24
-            text: "ENTER  to seal      ESC  to refuse"
-            color: Theme.alpha(Theme.t.text, 0.45); font.family: Theme.display; font.pixelSize: 12; font.letterSpacing: 2
-        }
+        base: Theme.t.base; text: Theme.t.text; gold: Theme.gold; accent: Theme.accent
+        radius: Theme.ledgerR; face: Theme.display; xia: Theme.xia; sealImage: Theme.asset("seal.png")
+        message: seal.message; who: seal.who; prompt: seal.prompt; note: seal.note; noteIsError: seal.noteIsError; echo: seal.echo
+        preset: seal.sim && !seal.flow ? "kept word" : ""
+        onGive: w => seal.give(w)
+        onRefuse: seal.refuse()
     }
 }

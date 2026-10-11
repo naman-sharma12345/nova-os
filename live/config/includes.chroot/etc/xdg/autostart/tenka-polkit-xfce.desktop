@@ -1,6 +1,7 @@
 [Desktop Entry]
 Type=Application
 Name=Authentication agent
-Exec=/usr/libexec/hyprpolkitagent
+Comment=The Seal: Tenka's own administrator prompt (hyprpolkitagent if it cannot start)
+Exec=tenka-seal-lite
 OnlyShowIn=XFCE;
 NoDisplay=true

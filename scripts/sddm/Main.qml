@@ -302,7 +302,7 @@ Rectangle {
             color: config.text
             font.family: config.displayFont; font.pixelSize: 132 * root.s; font.letterSpacing: 6 * root.s
             layer.enabled: true
-            layer.effect: MultiEffect { shadowEnabled: true; shadowColor: config.glow; shadowBlur: 1.0; shadowOpacity: 0.55; shadowHorizontalOffset: 0; shadowVerticalOffset: 0 }
+            layer.effect: MultiEffect { shadowEnabled: true; shadowColor: "black"; shadowBlur: 0.8; shadowOpacity: 0.45; shadowVerticalOffset: 4 }   // a plain drop shadow for legibility, never a coloured glow
         }
         Rectangle {   // gold hairline with a bead
             id: rule

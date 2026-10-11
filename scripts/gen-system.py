@@ -76,19 +76,6 @@ def crest(name, px):
     d.ellipse((px * .08, px * .08, px * .92, px * .92), outline=c + (255,), width=max(2, px // 18))
     return im
 
-def divider(name, w, h):
-    src = os.path.join(ROOT, "themes", name, "textures", "divider.svg")
-    out = f"/tmp/tenka-divider-{name}.png"
-    if os.path.exists(src) and shutil.which("rsvg-convert"):
-        subprocess.run(["rsvg-convert", "-w", str(w), "-h", str(h), "-a", src, "-o", out], check=False)
-        if os.path.exists(out): return Image.open(out).convert("RGBA")
-    p = gt.THEMES[name]["p"]
-    im = Image.new("RGBA", (w, h), (0, 0, 0, 0)); d = ImageDraw.Draw(im)
-    for i in range(w):
-        a = int(255 * (1 - abs(i - w / 2) / (w / 2)) ** 1.5)
-        d.line((i, h // 2, i, h // 2 + 1), fill=hexrgb(p["accent2"]) + (a,))
-    return im
-
 def bg_image(name, size, darken=0.55, blur=0, file=None):
     if name == "xianxia": darken *= 0.72
     im = Image.open(os.path.join(ROOT, "themes", name, "wallpapers", file or BG[name])).convert("RGB")
@@ -123,7 +110,6 @@ def sddm(name, T):
     # background.png, enso.png and seal.png are the splash's own last frame: scripts/gen-plymouth.py writes them
     button(name, T).save(os.path.join(d, "button.png"))
     crest(name, 256).save(os.path.join(d, "crest.png"))
-    divider(name, 600, 40).save(os.path.join(d, "divider.png"))
     disp = T["font_display"]
     W(os.path.join(d, "metadata.desktop"), textwrap.dedent(f"""\
     [SddmGreeterTheme]

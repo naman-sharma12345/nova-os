@@ -36,5 +36,5 @@ Lanczos resize to 3840×2160 where needed, a light unsharp mask and fine film gr
 - `sounds/login.ogg` (2.9 s), `sounds/notify.ogg` (0.75 s): synthesized guzheng (Karplus–Strong with a gentle vibrato) glissando up a D-major pentatonic, plus a synthesized singing-bowl / temple-bell tone (inharmonic partials 1 : 2.76 : 5.40 : 8.93 with beating) and an algorithmic reverb. Ogg Vorbis 48 kHz, ≈ −16 LUFS, true peak ≤ −1 dBTP.
 - `icons/wlogout/*.svg` (256×256): hand-drawn line art in celestial white #eef3ec with a jade #5fc9a0 accent: talisman with seal (lock), cloud gate (logout), crescent over cloud (suspend), lotus bud (hibernate), jian sword through a power arc (shutdown), taiji / yin-yang ring (reboot).
 - `fastfetch/logo.png` (512×512): the crest on a soft jade glow. `fastfetch/logo.txt`: 18×38 block-character crest (lotus in a ring); `$1` jade, `$2` gold, `$3` white.
-- `textures/xiangyun-tile.png` (512×512, seamless): xiangyun curls on a dotted diamond lattice in overlay #1d332e on transparent. `textures/divider.svg` (600×40): a gold cloud-scroll line with a jade bead.
+- `textures/xiangyun-tile.png` (512×512, seamless): xiangyun curls on a dotted diamond lattice in overlay #1d332e on transparent.
 

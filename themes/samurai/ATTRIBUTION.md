@@ -35,5 +35,5 @@ Lanczos resize to 3840×2160 where needed, a light unsharp mask and fine film gr
 - `sounds/login.ogg` (2.8 s), `sounds/notify.ogg` (0.62 s): synthesized koto plucks (Karplus–Strong with pluck-position comb and body filters) in the In / Miyako-bushi scale (E F A B C). login adds a breathy synthesized shakuhachi tone (sine partials, vibrato, band-passed breath noise) and an algorithmic reverb. Ogg Vorbis 48 kHz, normalized to ≈ −16 LUFS, true peak ≤ −1 dBTP.
 - `icons/wlogout/*.svg` (256×256): hand-drawn line art in washi #efe6d6 with a vermilion #d8412f accent: sheathed katana (lock), torii (logout), crescent moon (suspend), sakura bud (hibernate), broken ensō with a power stroke (shutdown), ensō arrow (reboot).
 - `fastfetch/logo.png` (512×512): the crest on a soft vermilion glow. `fastfetch/logo.txt`: 18×38 block-character crest; `$1` vermilion, `$2` gold, `$3` cream.
-- `textures/seigaiha-tile.png` (512×512, seamless): seigaiha lines in overlay #2a2522 on transparent. `textures/divider.svg` (600×40): a tapered dry-brush stroke with a small vermilion seal.
+- `textures/seigaiha-tile.png` (512×512, seamless): seigaiha lines in overlay #2a2522 on transparent.
 

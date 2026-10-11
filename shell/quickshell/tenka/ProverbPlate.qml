@@ -12,6 +12,8 @@ Item {
     property real size: 24
     property real textOpacity: 0.86
     property bool shadow: false
+    property color ink: Theme.t.text          // the line's colour (the desk passes its ink on pale art)
+    property bool onLight: false              // on pale art the label takes the accent; gold fades into light
     implicitWidth: maxWidth * s
     implicitHeight: col.height
     width: implicitWidth; height: implicitHeight
@@ -26,15 +28,15 @@ Item {
             spacing: 12 * plate.s
             Image { width: 18 * plate.s; height: 22 * plate.s; source: Theme.asset("seal.png"); smooth: true
                     rotation: -3; anchors.verticalCenter: parent.verticalCenter }
-            Text { text: "THE DAY'S WORD"; color: Theme.alpha(Theme.gold, 0.9); font.family: Theme.display
+            Text { text: "THE DAY'S WORD"; color: plate.onLight ? Theme.accent : Theme.alpha(Theme.gold, 0.9); font.family: Theme.display
                    font.pixelSize: 12 * plate.s; font.letterSpacing: 6 * plate.s; anchors.verticalCenter: parent.verticalCenter }
-            Rectangle { width: 36 * plate.s; height: 1; color: Theme.alpha(Theme.gold, 0.55); anchors.verticalCenter: parent.verticalCenter }
+            Rectangle { width: 36 * plate.s; height: 1; color: plate.onLight ? Theme.alpha(Theme.accent, 0.7) : Theme.alpha(Theme.gold, 0.55); anchors.verticalCenter: parent.verticalCenter }
         }
         Text {
             width: parent.width; wrapMode: Text.WordWrap
             horizontalAlignment: plate.alignRight ? Text.AlignRight : Text.AlignLeft
             text: Theme.proverb
-            color: Theme.alpha(Theme.t.text, plate.textOpacity)
+            color: Theme.alpha(plate.ink, plate.textOpacity)
             font.family: Theme.display; font.pixelSize: plate.size * plate.s; lineHeight: 1.28
             layer.enabled: plate.shadow && !Theme.perf
             layer.effect: MultiEffect { shadowEnabled: true; shadowColor: "black"; shadowBlur: 0.25; shadowOpacity: 0.5; shadowVerticalOffset: 1 }

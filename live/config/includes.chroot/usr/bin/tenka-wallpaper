@@ -15,7 +15,7 @@ season_set() {
     samurai:plum)  echo "06-katana-sakura 04-moon-seigaiha 01-fuji-sumie" ;;
     samurai:lotus) echo "08-koi-pond 10-great-wave 09-bamboo-moon 03-enso-washi" ;;
     samurai:maple) echo "11-maple-ember 05-ronin-dusk 13-ronin-red-sun 12-castle-red-moon" ;;
-    samurai:snow)  echo "14-pagoda-moon 02-torii-night" ;;   # 07-pagoda-snow is too pale under the desk type
+    samurai:snow)  echo "07-pagoda-snow 14-pagoda-moon 02-torii-night" ;;   # the desk type turns to ink on pale art
     xianxia:plum)  echo "04-ladies-pavilion 01-floating-peaks" ;;
     xianxia:lotus) echo "03-jade-lotus 09-celestial-palace 05-cloud-sea-seclusion" ;;
     xianxia:maple) echo "12-sword-tomb 08-alchemy-hall 02-demonic-path 06-pleasure-river" ;;

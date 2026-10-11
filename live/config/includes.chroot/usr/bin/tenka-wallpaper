@@ -1,11 +1,52 @@
 #!/bin/bash
-# tenka-wallpaper first|next|prev|set <file>|restore
+# tenka-wallpaper first|next|prev|set <file>|restore|season [on|off|tick]
+# season: the wallpaper follows the season (on by default): each day one picture from the season's set
+# (plum, lotus, maple, snow), changed by tenka-hour's quarter-hour tick. A picture you choose by hand
+# stays for the rest of that day; `season off` stops the following altogether.
 # Cross-fades: a new swaybg layer fades in (Hyprland layer animation), then the old one is released.
 T=$(tenka-theme --current); D=/usr/share/tenka/themes/$T/wallpapers
 C="$HOME/.cache/tenka"; mkdir -p "$C"
 mapfile -t W < <(ls "$D"/[0-9]*.jpg "$D"/[0-9]*.png 2>/dev/null | sort)
 cur=$(readlink -f "$C/wallpaper" 2>/dev/null)
 idx=0; for i in "${!W[@]}"; do [ "${W[$i]}" = "$cur" ] && idx=$i; done
+# the season's pictures, per pack (file stems in the pack's wallpapers dir)
+season_set() {
+  case "$T:$1" in
+    samurai:plum)  echo "06-katana-sakura 04-moon-seigaiha 01-fuji-sumie" ;;
+    samurai:lotus) echo "08-koi-pond 10-great-wave 09-bamboo-moon 03-enso-washi" ;;
+    samurai:maple) echo "11-maple-ember 05-ronin-dusk 13-ronin-red-sun 12-castle-red-moon" ;;
+    samurai:snow)  echo "14-pagoda-moon 02-torii-night" ;;   # 07-pagoda-snow is too pale under the desk type
+    xianxia:plum)  echo "04-ladies-pavilion 01-floating-peaks" ;;
+    xianxia:lotus) echo "03-jade-lotus 09-celestial-palace 05-cloud-sea-seclusion" ;;
+    xianxia:maple) echo "12-sword-tomb 08-alchemy-hall 02-demonic-path 06-pleasure-river" ;;
+    xianxia:snow)  echo "10-frost-sect 07-golden-dragon 11-imperial-city" ;;
+  esac
+}
+S="${XDG_CONFIG_HOME:-$HOME/.config}/tenka"; today=$(date +%F)
+season_pick() {   # today's picture from the season's set
+  local s P pick
+  s=$(sed -n 's/.*"season": *"\([a-z]*\)".*/\1/p' "$S/hour.json" 2>/dev/null)
+  [ -n "$s" ] || case $((10#$(date +%m))) in 3|4|5) s=plum ;; 6|7|8) s=lotus ;; 9|10|11) s=maple ;; *) s=snow ;; esac
+  read -ra P <<< "$(season_set "$s")"; [ ${#P[@]} -gt 0 ] || return 0
+  pick="${P[$(( 10#$(date +%j) % ${#P[@]} ))]}"
+  ls "$D/$pick".* 2>/dev/null | head -1
+}
+if [ "${1:-}" = season ]; then
+  case "${2:-tick}" in
+    off) touch "$S/wall-season-off"; exit 0 ;;
+    on) rm -f "$S/wall-season-off" "$C/wall-pinned" ;;
+  esac
+  [ -e "$S/wall-season-off" ] && exit 0
+  pgrep -x qs >/dev/null 2>&1 || exit 0   # the flagship shell draws it; Lite keeps its own
+  [ "$(cat "$C/wall-pinned" 2>/dev/null)" = "$today" ] && exit 0
+  f=$(season_pick); [ -f "$f" ] || exit 0
+  [ "$f" = "$cur" ] && exit 0
+  set -- set "$f"; auto=1
+fi
+# a pack switch opens on the season's picture while the wallpaper follows the season
+if [ "${1:-}" = first ] && [ ! -e "$S/wall-season-off" ]; then
+  f=$(season_pick); [ -f "$f" ] && { set -- set "$f"; auto=1; }
+fi
 case "${1:-restore}" in
   first) f="${W[0]}" ;;
   next) f="${W[$(( (idx+1) % ${#W[@]} ))]}" ;;
@@ -14,6 +55,8 @@ case "${1:-restore}" in
   restore) f="$cur"; [ -f "$f" ] && [[ "$f" == "$D"/* ]] || f="${W[0]}" ;;
 esac
 [ -f "$f" ] || exit 1
+# a hand-picked picture holds for the rest of the day
+case "${1:-}" in first|next|prev|set) [ -n "${auto:-}" ] || echo "$today" > "$C/wall-pinned" ;; esac
 ln -sf "$f" "$C/wallpaper"
 # Under the Tenka shell the wallpaper is drawn (and cross-faded) by the shell itself.
 J="$HOME/.config/tenka/shell-theme.json"

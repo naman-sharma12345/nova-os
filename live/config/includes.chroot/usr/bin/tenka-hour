@@ -19,4 +19,6 @@ case $m in 3|4|5) season=plum ;; 6|7|8) season=lotus ;; 9|10|11) season=maple ;;
 new="{ \"phase\": \"$phase\", \"season\": \"$season\" }"
 # only a real change touches the file, so nothing redraws every quarter hour
 [ "$(cat "$S/hour.json" 2>/dev/null)" = "$new" ] || { echo "$new" > "$S/hour.json.new" && mv "$S/hour.json.new" "$S/hour.json"; }
+# the wallpaper follows the season (tenka-wallpaper season off stops it)
+command -v tenka-wallpaper >/dev/null && tenka-wallpaper season tick >/dev/null 2>&1
 exit 0

@@ -35,24 +35,41 @@ PanelWindow {
     // ---- life: a few petals (Tenka) or rising qi motes (Tianxia)
     // they rest in Performance mode, and pause (faded out) while windows cover the desk or an overlay is up
     ParticleSystem { id: ps; running: !Theme.perf; paused: Theme.working || Theme.hush || Theme.focus }
-    Emitter {
-        system: ps
-        x: Theme.xia ? 0 : desk.width * 0.3; y: Theme.xia ? desk.height : -40
-        width: Theme.xia ? desk.width : desk.width * 0.8; height: 1
-        emitRate: Theme.xia ? 2.5 : 0.9; lifeSpan: 18000; lifeSpanVariation: 3000
-        size: Theme.xia ? 14 : 15; sizeVariation: 6
-        velocity: AngleDirection { angle: Theme.xia ? 270 : 112; angleVariation: 15; magnitude: Theme.xia ? 45 : 58; magnitudeVariation: 15 }
-        Component.onCompleted: burst(Theme.xia ? 18 : 6)
+    // what falls follows the season (Theme.season): plum petals in spring, Tianxia's rising motes or Tenka's
+    // petals in summer, maple leaves in autumn (in the season's own ink), snow in winter. Flat sprites, no glow.
+    readonly property string fall: Theme.season === "maple" ? "leaf" : Theme.season === "snow" ? "flake"
+                                 : (Theme.xia && Theme.season === "lotus") ? "mote" : "petal"
+    component Fall: Emitter {
+        required property string kind
+        system: ps; group: kind; enabled: desk.fall === kind
+        lifeSpan: 18000; lifeSpanVariation: 3000
+        Component.onCompleted: if (enabled) burst(kind === "mote" ? 18 : kind === "flake" ? 24 : 6)
     }
+    Fall { kind: "petal"; x: desk.width * 0.3; y: -40; width: desk.width * 0.8; height: 1
+           emitRate: 0.9; size: 15; sizeVariation: 6
+           velocity: AngleDirection { angle: 112; angleVariation: 15; magnitude: 58; magnitudeVariation: 15 } }
+    Fall { kind: "mote"; x: 0; y: desk.height; width: desk.width; height: 1
+           emitRate: 2.5; size: 14; sizeVariation: 6
+           velocity: AngleDirection { angle: 270; angleVariation: 15; magnitude: 45; magnitudeVariation: 15 } }
+    Fall { kind: "leaf"; x: desk.width * 0.15; y: -40; width: desk.width * 0.9; height: 1
+           emitRate: 0.7; size: 20; sizeVariation: 7
+           velocity: AngleDirection { angle: 104; angleVariation: 18; magnitude: 52; magnitudeVariation: 14 } }
+    Fall { kind: "flake"; x: 0; y: -20; width: desk.width; height: 1
+           emitRate: 3.2; size: 7; sizeVariation: 4
+           velocity: AngleDirection { angle: 96; angleVariation: 10; magnitude: 38; magnitudeVariation: 12 } }
     Wander { system: ps; xVariance: 60; pace: 40; affectedParameter: Wander.Velocity }
-    ImageParticle {
-        system: ps; source: Theme.xia ? "assets/mote.png" : "assets/petal.png"
-        alpha: Theme.xia ? 0.5 : 0.75; alphaVariation: 0.3
-        rotationVariation: Theme.xia ? 0 : 180; rotationVelocityVariation: Theme.xia ? 0 : 60
+    component Sprite: ImageParticle {
+        system: ps
         entryEffect: ImageParticle.Fade
         opacity: Theme.working || Theme.hush || Theme.focus ? 0 : 1
         Behavior on opacity { NumberAnimation { duration: 260 } }
     }
+    Sprite { groups: ["petal"]; source: "assets/petal.png"; alpha: Theme.xia ? 0.6 : 0.75; alphaVariation: 0.3
+             rotationVariation: 180; rotationVelocityVariation: 60 }
+    Sprite { groups: ["mote"]; source: "assets/mote.png"; alpha: 0.5; alphaVariation: 0.3 }
+    Sprite { groups: ["leaf"]; source: "assets/leaf.png"; color: Theme.seasonInk; colorVariation: 0.08
+             alpha: 0.8; alphaVariation: 0.25; rotationVariation: 180; rotationVelocityVariation: 40 }
+    Sprite { groups: ["flake"]; source: "assets/flake.png"; color: Theme.t.ink; alpha: 0.7; alphaVariation: 0.3 }
 
     Item {
         id: title

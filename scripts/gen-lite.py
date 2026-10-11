@@ -285,6 +285,10 @@ def gtk_theme(name, T, d):
         border-top: 1px solid {A(p['accent2'], 0.6)}; border-radius: 2px; box-shadow: none; }}
     tooltip decoration {{ border-radius: 2px; box-shadow: none; }}
     link, *:link {{ color: {p['accent2']}; }}
+    /* link buttons ("Release notes", "Open website"): words only, never sitting on a button slab */
+    button.link, button.link:hover, button.link:active, button.link:checked, button.link:focus {{ background-color: transparent; background-image: none;
+        border-color: transparent; box-shadow: none; transition: none; }}
+    button.link:hover > label {{ color: {p['text']}; }}
 
     /* ---- Tenka Lite panels, mirroring the Tenka shell: the top bar is bare (its colour comes from
        the panel's own transparent background); the dock's glass is its background-rgba, rounded here ---- */

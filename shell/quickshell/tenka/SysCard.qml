@@ -66,7 +66,7 @@ Glass {
             Text { anchors.centerIn: parent; text: Math.round(e.v * 100); color: Theme.t.text; font.family: Theme.display; font.pixelSize: 22 }
         }
         Text { anchors.bottom: parent.bottom; anchors.horizontalCenter: parent.horizontalCenter; text: e.label
-               color: Theme.alpha(Theme.t.text, 0.62); font.family: Theme.ui; font.pixelSize: 10; font.weight: Font.Medium; font.letterSpacing: 2 }
+               color: Theme.alpha(Theme.t.text, 0.62); font.family: Theme.ui; font.pixelSize: 10; font.letterSpacing: 2 }
     }
 
     Column {

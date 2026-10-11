@@ -11,7 +11,7 @@ Singleton {
     readonly property alias t: adapter
     readonly property string display: "Marcellus"
     readonly property string brand: "Cinzel Decorative"
-    readonly property string ui: "Inter"
+    readonly property string ui: "Marcellus"   // the one UI face (regular only; it has no bold)
     readonly property string glyphs: "Symbols Nerd Font"
     readonly property bool xia: adapter.name === "xianxia"
     // the ledger faces share the windows' corners: Tenka nearly square (a blade edge), Tianxia a little softer

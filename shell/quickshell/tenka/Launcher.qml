@@ -116,7 +116,7 @@ PanelWindow {
                 anchors.right: parent.right; anchors.rightMargin: 16; anchors.verticalCenter: parent.verticalCenter
                 width: escT.width + 20; height: 26; radius: 8; color: Theme.alpha(Theme.t.text, 0.08)
                 border.width: 1; border.color: Theme.alpha(Theme.t.text, 0.14)
-                Text { id: escT; anchors.centerIn: parent; text: "ESC"; color: Theme.alpha(Theme.t.text, 0.6); font.family: Theme.ui; font.pixelSize: 11; font.weight: Font.DemiBold; font.letterSpacing: 1.5 }
+                Text { id: escT; anchors.centerIn: parent; text: "ESC"; color: Theme.alpha(Theme.t.text, 0.6); font.family: Theme.ui; font.pixelSize: 11; font.letterSpacing: 1.5 }
             }
         }
 
@@ -240,7 +240,7 @@ PanelWindow {
             Repeater {
                 model: [["↵", "open"], ["↑ ↓ ← →", "move"], ["Esc", "close"]]
                 Row { required property var modelData; spacing: 8
-                    Text { text: modelData[0]; color: Theme.t.gold; font.family: Theme.ui; font.pixelSize: 12; font.weight: Font.DemiBold }
+                    Text { text: modelData[0]; color: Theme.t.gold; font.family: Theme.ui; font.pixelSize: 12 }
                     Text { text: modelData[1]; color: Theme.alpha(Theme.t.text, 0.5); font.family: Theme.ui; font.pixelSize: 12 } }
             }
         }

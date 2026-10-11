@@ -1,0 +1,94 @@
+<!doctype html>
+<!-- The Courtyard (Tianxia: The Pavilion): Firefox's new tab and home page in the house style. The hour in
+     Marcellus, the day and the season, one seek line, the day's proverb under the pack's seal (the same one the
+     desk shows). Flat, no glow, no tiles, nothing fetched from the web. /usr/lib/firefox-esr/tenka.cfg points the
+     new tab here with ?t=<theme>; the words and colours come from <theme>.js (scripts/gen-newtab.py). -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>New Tab</title>
+<script>
+  (function () {
+    var t = (new URLSearchParams(location.search).get("t") || "samurai").replace(/[^a-z]/g, "") || "samurai";
+    document.write('<script src="' + t + '.js"><\/script>');
+  })();
+</script>
+<style>
+  :root { --base: #0f0d0c; --text: #efe6d6; --gold: #c9a35a; --accent: #d8412f; --sub: #b8ab96; }
+  html, body { margin: 0; height: 100%; background: var(--base); color: var(--text); overflow: hidden; }
+  body { font-family: "Marcellus", serif; -moz-osx-font-smoothing: grayscale; }
+  #wall { position: fixed; inset: 0; background-size: cover; background-position: center; opacity: 0; transition: opacity .5s ease-out; }
+  #wall.in { opacity: 1; }
+  #ink { position: fixed; inset: 0; background: linear-gradient(180deg, var(--ink-a) 0%, var(--ink-b) 100%); }
+  main { position: relative; height: 100%; display: flex; flex-direction: column; align-items: center; }
+  .top { flex: 0 0 31vh; }
+  #seal { width: 46px; height: 46px; opacity: .9; margin-bottom: 18px; }
+  #hour { font-size: 112px; line-height: 1; letter-spacing: 6px; font-weight: 400; }
+  #day { margin-top: 16px; font-size: 13px; letter-spacing: 5px; color: var(--gold); text-transform: uppercase; }
+  form { margin-top: 54px; width: min(560px, 80vw); }
+  #q { width: 100%; box-sizing: border-box; background: transparent; border: 0; border-bottom: 1px solid var(--rule);
+       color: var(--text); font: 19px "Inter", sans-serif; padding: 10px 2px; outline: none; text-align: center; caret-color: var(--accent); }
+  #q:focus { border-bottom-color: var(--accent); }
+  #q::placeholder { color: var(--hint); font-family: "Marcellus", serif; letter-spacing: 3px; font-size: 16px; }
+  #where { margin-top: 10px; font: 11px "Inter", sans-serif; color: var(--hint); letter-spacing: .5px; text-align: center; min-height: 14px; }
+  .low { margin-top: auto; margin-bottom: 46px; display: flex; flex-direction: column; align-items: center; max-width: 70vw; }
+  .rule { width: 44px; height: 1px; background: var(--gold); opacity: .55; margin-bottom: 14px; }
+  #word { font-size: 16px; color: var(--soft); text-align: center; line-height: 1.5; }
+  #mark { position: fixed; left: 34px; bottom: 30px; font-family: "Cinzel Decorative", "Marcellus", serif; font-size: 17px; color: var(--hint); letter-spacing: 1px; }
+  #page { position: fixed; right: 34px; bottom: 32px; font-size: 10px; letter-spacing: 4px; color: var(--hint); text-transform: uppercase; }
+</style>
+</head>
+<body>
+<div id="wall"></div><div id="ink"></div>
+<main>
+  <div class="top"></div>
+  <img id="seal" alt="">
+  <div id="hour"></div>
+  <div id="day"></div>
+  <form id="f" autocomplete="off">
+    <input id="q" name="q" type="text" spellcheck="false" autofocus>
+    <div id="where"></div>
+  </form>
+  <div class="low"><div class="rule"></div><div id="word"></div></div>
+</main>
+<div id="mark"></div><div id="page"></div>
+<script>
+  var T = window.TENKA || { display: "Tenka", seekWord: "Seek", proverbs: [], page: "The Courtyard" };
+  function rgba(hex, a) { var h = (hex || "#000000").replace("#", ""); return "rgba(" + parseInt(h.slice(0, 2), 16) + "," + parseInt(h.slice(2, 4), 16) + "," + parseInt(h.slice(4, 6), 16) + "," + a + ")"; }
+  var R = document.documentElement.style;
+  if (T.base) {
+    R.setProperty("--base", T.base); R.setProperty("--text", T.text); R.setProperty("--gold", T.gold); R.setProperty("--accent", T.accent); R.setProperty("--sub", T.subtext);
+  }
+  R.setProperty("--ink-a", rgba(T.base, .50)); R.setProperty("--ink-b", rgba(T.base, .78));
+  R.setProperty("--rule", rgba(T.gold, .45)); R.setProperty("--hint", rgba(T.text, .38)); R.setProperty("--soft", rgba(T.text, .72));
+  if (T.wall) { var im = new Image(); im.onload = function () { var w = document.getElementById("wall"); w.style.backgroundImage = "url('file://" + T.wall + "')"; w.className = "in"; }; im.src = "file://" + T.wall; }
+  var seal = document.getElementById("seal"); if (T.crest) seal.src = "file://" + T.crest; else seal.style.display = "none";
+  document.getElementById("mark").textContent = T.display || "";
+  document.getElementById("page").textContent = T.page || "";
+  document.title = T.display ? T.display : "New Tab";
+  var q = document.getElementById("q"); q.placeholder = (T.seekWord || "Seek");
+  var SEASON = { plum: "Plum", lotus: "Lotus", maple: "Maple", snow: "Snow" };   // the desk's own season words (Theme.qml)
+  function seasonOf(d) { var m = d.getMonth() + 1; return m >= 3 && m <= 5 ? "plum" : m >= 6 && m <= 8 ? "lotus" : m >= 9 && m <= 11 ? "maple" : "snow"; }
+  function dayOfYear(d) { return Math.floor((new Date(d.getFullYear(), d.getMonth(), d.getDate()) - new Date(d.getFullYear(), 0, 0)) / 86400000); }
+  function tick() {
+    var d = new Date();
+    document.getElementById("hour").textContent = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    document.getElementById("day").textContent = d.toLocaleDateString("en-GB", { weekday: "long" }) + "  ·  " +
+      d.toLocaleDateString("en-GB", { day: "numeric", month: "long" }) + "  ·  " + SEASON[seasonOf(d)];
+    var p = T.proverbs || []; document.getElementById("word").textContent = p.length ? p[dayOfYear(d) % p.length] : "";
+  }
+  tick(); setInterval(tick, 1000);
+  // one line for everything: an address goes there, anything else is searched (DuckDuckGo, nothing stored here)
+  function isAddr(s) { return /^[a-z]+:\/\//i.test(s) || (/^[^\s]+\.[a-z]{2,}(\/.*)?$/i.test(s) && !/\s/.test(s)) || /^localhost(:\d+)?(\/.*)?$/.test(s); }
+  q.addEventListener("input", function () {
+    var s = q.value.trim(); document.getElementById("where").textContent = !s ? "" : isAddr(s) ? "go to " + s : "search the web for \u201c" + s + "\u201d";
+  });
+  document.getElementById("f").addEventListener("submit", function (e) {
+    e.preventDefault(); var s = q.value.trim(); if (!s) return;
+    location.href = isAddr(s) ? (/^[a-z]+:\/\//i.test(s) ? s : "https://" + s) : "https://duckduckgo.com/?q=" + encodeURIComponent(s);
+  });
+  window.addEventListener("load", function () { q.focus(); });
+</script>
+</body>
+</html>

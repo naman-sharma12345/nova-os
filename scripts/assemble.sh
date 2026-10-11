@@ -11,6 +11,7 @@ python3 scripts/gen-lite.py
 python3 scripts/gen-system.py
 python3 scripts/gen-folders.py edge
 python3 scripts/gen-cursors.py
+python3 scripts/gen-newtab.py   # Firefox's new tab page words (reads the committed shell-theme.json)
 mkdir -p "$BUILD"
 rsync -a --delete --exclude chroot --exclude binary --exclude cache --exclude '*.iso' --exclude '.build' --exclude 'config/hooks/normal' --exclude 'local' --exclude 'chroot.*' --exclude '*.log' --exclude 'config/binary' --exclude 'config/bootstrap' --exclude 'config/chroot' --exclude 'config/common' --exclude 'config/source' \
       live/ "$BUILD/live/"

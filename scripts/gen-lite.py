@@ -130,6 +130,27 @@ def gtk_theme(name, T, d):
     menu menuitem arrow {{ color: {A(p['text'], 0.45)}; min-width: 10px; min-height: 10px; }}
     menu separator, .menu separator {{ background-color: {A(p['accent2'], 0.18)}; min-height: 1px; margin: 5px 18px; }}
     menu > separator:first-child, menu > menuitem.separator:first-child, menu > separator:last-child {{ min-height: 0; margin: 0; background: none; }}
+    /* the Settings Manager (xfce4-settings-manager; the viewport is .exoiconview in 4.20, .xfceiconview later): categories as ledger headings (Marcellus, gold, spaced) over a
+       hairline, the settings as plain Marcellus words under the gold line icons, the chosen one on a faint tint */
+    .xfceiconview, viewport.xfceiconview, .xfceiconview *, .exoiconview, viewport.exoiconview, .exoiconview * {{ background-color: transparent; font-family: "Marcellus"; }}
+    .xfceiconview label, viewport.xfceiconview label, .exoiconview label, viewport.exoiconview label {{ color: {p['accent2']}; font-family: "Marcellus"; font-weight: normal; font-size: 12px;
+        letter-spacing: 2.5px; margin: 14px 0 2px 4px; }}
+    .xfceiconview separator, viewport.xfceiconview separator, .exoiconview separator, viewport.exoiconview separator {{ background-color: {A(p['accent2'], 0.22)}; min-height: 1px; margin: 4px 0 6px 0; }}
+    .xfceiconview iconview, .xfceiconview .view, .exoiconview iconview, .exoiconview .view {{ background-color: transparent; color: {p['text']}; font-family: "Marcellus"; }}
+    .xfceiconview .view:selected, .xfceiconview iconview:selected, .xfceiconview *:selected, .exoiconview .view:selected, .exoiconview iconview:selected, .exoiconview *:selected {{ background-color: {A(p['accent'], 0.16)}; color: {p['text']}; border-radius: 0; }}
+    /* dialogs' own action rows (Help, Close, ...): quiet words, a rule under the focused one, no pills */
+    dialog .dialog-action-area button, dialog .dialog-action-box button, window.dialog .dialog-action-area button {{
+        background: none; background-color: transparent; background-image: none; border: none; border-radius: 0; box-shadow: none;
+        border-bottom: 1px solid transparent; padding: 6px 12px; min-height: 26px; }}
+    dialog .dialog-action-area button label, dialog .dialog-action-box button label {{ font-family: "Marcellus"; font-weight: normal; color: {p['subtext']}; letter-spacing: 0.6px; }}
+    dialog .dialog-action-area button:hover, dialog .dialog-action-area button:focus, dialog .dialog-action-box button:hover, dialog .dialog-action-box button:focus {{
+        border-bottom: 1px solid {p['accent']}; background-color: {A(p['text'], 0.04)}; }}
+    dialog .dialog-action-area button:hover label, dialog .dialog-action-area button:focus label {{ color: {p['text']}; }}
+    dialog .dialog-action-area button image, dialog .dialog-action-box button image {{ color: {p['accent2']}; -gtk-icon-style: symbolic; }}
+    dialog entry.search {{ background-color: transparent; background-image: none; border: none; border-radius: 0; box-shadow: none;
+        border-bottom: 1px solid {A(p['accent2'], 0.45)}; padding: 4px 4px; font-family: "Marcellus"; caret-color: {p['accent2']}; }}
+    dialog entry.search:focus {{ border-bottom: 1px solid {p['accent']}; }}
+    dialog entry.search image {{ color: {A(p['text'], 0.5)}; }}
     menu menuitem image, menu menuitem check, menu menuitem radio {{ color: {p['accent2']}; }}
     tooltip, tooltip.background {{ background-color: {A(p['base'], 0.95)}; color: {p['text']}; border: 1px solid {A(p['accent2'], 0.35)}; border-radius: {r}px; }}
     link, *:link {{ color: {p['accent2']}; }}

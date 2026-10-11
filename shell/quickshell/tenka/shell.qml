@@ -34,6 +34,7 @@ ShellRoot {
     Lantern {}
     Inkstone {}
     Loupe {}
+    Codex {}
     ControlCenter {}
     Notifications {}
     Osd {}

@@ -11,6 +11,7 @@
 #  6. tenka-lantern reads the battery facts (charge, time, health, devices) and sets the power profile
 #  7. the Inkstone's search puts whole words and word starts ahead of matches inside a word (needs node)
 #  8. tenka-loupe freezes the screen into a private file, copies, and keeps LATELY (colours only, newest first)
+#  9. tenka-codex reads every key from the live Hyprland / XFCE config, including the user's own user.lua
 set -u
 ROOT=$(cd "$(dirname "$0")/.." && pwd); BIN="$ROOT/live/config/includes.chroot/usr/bin"
 fail=0; T=$(mktemp -d); trap 'rm -rf "$T"' EXIT
@@ -178,5 +179,24 @@ for c in '#C9A35A' '#112233' 'hello' '#c9a35a'; do
 done
 [ "$(cat "$T/clip")" = "#c9a35a" ] || { echo "FAIL: tenka-loupe copy did not reach the clipboard"; fail=1; }
 [ "$(HOME="$T/lhome" XDG_CONFIG_HOME= sh "$BIN/tenka-loupe" lately)" = '["#c9a35a","#112233"]' ] || { echo "FAIL: tenka-loupe lately: $(HOME="$T/lhome" XDG_CONFIG_HOME= sh "$BIN/tenka-loupe" lately)"; fail=1; }
+# 9. tenka-codex reads the keys from the live config: the shipped Hyprland and Lite keys both list Super + /,
+#    and a key the user binds in ~/.config/hypr/user.lua shows up under "Yours"
+mkdir -p "$T/chome/.config/hypr" "$T/chome/.config/xfce4/xfconf/xfce-perchannel-xml"
+cp "$ROOT/live/config/includes.chroot/etc/skel/.config/hypr/hyprland.lua" "$T/chome/.config/hypr/"
+cp "$ROOT/live/config/includes.chroot/etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml" "$T/chome/.config/xfce4/xfconf/xfce-perchannel-xml/"
+printf 'hl.bind("SUPER + SHIFT + M", hl.dsp.exec_cmd("mpv --player-operation-mode=pseudo-gui"))\n' > "$T/chome/.config/hypr/user.lua"
+HOME="$T/chome" python3 "$BIN/tenka-codex" hyprland > "$T/codex-h.json" && HOME="$T/chome" python3 "$BIN/tenka-codex" lite > "$T/codex-l.json" &&
+python3 - "$T/codex-h.json" "$T/codex-l.json" <<'EOF' || fail=1
+import json, sys
+h, l = (json.load(open(p)) for p in sys.argv[1:3])
+def keys(d): return {(" + ".join(r["keys"]), g["name"]): r["what"] for g in d["groups"] for r in g["keys"]}
+kh, kl, bad = keys(h), keys(l), []
+if ("Super + /", "Tenka") not in kh: bad.append("hyprland has no Super + /")
+if ("Super + /", "Tenka") not in kl: bad.append("lite has no Super + /")
+if not any(k == "Super + Shift + M" and g == "Yours" for k, g in kh): bad.append("user.lua key missing from Yours")
+if ("Super + 1 … 0", "Desks") not in kh: bad.append("workspace loop not folded")
+if len(h["groups"]) < 6: bad.append("hyprland groups: %d" % len(h["groups"]))
+if bad: print("FAIL: tenka-codex: " + "; ".join(bad)); sys.exit(1)
+EOF
 [ "$fail" = 0 ] && echo "check-session: ok"
 exit $fail

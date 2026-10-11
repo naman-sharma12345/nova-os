@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=The Codex
+GenericName=Keyboard shortcuts
+Comment=Every key this desk answers to, read from your own config (Super + /)
+Exec=tenka-codex open
+Icon=preferences-desktop-keyboard-shortcuts
+Categories=Settings;
+Keywords=keys;keyboard;shortcuts;keybindings;cheat;help;codex;scripture;

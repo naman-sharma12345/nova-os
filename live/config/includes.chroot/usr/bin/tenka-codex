@@ -1,0 +1,282 @@
+#!/usr/bin/python3
+"""tenka-codex: every key this desk answers to, read from the live config (not a stale cheat sheet).
+
+Hyprland (the flagship): ~/.config/hypr/hyprland.lua and ~/.config/hypr/user.lua, every hl.bind() line.
+Tenka Lite (XFCE): ~/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml.
+Prints JSON for The Codex card (Super + /): {"session", "sources", "groups": [{"name", "keys": [{"keys": [...], "what"}]}]}.
+  tenka-codex            the session it is running in (WAYLAND_DISPLAY + Hyprland -> hyprland, else lite)
+  tenka-codex hyprland|lite
+  tenka-codex text       the same, as plain text for a terminal
+  tenka-codex open       show The Codex card (qs ipc on Hyprland; a small Qt window on Tenka Lite)
+"""
+import json, os, re, sys, html
+import xml.etree.ElementTree as ET
+
+HOME = os.path.expanduser("~")
+ORDER = ["Open", "Windows", "Desks", "Tenka", "Session", "Media keys", "Yours"]
+
+# what a bind does, in plain words: (group, words). Matched against the dispatcher text, first hit wins.
+KNOWN = [
+    (r"global\(\"tenka:overview\"\)", "Tenka", "Overview: every desk at once"),
+    (r"global\(\"tenka:switcher-next\"\)", "Windows", "Switch windows"),
+    (r"global\(\"tenka:switcher-prev\"\)", "Windows", "Switch windows, backwards"),
+    (r"global\(\"tenka:switcher-commit\"\)", None, None),
+    (r"global\(\"tenka:slip\"\)", "Tenka", "A note to self on the desk"),
+    (r"global\(\"tenka:glyphs\"\)", "Tenka", "Find and place a glyph"),
+    (r"global\(\"tenka:loupe\"\)", "Tenka", "Pick a colour, measure the screen"),
+    (r"global\(\"tenka:codex\"\)", "Tenka", "This page: every key"),
+    (r"exec_cmd\(terminal\)|xfce4-terminal|\bkitty\b", "Open", "Terminal"),
+    (r"exec_cmd\(menu\)|tenka-launcher|whiskermenu", "Open", "Launcher"),
+    (r"exec_cmd\(files\)|\bthunar\b", "Open", "Files"),
+    (r"exec_cmd\(browser\)|firefox", "Open", "Browser"),
+    (r"desk toggle", "Open", "The desk"),
+    (r"control toggle", "Open", "Control centre"),
+    (r"tenka-clipboard", "Open", "Clipboard history"),
+    (r"tenka-lantern", "Open", "Battery and power"),
+    (r"tenka-glyphs", "Tenka", "Find and place a glyph"),
+    (r"tenka-loupe", "Tenka", "Pick a colour, measure the screen"),
+    (r"tenka-codex", "Tenka", "This page: every key"),
+    (r"slip\.txt", "Tenka", "A note to self on the desk"),
+    (r"tenka-welcome --picker", "Tenka", "Switch theme: Tenka or Tianxia"),
+    (r"tile_left_key", "Windows", "Tile left"),
+    (r"tile_right_key", "Windows", "Tile right"),
+    (r"tenka-theme-menu|tenka-theme\b", "Tenka", "Switch theme: Tenka or Tianxia"),
+    (r"tenka-wallpaper", "Tenka", "Next wallpaper"),
+    (r"tenka-focus", "Tenka", "Focus: 25 minutes, the desk dims"),
+    (r"tenka-perf", "Tenka", "Performance mode"),
+    (r"tenka-shot area|tenka-shot -r|tenka-shot region", "Tenka", "Screenshot an area"),
+    (r"tenka-shot", "Tenka", "Screenshot the screen"),
+    (r"tenka-lock|xflock4", "Session", "Lock"),
+    (r"tenka-power|xfce4-session-logout", "Session", "Power menu"),
+    (r"window\.close\(\)|close_window_key", "Windows", "Close the window"),
+    (r"window\.fullscreen\(\)|fullscreen_key", "Windows", "Fullscreen"),
+    (r"window\.float\(", "Windows", "Float or tile"),
+    (r"window\.pseudo\(\)", "Windows", "Pseudo-tile"),
+    (r"togglesplit", "Windows", "Turn the split"),
+    (r"focus\(\{ direction", "Windows", "Move focus"),
+    (r"window\.move\(\{ direction", "Windows", "Move the window"),
+    (r"window\.drag\(\)", "Windows", "Move the window"),
+    (r"window\.resize\(\)", "Windows", "Resize the window"),
+    (r"maximize_window_key", "Windows", "Maximise"),
+    (r"cycle_windows_key", "Windows", "Switch windows"),
+    (r"focus\(\{ workspace = i", "Desks", "Go to desk"),
+    (r"window\.move\(\{ workspace = i", "Desks", "Send the window to desk"),
+    (r"toggle_special\(\"scroll\"\)", "Desks", "The scroll: a hidden desk"),
+    (r"special:scroll", "Desks", "Put the window in the scroll"),
+    (r"workspace = \"e\+1\"", "Desks", "Next desk"),
+    (r"workspace = \"e-1\"", "Desks", "Previous desk"),
+    (r"workspace_(\d+)_key", "Desks", "Go to desk"),
+    (r"move_window_workspace_(\d+)_key", "Desks", "Send the window to desk"),
+    (r"show_desktop_key", "Open", "The desk"),
+    (r"set-volume.*\+|output-volume raise|volume up", "Media keys", "Volume up"),
+    (r"set-volume.*-|output-volume lower|volume down", "Media keys", "Volume down"),
+    (r"set-mute|mute", "Media keys", "Mute"),
+    (r"brightness up", "Media keys", "Brighter"),
+    (r"brightness down", "Media keys", "Dimmer"),
+    (r"play-pause", "Media keys", "Play or pause"),
+    (r"playerctl next", "Media keys", "Next track"),
+    (r"playerctl previous", "Media keys", "Previous track"),
+]
+KEYWORD = {"SUPER": "Super", "MOD4": "Super", "SUPER_L": "Super (tap)", "SUPER_R": "Super (tap)", "SHIFT": "Shift", "ALT": "Alt", "MOD1": "Alt", "CTRL": "Ctrl", "CONTROL": "Ctrl",
+           "PRIMARY": "Ctrl", "RETURN": "Enter", "SPACE": "Space", "ESCAPE": "Esc", "PERIOD": ".", "SLASH": "/", "COMMA": ",",
+           "TAB": "Tab", "PRINT": "PrtSc", "LEFT": "←", "RIGHT": "→", "UP": "↑", "DOWN": "↓", "DELETE": "Del",
+           "MOUSE:272": "Left drag", "MOUSE:273": "Right drag", "MOUSE_DOWN": "Wheel down", "MOUSE_UP": "Wheel up",
+           "XF86AUDIORAISEVOLUME": "Volume +", "XF86AUDIOLOWERVOLUME": "Volume −", "XF86AUDIOMUTE": "Mute",
+           "XF86MONBRIGHTNESSUP": "Bright +", "XF86MONBRIGHTNESSDOWN": "Bright −", "XF86AUDIOPLAY": "Play",
+           "XF86AUDIONEXT": "Next", "XF86AUDIOPREV": "Prev", "XF86BATTERY": "Battery",
+           "@ARROWS": "← → ↑ ↓", "@DIGITS": "1 … 0"}
+
+def pretty(k):
+    k = k.strip()
+    u = k.upper()
+    if u in KEYWORD: return KEYWORD[u]
+    if len(k) == 1: return k.upper()
+    if re.fullmatch(r"F\d{1,2}", u): return u
+    return k[:1].upper() + k[1:]
+
+def describe(disp, comment):
+    for pat, group, words in KNOWN:
+        if re.search(pat, disp):
+            return group, words
+    if comment:
+        c = re.sub(r"^the [a-z]+:\s*", "", comment.strip())
+        return "Yours", c[:1].upper() + c[1:]
+    m = re.search(r'exec_cmd\("([^"]+)"\)', disp)
+    return "Yours", ("Run " + m.group(1)) if m else disp[:48]
+
+MODS = ["Super", "Ctrl", "Alt", "Shift"]
+def order(keys):
+    """modifiers first, always in the same order (Super, Ctrl, Alt, Shift), then the key"""
+    return sorted(keys, key=lambda k: (MODS.index(k) if k in MODS else 9))
+
+def lua_keys(expr, loopvars):
+    parts = []
+    for tok in re.split(r"\s*\.\.\s*", expr.strip()):
+        m = re.fullmatch(r'"([^"]*)"', tok)
+        if m: parts.append(m.group(1))
+        elif tok == "M": parts.append("SUPER")
+        elif tok in loopvars: parts.append(loopvars[tok])
+        else: return None
+    keys = [p for p in re.split(r"\s*\+\s*", "".join(parts)) if p.strip()]
+    return order([pretty(k) for k in keys])
+
+def split_args(s):
+    """hl.bind(<a>, <b>[, <c>]) -> args, honouring strings and brackets"""
+    depth, out, cur, q = 0, [], "", None
+    for ch in s:
+        if q:
+            cur += ch
+            if ch == q: q = None
+            continue
+        if ch in "\"'": q = ch; cur += ch; continue
+        if ch in "({[": depth += 1
+        if ch in ")}]":
+            if depth == 0: out.append(cur); return out
+            depth -= 1
+        if ch == "," and depth == 0: out.append(cur); cur = ""; continue
+        cur += ch
+    out.append(cur); return out
+
+def read_lua(path, default_group=None):
+    rows, loopvars = [], {}
+    try: text = open(path, encoding="utf-8").read()
+    except OSError: return rows
+    for line in text.splitlines():
+        s = line.strip()
+        m = re.match(r"for\s+_,\s*(\w+)\s+in\s+ipairs\(\{([^}]*)\}\)", s)
+        if m:
+            items = re.findall(r'"([^"]+)"', m.group(2))
+            loopvars[m.group(1)] = "@ARROWS" if set(items) >= {"left", "right"} else " ".join(items)
+            continue
+        m = re.match(r"for\s+(\w+)\s*=\s*1,\s*10", s)
+        if m: loopvars[m.group(1)] = "@DIGITS"; loopvars["key"] = "@DIGITS"; continue
+        if s == "end": loopvars = {}; continue
+        if not s.startswith("hl.bind("): continue
+        comment = s.split("--", 1)[1] if re.search(r"\)\s*--", s) else ""
+        args = split_args(s[len("hl.bind("):])
+        if len(args) < 2: continue
+        if "release = true" in (args[2] if len(args) > 2 else ""): continue
+        keys = lua_keys(args[0], loopvars)
+        if not keys: continue
+        group, words = describe(args[1].strip(), comment)
+        if group is None: continue
+        if default_group and group == "Yours": group = default_group
+        rows.append((group, keys, words))
+    return rows
+
+def read_xfce(path):
+    rows = []
+    try: root = ET.parse(path).getroot()
+    except (OSError, ET.ParseError): return rows
+    def walk(node, trail):
+        for p in node.findall("property"):
+            name, val = p.get("name", ""), p.get("value")
+            t = trail + [name]
+            if val is not None and "custom" in t and name.startswith("<") or (val is not None and "custom" in t and len(name) <= 24 and name not in ("override",)):
+                if name == "override" or val in ("", None): continue
+                mods = re.findall(r"<(\w+)>", name)
+                key = re.sub(r"<\w+>", "", name)
+                keys = order([pretty(m) for m in mods] + ([pretty(key)] if key else []))
+                group, words = describe(val, "")
+                if group: rows.append((group, keys, words))
+            walk(p, t)
+    walk(root, [])
+    return rows
+
+def collect(session):
+    if session == "hyprland":
+        srcs = [os.path.join(HOME, ".config/hypr/hyprland.lua")]
+        if not os.path.exists(srcs[0]): srcs = ["/etc/skel/.config/hypr/hyprland.lua"]
+        rows = read_lua(srcs[0])
+        user = os.path.join(HOME, ".config/hypr/user.lua")
+        if os.path.exists(user): srcs.append(user); rows += read_lua(user, "Yours")
+    else:
+        p = os.path.join(HOME, ".config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml")
+        if not os.path.exists(p): p = "/etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml"
+        srcs, rows = [p], read_xfce(p)
+    # numbered desks bound one by one (XFCE) read as one line: Super + 1 … 4
+    nums = {}
+    for group, keys, words in rows:
+        if group == "Desks" and keys and keys[-1].isdigit(): nums.setdefault((tuple(keys[:-1]), words), []).append(keys[-1])
+    folded, done = [], set()
+    for group, keys, words in rows:
+        if group == "Desks" and keys and keys[-1].isdigit():
+            sig = (tuple(keys[:-1]), words)
+            if sig in done: continue
+            done.add(sig); ds = sorted(nums[sig], key=lambda d: int(d) or 10)
+            keys = keys[:-1] + ([ds[0] + " … " + ds[-1]] if len(ds) > 1 else ds)
+        folded.append((group, keys, words))
+    rows = folded
+    groups, seen = {}, set()
+    for group, keys, words in rows:
+        sig = (tuple(keys), words)
+        if sig in seen: continue
+        seen.add(sig)
+        g = groups.setdefault(group, [])
+        # one line for a key pair that does the same thing (e.g. Super + Escape and Super + Shift + E)
+        twin = next((r for r in g if r["what"] == words), None)
+        width = sum(len(k) + 3 for k in twin["keys"] + keys) if twin else 0     # both pairs of caps must fit one line
+        if twin and not twin.get("also") and group != "Desks" and width <= 34:
+            twin["also"] = [keys]; continue
+        g.append({"keys": keys, "what": words})
+    srcs = ["~" + x[len(HOME):] if HOME != "/" and x.startswith(HOME + "/") else x for x in srcs]
+    return {"session": session, "sources": srcs,
+            "groups": [{"name": n, "keys": groups[n]} for n in ORDER if n in groups]}
+
+def open_card():
+    """Super + /: the flagship's Codex over qs ipc on Hyprland; on Tenka Lite the same card in a small Qt window"""
+    import signal, subprocess
+    if os.environ.get("WAYLAND_DISPLAY") and subprocess.run(["pgrep", "-x", "qs"], capture_output=True).returncode == 0:
+        subprocess.run(["qs", "-c", "tenka", "ipc", "call", "codex", "toggle"], capture_output=True)
+        return 0
+    if not os.environ.get("DISPLAY"):
+        return 1
+    rt = os.environ.get("XDG_RUNTIME_DIR") or "/tmp"
+    lock = os.path.join(rt, "tenka-codex.pid")
+    try:                                                # pressed again while open: close it, like the flagship
+        pid = int(open(lock).read().strip())
+        if b"LiteCodex.qml" not in open(f"/proc/{pid}/cmdline", "rb").read():   # never a pid reused since
+            raise ValueError
+        os.kill(pid, signal.SIGTERM)
+        os.remove(lock)
+        return 0
+    except (OSError, ValueError):
+        pass
+    facts = os.path.join(rt, "tenka-codex.json")
+    fd = os.open(facts + ".part", os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "w") as f:
+        json.dump(collect("lite"), f, ensure_ascii=False)
+    os.replace(facts + ".part", facts)
+    theme = os.path.join(os.environ.get("XDG_CONFIG_HOME") or os.path.join(HOME, ".config"), "tenka", "shell-theme.json")
+    env = dict(os.environ, QML_XHR_ALLOW_FILE_READ="1", QT_QPA_PLATFORM="xcb", QT_MESSAGE_PATTERN="%{message}")
+    p = subprocess.Popen(["/usr/lib/qt6/bin/qml", "/usr/share/tenka/codex/LiteCodex.qml", "--", facts, theme],
+                         stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=env)
+    with open(lock, "w") as f:
+        f.write(str(p.pid))
+    p.wait()
+    for x in (lock, facts):
+        try: os.remove(x)
+        except OSError: pass
+    return 0
+
+def main():
+    a = sys.argv[1:]
+    if a[:1] == ["open"]:
+        sys.exit(open_card())
+    session = next((x for x in a if x in ("hyprland", "lite")), None)
+    if not session:
+        session = "hyprland" if os.environ.get("HYPRLAND_INSTANCE_SIGNATURE") or (os.environ.get("WAYLAND_DISPLAY") and
+                  os.environ.get("XDG_CURRENT_DESKTOP", "").lower().startswith("hypr")) else "lite"
+    data = collect(session)
+    if "text" in a:
+        for g in data["groups"]:
+            print(g["name"].upper())
+            for r in g["keys"]:
+                k = " + ".join(r["keys"]) + "".join("  or  " + " + ".join(x) for x in r.get("also", []))
+                print(f"  {k:<28} {r['what']}")
+            print()
+    else:
+        print(json.dumps(data, ensure_ascii=False))
+
+if __name__ == "__main__":
+    main()

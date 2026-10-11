@@ -181,6 +181,30 @@ def gtk_theme(name, T, d):
     dialog entry.search:focus {{ border-bottom: 1px solid {p['accent']}; }}
     dialog entry.search image {{ color: {A(p['text'], 0.5)}; }}
     menu menuitem image, menu menuitem check, menu menuitem radio {{ color: {p['accent2']}; }}
+    /* dialogs and settings pages (editor preferences, file properties): the same ink sheet all the way through,
+       Marcellus words; tabs are words, the open one marked by a short accent rule under it, never a grey card */
+    dialog notebook, dialog notebook > stack, dialog notebook > stack:not(:only-child), dialog notebook > header,
+    window.dialog notebook > stack, dialog scrolledwindow, dialog viewport, dialog frame > border {{ background-color: {p['base']}; background-image: none; }}
+    notebook > stack:not(:only-child) {{ background-color: {p['base']}; }}
+    notebook > header {{ background-color: transparent; background-image: none; border: none; box-shadow: inset 0 -1px 0 {A(p['accent2'], 0.18)}; }}
+    notebook > header tab {{ background: none; border: none; border-radius: 0; box-shadow: none; padding: 6px 14px; margin: 0; min-height: 0; outline: none; }}
+    notebook > header tab label {{ font-family: "Marcellus"; font-weight: normal; color: {p['subtext']}; letter-spacing: 0.5px; }}
+    notebook > header tab:hover label {{ color: {p['text']}; }}
+    notebook > header tab:checked {{ box-shadow: inset 0 -1px 0 {p['accent']}; background: none; }}
+    notebook > header tab:checked label {{ color: {p['text']}; }}
+    dialog label, dialog checkbutton label, dialog radiobutton label, dialog combobox, dialog spinbutton, dialog button label {{ font-family: "Marcellus"; }}
+    dialog frame > border {{ border: none; }}
+    dialog notebook > stack {{ padding: 10px 14px 6px 14px; }}
+    dialog combobox button.combo, dialog combobox button.combo:only-child, dialog combobox > box > button, dialog button.font, dialog spinbutton, dialog spinbutton:not(.vertical), dialog spinbutton entry, dialog spinbutton button, dialog spinbutton:not(.vertical) > button {{ background-color: transparent; background-image: none;
+        border: none; border-radius: 0; box-shadow: none; }}
+    dialog combobox button.combo:only-child, dialog button.font, dialog spinbutton:not(.vertical) {{ border-bottom: 1px solid {A(p['accent2'], 0.35)}; }}
+    dialog combobox button.combo:only-child:hover, dialog combobox button.combo:only-child:checked, dialog button.font:hover, dialog spinbutton:focus-within {{ border-bottom-color: {p['accent']}; }}
+    dialog spinbutton button {{ color: {A(p['text'], 0.5)}; }}
+    dialog combobox > box.linked > button.combo:only-child, dialog combobox > box.linked > button.combo:only-child:hover {{ background-color: transparent; background-image: none;
+        border-radius: 0; box-shadow: none; border: none; border-bottom: 1px solid {A(p['accent2'], 0.35)}; }}
+    dialog combobox > box.linked > button.combo:only-child:hover {{ border-bottom-color: {p['accent']}; }}
+    button.combo:only-child:focus, button.combo:only-child:checked {{ box-shadow: inset 0 0 0 1px {A(p['accent2'], 0.45)}; }}
+    dialog combobox button.combo:only-child:focus, dialog combobox button.combo:only-child:checked {{ box-shadow: none; background-color: transparent; }}
     /* ticks and choices (menus, dialogs, settings): a quiet outline, the chosen one marked in gold; no filled
        discs from the base theme */
     check, radio, menu menuitem check, menu menuitem radio {{ min-width: 14px; min-height: 14px; margin: 0 6px 0 0; padding: 0;

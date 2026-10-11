@@ -254,6 +254,11 @@ def gtk_theme(name, T, d):
         background-color: {A(p['accent2'], 0.12)}; color: {p['text']}; box-shadow: inset 2px 0 0 {p['accent2']}; }}
     infobar.question label, infobar.action label {{ color: {p['text']}; }}
     XfdesktopIconView.view:selected, XfdesktopIconView.view:active, XfdesktopIconView.view:checked {{ background-color: {A(p['accent'], 0.30)}; color: {p['text']}; border-radius: 2px; }}
+    /* level bars (battery, password strength): gold, seal red when low, no yellow or mint from the base theme */
+    levelbar block.high, levelbar block:not(.empty), levelbar block.full {{ background-color: {p['accent2']}; }}
+    levelbar block.low {{ background-color: {DANGER}; }}
+    levelbar block.empty {{ background-color: {A(p['text'], 0.10)}; }}
+    levelbar trough {{ border-radius: 2px; }}
     /* sliders: a small gold dot drawn by the theme; the base theme's knob is a blue picture no recolour reaches */
     scale slider, scale slider:hover, scale slider:active, scale slider:focus {{ background-image: none; background-color: {p['accent2']};
         min-width: 12px; min-height: 12px; margin: -5px; border: 2px solid {p['base']}; border-radius: 50%; box-shadow: none; transition: none; }}

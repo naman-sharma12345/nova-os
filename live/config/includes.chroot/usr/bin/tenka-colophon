@@ -1,0 +1,278 @@
+#!/usr/bin/python3
+"""tenka-colophon: The Colophon (Tianxia: The Lineage), our own "about this computer".
+
+A book's colophon is the note at the back that says what it was made of and by whom. This is the desk's:
+the machine, its processor, memory, graphics, display, storage, kernel, desk, packages, how long it has been
+awake and since when it has been kept, read just now from the system itself (no daemon, nothing cached).
+  tenka-colophon            the facts as JSON (for the card)
+  tenka-colophon text       the same as plain text, for a terminal, a bug report or a forum post
+  tenka-colophon copy       put that text on the clipboard (wl-copy, or xclip on X11)
+  tenka-colophon open       show the card (qs ipc on Hyprland; a small Qt window on Tenka Lite)
+"""
+import json, os, re, subprocess, sys, time
+
+HOME = os.path.expanduser("~")
+
+def rd(p, default=""):
+    try:
+        with open(p, encoding="utf-8", errors="replace") as f:
+            return f.read().strip()
+    except OSError:
+        return default
+
+def run(cmd, timeout=2):
+    try:
+        return subprocess.run(cmd, capture_output=True, text=True, timeout=timeout).stdout.strip()
+    except (OSError, subprocess.SubprocessError):
+        return ""
+
+def osrel():
+    d = {}
+    for line in (rd("/etc/os-release") or rd("/usr/lib/os-release")).splitlines():
+        if "=" in line:
+            k, v = line.split("=", 1)
+            d[k] = v.strip().strip('"')
+    return d
+
+def size(n):
+    for unit in ("B", "KB", "MB", "GB", "TB"):
+        if n < 1000 or unit == "TB":
+            return (f"{n:.0f} {unit}" if n >= 100 or unit == "B" else f"{n:.1f} {unit}")
+        n /= 1000.0
+
+def gib(n):  # memory is sold in binary units: 8 GB of RAM reads 7.8 GiB in /proc; say it the way the box says it
+    g = n / 1024 ** 3
+    return f"{round(g)} GB" if abs(g - round(g)) < 0.25 else f"{g:.1f} GB"
+
+def machine():
+    junk = re.compile(r"^(to be filled.*|system product name|system manufacturer|default string|none|not applicable|o\.e\.m\.?|)$", re.I)
+    v, p, ver = (rd(f"/sys/class/dmi/id/{k}") for k in ("sys_vendor", "product_name", "product_version"))
+    fam = rd("/sys/class/dmi/id/product_family")
+    if v.upper() == "LENOVO" and ver and not junk.match(ver):   # Lenovo keeps the name people know in product_version
+        p = ver
+    parts = [x for x in (v, p) if x and not junk.match(x)]
+    if len(parts) == 2 and parts[1].lower().startswith(parts[0].lower()):
+        parts = parts[1:]
+    s = " ".join(parts) or (fam if fam and not junk.match(fam) else "")
+    return s or "This computer"
+
+def processor():
+    model, cores = "", 0
+    for line in rd("/proc/cpuinfo").splitlines():
+        if line.startswith("model name") and not model:
+            model = line.split(":", 1)[1].strip()
+        if line.startswith("processor"):
+            cores += 1
+    model = re.sub(r"\((R|TM|tm|r)\)", "", model)
+    model = re.sub(r"\s+(CPU|Processor)\b", "", model)
+    model = re.sub(r"\s+@\s+[\d.]+\s*GHz", "", model)
+    model = re.sub(r"\s+\d+-Core(\s+Processor)?", "", model, flags=re.I)
+    model = re.sub(r"\s{2,}", " ", model).strip() or "Processor"
+    mhz = rd("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq")
+    ghz = f"  ·  {int(mhz) / 1e6:.1f} GHz" if mhz.isdigit() else ""
+    return f"{model}", f"{cores} {'thread' if cores == 1 else 'threads'}{ghz}"
+
+DRIVERS = {"i915": "Intel graphics", "xe": "Intel graphics", "amdgpu": "AMD Radeon", "radeon": "AMD Radeon",
+           "nouveau": "NVIDIA (nouveau)", "nvidia": "NVIDIA", "virtio-pci": "Virtio GPU", "virtio_gpu": "Virtio GPU",
+           "bochs-drm": "Standard VGA (virtual)", "bochs": "Standard VGA (virtual)", "qxl": "QXL (virtual)",
+           "vmwgfx": "VMware SVGA (virtual)", "cirrus": "Cirrus (virtual)", "simpledrm": "Firmware framebuffer",
+           "hyperv_drm": "Hyper-V (virtual)", "vboxvideo": "VirtualBox (virtual)", "vc4-drm": "VideoCore", "v3d": "VideoCore"}
+
+def graphics():
+    seen = []
+    base = "/sys/class/drm"
+    for c in sorted(os.listdir(base)) if os.path.isdir(base) else []:
+        if not re.fullmatch(r"card\d+", c):
+            continue
+        ue = dict(l.split("=", 1) for l in rd(f"{base}/{c}/device/uevent").splitlines() if "=" in l)
+        name = DRIVERS.get(ue.get("DRIVER", ""), ue.get("DRIVER", ""))
+        if name and name not in seen:
+            seen.append(name)
+    real = [g for g in seen if g != "Firmware framebuffer"] or seen
+    return "  ·  ".join(real)
+
+def display():
+    if os.environ.get("HYPRLAND_INSTANCE_SIGNATURE"):
+        try:
+            ms = json.loads(run(["hyprctl", "monitors", "-j"]) or "[]")
+            if ms:
+                return "  ·  ".join(f"{m['width']} × {m['height']}" + (f"  ·  {round(m['refreshRate'])} Hz" if m.get("refreshRate", 0) >= 1 else "") +
+                                    (f"  ·  ×{m['scale']:g}" if m.get("scale", 1) != 1 else "") for m in ms)
+        except (ValueError, KeyError, TypeError):
+            pass
+    if os.environ.get("DISPLAY"):
+        out = run(["xrandr", "--current"])
+        modes = re.findall(r"^\s+(\d+)x(\d+)\s+.*?([\d.]+)\*", out, re.M)
+        if modes:
+            return "  ·  ".join(f"{w} × {h}" + (f"  ·  {round(float(r))} Hz" if float(r) >= 1 else "") for w, h, r in modes)
+        m = re.search(r"current (\d+) x (\d+)", out)
+        if m:
+            return f"{m.group(1)} × {m.group(2)}"
+    for c in sorted(os.listdir("/sys/class/drm")) if os.path.isdir("/sys/class/drm") else []:
+        if rd(f"/sys/class/drm/{c}/status") == "connected":
+            m = rd(f"/sys/class/drm/{c}/modes").splitlines()
+            if m:
+                return m[0].replace("x", " × ")
+    return ""
+
+def storage():
+    st = os.statvfs("/")
+    total, free = st.f_blocks * st.f_frsize, st.f_bavail * st.f_frsize
+    return size(free) + " free of " + size(total), (1 - free / total) if total else 0
+
+def desk(session):
+    v = lambda p: re.sub(r"[+~-].*$", "", run(["dpkg-query", "-W", "-f", "${Version}", p]))
+    if session == "hyprland":
+        return ("Hyprland " + v("hyprland")).strip() + "  ·  Quickshell"
+    x = v("xfwm4")
+    return "Tenka Lite  ·  XFCE " + ".".join(x.split(".")[:2]) if x else "Tenka Lite  ·  XFCE"
+
+def packages():
+    n = 0
+    try:
+        with open("/var/lib/dpkg/status", encoding="utf-8", errors="replace") as f:
+            for line in f:
+                if line.startswith("Status: install ok installed"):
+                    n += 1
+    except OSError:
+        return ""
+    return f"{n:,}"
+
+def awake():
+    try:
+        s = int(float(rd("/proc/uptime").split()[0]))
+    except (ValueError, IndexError):
+        return ""
+    d, h, m = s // 86400, s % 86400 // 3600, s % 3600 // 60
+    if d:
+        return f"{d} {'day' if d == 1 else 'days'}, {h} h"
+    return f"{h} h {m} min" if h else f"{m} min"
+
+def kept():
+    if "boot=live" in rd("/proc/cmdline"):
+        return "a live session (nothing is kept)"
+    b = run(["stat", "-c", "%W", "/"])                   # the root filesystem's birth: the day it was installed
+    t = int(b) if b.isdigit() else 0
+    if not t:
+        for q in ("/var/log/installer", "/etc/machine-id"):
+            try:
+                t = int(os.stat(q).st_mtime); break
+            except OSError:
+                pass
+    return time.strftime("%-d %B %Y", time.localtime(t)) if t else ""
+
+def theme():
+    p = os.path.join(os.environ.get("XDG_CONFIG_HOME") or os.path.join(HOME, ".config"), "tenka", "shell-theme.json")
+    try:
+        return json.load(open(p))
+    except (OSError, ValueError):
+        return {}
+
+def collect(session=None):
+    if not session:
+        session = "hyprland" if os.environ.get("HYPRLAND_INSTANCE_SIGNATURE") or (os.environ.get("WAYLAND_DISPLAY") and
+                  os.environ.get("XDG_CURRENT_DESKTOP", "").lower().startswith("hypr")) else "lite"
+    o = osrel()
+    deb = rd("/etc/debian_version")
+    t = theme()
+    cpu, threads = processor()
+    mem = 0
+    for line in rd("/proc/meminfo").splitlines():
+        if line.startswith("MemTotal:"):
+            mem = int(line.split()[1]) * 1024
+    disk, used = storage()
+    host = rd("/etc/hostname") or os.uname().nodename
+    rows = [
+        ["Machine", machine()],
+        ["Processor", cpu, threads],
+        ["Memory", gib(mem)],
+        ["Graphics", graphics()],
+        ["Display", display()],
+        ["Storage", disk],
+        ["Kernel", "Linux " + os.uname().release],
+        ["Desk", desk(session)],
+        ["Packages", packages()],
+        ["Awake", awake()],
+        ["Kept since", kept()],
+    ]
+    return {
+        "session": session,
+        "name": t.get("display") or o.get("NAME", "Tenka"),
+        "tagline": t.get("tagline", ""),
+        "crest": t.get("crest", ""),
+        "version": o.get("VERSION", o.get("VERSION_ID", "")),
+        "base": ("Debian " + deb.split(".")[0] + (" " + o["DEBIAN_VERSION_CODENAME"] if o.get("DEBIAN_VERSION_CODENAME") else "")) if deb[:1].isdigit()
+                else "Debian " + (o.get("DEBIAN_VERSION_CODENAME") or deb),
+        "debian": deb,
+        "who": f"{os.environ.get('USER') or os.path.basename(HOME)} @ {host}",
+        "used": round(used, 3),
+        "rows": [r for r in rows if r[1]],
+    }
+
+def text(d):
+    out = [f"{d['name']} {d['version']}  ·  on {d['base']} ({d['debian']})", d["who"], ""]
+    for r in d["rows"]:
+        out.append(f"  {r[0]:<11} {r[1]}" + (f"  ·  {r[2]}" if len(r) > 2 else ""))
+    return "\n".join(out)
+
+def copy(s):
+    if os.environ.get("WAYLAND_DISPLAY"):
+        subprocess.run(["wl-copy"], input=s, text=True)
+    else:
+        subprocess.run(["xclip", "-selection", "clipboard"], input=s, text=True)
+
+def open_card():
+    """The flagship's card over qs ipc on Hyprland; on Tenka Lite the same card in a small Qt window"""
+    import signal
+    if os.environ.get("WAYLAND_DISPLAY") and subprocess.run(["pgrep", "-x", "qs"], capture_output=True).returncode == 0:
+        subprocess.run(["qs", "-c", "tenka", "ipc", "call", "colophon", "toggle"], capture_output=True)
+        return 0
+    if not os.environ.get("DISPLAY"):
+        print(text(collect()))
+        return 0
+    rt = os.environ.get("XDG_RUNTIME_DIR") or "/tmp"
+    lock = os.path.join(rt, "tenka-colophon.pid")
+    try:                                                # opened again while open: close it
+        pid = int(open(lock).read().strip())
+        if b"LiteColophon.qml" not in open(f"/proc/{pid}/cmdline", "rb").read():
+            raise ValueError
+        os.kill(pid, signal.SIGTERM)
+        os.remove(lock)
+        return 0
+    except (OSError, ValueError):
+        pass
+    d = collect("lite")
+    facts = os.path.join(rt, "tenka-colophon.json")
+    fd = os.open(facts + ".part", os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "w") as f:
+        json.dump(d, f, ensure_ascii=False)
+    os.replace(facts + ".part", facts)
+    th = os.path.join(os.environ.get("XDG_CONFIG_HOME") or os.path.join(HOME, ".config"), "tenka", "shell-theme.json")
+    env = dict(os.environ, QML_XHR_ALLOW_FILE_READ="1", QT_QPA_PLATFORM="xcb", QT_MESSAGE_PATTERN="%{message}")
+    p = subprocess.Popen(["/usr/lib/qt6/bin/qml", "/usr/share/tenka/colophon/LiteColophon.qml", "--", facts, th],
+                         stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, env=env, text=True)
+    with open(lock, "w") as f:
+        f.write(str(p.pid))
+    for line in p.stderr:                               # the card asks for a copy on stderr ("COPY")
+        if line.strip() == "COPY":
+            copy(text(d))
+    p.wait()
+    for x in (lock, facts):
+        try: os.remove(x)
+        except OSError: pass
+    return 0
+
+def main():
+    a = sys.argv[1:]
+    if a[:1] == ["open"]:
+        sys.exit(open_card())
+    d = collect(next((x for x in a if x in ("hyprland", "lite")), None))
+    if a[:1] == ["text"]:
+        print(text(d))
+    elif a[:1] == ["copy"]:
+        copy(text(d))
+    else:
+        print(json.dumps(d, ensure_ascii=False))
+
+if __name__ == "__main__":
+    main()

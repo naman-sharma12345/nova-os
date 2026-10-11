@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=The Colophon
+GenericName=About this computer
+Comment=What this desk is made of: machine, processor, memory, graphics, display, storage, kernel
+Exec=tenka-colophon open
+Icon=tenka
+Categories=System;Settings;
+Keywords=about;system;info;information;computer;hardware;version;specs;colophon;lineage;

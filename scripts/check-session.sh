@@ -13,6 +13,7 @@
 #  8. tenka-loupe freezes the screen into a private file, copies, and keeps LATELY (colours only, newest first)
 #  9. tenka-codex reads every key from the live Hyprland / XFCE config, including the user's own user.lua
 # 10. tenka-glance tells a folder, a text and a picture apart, and reads a picture's size from its header
+# 11. tenka-colophon reads the machine (kernel, memory, packages) and names the desk after the active theme
 set -u
 ROOT=$(cd "$(dirname "$0")/.." && pwd); BIN="$ROOT/live/config/includes.chroot/usr/bin"
 fail=0; T=$(mktemp -d); trap 'rm -rf "$T"' EXIT
@@ -217,5 +218,22 @@ if len(it[1]["lines"].splitlines()) != 60: bad.append("text lines: %d" % len(it[
 if it[2]["extra"] != "768 × 512": bad.append("picture size: %r" % it[2]["extra"])
 if bad: print("FAIL: tenka-glance: " + "; ".join(bad)); sys.exit(1)
 EOF
+# 11. tenka-colophon: the record is read from the system just now (the kernel row is this kernel, memory is
+#     MemTotal), named after the active pack, and its text form starts with that name
+mkdir -p "$T/colo/.config/tenka"; printf '{"display": "Tianxia", "tagline": "ALL UNDER HEAVEN", "crest": "/x.png"}' > "$T/colo/.config/tenka/shell-theme.json"
+HOME="$T/colo" python3 "$BIN/tenka-colophon" lite > "$T/colo.json" && HOME="$T/colo" python3 "$BIN/tenka-colophon" text lite > "$T/colo.txt" &&
+python3 - "$T/colo.json" "$T/colo.txt" <<'EOF' || fail=1
+import json, os, sys
+d, t, bad = json.load(open(sys.argv[1])), open(sys.argv[2]).read(), []
+rows = {r[0]: r[1] for r in d["rows"]}
+if d["name"] != "Tianxia" or d["crest"] != "/x.png": bad.append("theme: %s %s" % (d["name"], d["crest"]))
+if rows.get("Kernel") != "Linux " + os.uname().release: bad.append("kernel: %r" % rows.get("Kernel"))
+if not rows.get("Memory", "").endswith(" GB"): bad.append("memory: %r" % rows.get("Memory"))
+if "Storage" not in rows or not 0 <= d["used"] <= 1: bad.append("storage: %r %r" % (rows.get("Storage"), d["used"]))
+if not rows.get("Desk", "").startswith("Tenka Lite"): bad.append("desk: %r" % rows.get("Desk"))
+if not t.startswith("Tianxia "): bad.append("text: %r" % t[:40])
+if bad: print("FAIL: tenka-colophon: " + "; ".join(bad)); sys.exit(1)
+EOF
+grep -q '^Exec=tenka-colophon open$' "$ROOT/live/config/includes.chroot/usr/share/applications/tenka-colophon.desktop" || { echo "FAIL: colophon desktop entry"; fail=1; }
 [ "$fail" = 0 ] && echo "check-session: ok"
 exit $fail

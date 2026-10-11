@@ -339,8 +339,10 @@ PanelWindow {
                        onHit: { cc.open = false; Theme.run("sleep 0.45; qs -c tenka ipc call loupe open") } }
                 Row2 { k: Theme.xia ? "The Brush" : "The Inkstone"; v: "glyphs"
                        onHit: { cc.open = false; Theme.ipc("glyphs", "open") } }
-                Row2 { k: Theme.xia ? "The Scripture" : "The Codex"; v: "every key"; last: true
+                Row2 { k: Theme.xia ? "The Scripture" : "The Codex"; v: "every key"
                        onHit: { cc.open = false; Theme.ipc("codex", "open") } }
+                Row2 { k: Theme.xia ? "The Lineage" : "The Colophon"; v: "this machine"; last: true
+                       onHit: { cc.open = false; Theme.ipc("colophon", "open") } }
             }
             Box {
                 num: "05"; label: "PATH"

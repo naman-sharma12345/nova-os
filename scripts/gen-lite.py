@@ -108,6 +108,10 @@ def gtk_theme(name, T, d):
 
     window.background, .background {{ background-color: {p['base']}; color: {p['text']}; }}
     .view, iconview, treeview.view, textview text {{ background-color: {p['mantle']}; color: {p['text']}; }}
+    /* the text editor's margins: the line numbers sit inset from the window edge on their own strip, and the
+       page keeps a clear gap after them instead of letters touching the gutter */
+    window.mousepad notebook scrolledwindow {{ border-left: 12px solid {p['mantle']}; }}
+    window.mousepad textview.view {{ padding-left: 16px; padding-right: 12px; }}
     headerbar, .titlebar, menubar, toolbar {{ background-color: {p['surface']}; color: {p['text']}; box-shadow: none; }}
     .sidebar, placessidebar, placessidebar list {{ background-color: {p['base']}; }}
     *:selected, selection, row:selected, .view:selected {{ background-color: {A(p['accent'], 0.85)}; color: {p['text']}; }}

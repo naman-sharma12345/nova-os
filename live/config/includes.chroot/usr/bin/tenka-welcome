@@ -14,9 +14,16 @@ if [ "$(cat /run/tenka/mode 2>/dev/null)" = lite ] || [ "${XDG_CURRENT_DESKTOP:-
 fi
 QML=$(command -v qml6 || echo /usr/lib/qt6/bin/qml)
 # RESOURCE_NAME names the window (WM_CLASS) so docks show the theme icon, not a generic one
-QT_QPA_PLATFORMTHEME= RESOURCE_NAME=tenka-welcome "$QML" /usr/share/tenka/welcome/Welcome.qml -- "$@" 2>/dev/null
+# its complaints go to a log, not to nowhere, so a welcome that never showed can be explained
+mkdir -p "$HOME/.cache/tenka"
+QT_QPA_PLATFORMTHEME= RESOURCE_NAME=tenka-welcome "$QML" /usr/share/tenka/welcome/Welcome.qml -- "$@" 2>"$HOME/.cache/tenka/welcome.log"
 rc=$?
-touch "$HOME/.config/tenka/welcomed"
+# only a welcome that actually ran and was closed counts as seen; a crash (or a missing Qt module)
+# leaves the flag unset so it comes back at the next login instead of never appearing again
+case $rc in
+  0|10|11|20|21) touch "$HOME/.config/tenka/welcomed" ;;
+  *) echo "tenka-welcome: qml exited $rc" >>"$HOME/.cache/tenka/welcome.log"; exit "$rc" ;;
+esac
 case $rc in
   10) tenka-theme samurai ;; 11) tenka-theme xianxia ;;
   20) tenka-perf on; tenka-theme samurai ;; 21) tenka-perf on; tenka-theme xianxia ;;

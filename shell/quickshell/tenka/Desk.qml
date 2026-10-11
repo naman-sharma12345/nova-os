@@ -73,7 +73,7 @@ PanelWindow {
                 layer.enabled: true
                 layer.effect: MultiEffect {
                     shadowEnabled: true; shadowColor: "#000000"   // a plain drop shadow for legibility, never a coloured glow
-                    shadowBlur: 1.0; shadowOpacity: 0.40; shadowVerticalOffset: 6
+                    shadowBlur: 0.3; shadowOpacity: 0.35; shadowVerticalOffset: 3
                 }
             }
             // the one accent: a hand-stamped seal with the weekday and the day
@@ -113,7 +113,7 @@ PanelWindow {
             color: Theme.alpha(Theme.t.text, 0.72)
             font.family: Theme.display; font.pixelSize: 22 * desk.s; lineHeight: 1.25
             layer.enabled: true
-            layer.effect: MultiEffect { shadowEnabled: true; shadowColor: "black"; shadowBlur: 0.6; shadowOpacity: 0.6; shadowVerticalOffset: 2 }
+            layer.effect: MultiEffect { shadowEnabled: true; shadowColor: "black"; shadowBlur: 0.25; shadowOpacity: 0.5; shadowVerticalOffset: 1 }
         }
         MouseArea { id: clockHit; x: 0; y: 0; width: clockRow.width; height: clockRow.height; cursorShape: Qt.PointingHandCursor
                     onClicked: { Theme.deskOpen = !Theme.deskOpen; Theme.pinOpen = Theme.deskOpen } }
@@ -142,7 +142,7 @@ PanelWindow {
             color: Theme.t.text
             font.family: Theme.display; font.pixelSize: 132 * desk.s; font.letterSpacing: 26 * desk.s
             layer.enabled: true
-            layer.effect: MultiEffect { shadowEnabled: true; shadowColor: "#000000"; shadowBlur: 1.0; shadowOpacity: 0.45; shadowVerticalOffset: 4 }
+            layer.effect: MultiEffect { shadowEnabled: true; shadowColor: "#000000"; shadowBlur: 0.3; shadowOpacity: 0.35; shadowVerticalOffset: 2 }
         }
         Row {   // gold hairline · seal · gold hairline
             id: filmRule

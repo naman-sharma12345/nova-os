@@ -20,8 +20,7 @@ Glass {
         Image { id: art; anchors.fill: parent; visible: false; fillMode: Image.PreserveAspectCrop; sourceSize.height: 400
                 source: m.p && m.p.trackArtUrl ? m.p.trackArtUrl : Theme.t.keyart }
         Rectangle { id: artMask; anchors.fill: parent; radius: 16; visible: false; layer.enabled: true }
-        MultiEffect { anchors.fill: parent; source: art; maskEnabled: true; maskSource: artMask; maskThresholdMin: 0.5; maskSpreadAtMin: 1.0
-                      shadowEnabled: true; shadowColor: "black"; shadowOpacity: 0.5; shadowBlur: 0.8; shadowVerticalOffset: 6 }
+        MultiEffect { anchors.fill: parent; source: art; maskEnabled: true; maskSource: artMask; maskThresholdMin: 0.5; maskSpreadAtMin: 1.0 }
         Rectangle { anchors.fill: parent; radius: 16; color: "transparent"; border.width: 1; border.color: Theme.alpha(Theme.t.gold, 0.35) }
     }
     Column {

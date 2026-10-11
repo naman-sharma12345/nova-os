@@ -121,5 +121,14 @@ for pair in org.xfce.mousepad:mousepad org.xfce.ristretto:ristretto; do
   [ -f "$f" ] && ! grep -q '^StartupWMClass=' "$f" && sed -i "0,/^\[Desktop Entry\]/s//[Desktop Entry]\nStartupWMClass=${pair#*:}/" "$f"
 done
 
+# The desktop and launcher menus: no mail client ships, so drop "Mail Reader" (it only opened an app picker), and
+# give the three preferred-app entries short names: Terminal, Files, Browser
+sed -i '/xfce4-mail-reader\.desktop/d' /etc/xdg/menus/xfce-applications.menu 2>/dev/null || true
+[ -f /usr/share/applications/xfce4-mail-reader.desktop ] && { grep -q '^NoDisplay=' /usr/share/applications/xfce4-mail-reader.desktop || sed -i '0,/^\[Desktop Entry\]/s//[Desktop Entry]\nNoDisplay=true/' /usr/share/applications/xfce4-mail-reader.desktop; }
+for pair in xfce4-terminal-emulator:Terminal xfce4-file-manager:Files xfce4-web-browser:Browser; do
+  f=/usr/share/applications/${pair%%:*}.desktop
+  [ -f "$f" ] && sed -i -e "s/^Name=.*/Name=${pair#*:}/" -e 's/^Name\[[^]]*\]=.*//' "$f"
+done
+
 fc-cache -f >/dev/null 2>&1 || true
 update-initramfs -u -k all || true

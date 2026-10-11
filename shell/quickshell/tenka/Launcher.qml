@@ -254,7 +254,7 @@ PanelWindow {
 
     // ======================================================================== face "menu"
     // The launcher as a title-screen menu: one hairline search, then the paths as a list in Marcellus;
-    // the chosen one sits on the boot menu's own brush stroke (a jade glow in Tianxia). No tiles, no glow.
+    // the chosen one sits on the boot menu's own brush stroke (a flat jade band in Tianxia). No tiles, no glow.
     Item {
         id: menu
         visible: launcher.face === "menu"

@@ -44,7 +44,8 @@ def W(path, data, mode=0o644):
 
 def hexrgb(c): c = c.lstrip("#"); return tuple(int(c[i:i+2], 16) for i in (0, 2, 4))
 
-def wordmark(name, T, size, path, spacing=0.18, glow=True, sub=None):
+def wordmark(name, T, size, path, spacing=0.18, sub=None):
+    """Flat letters and an italic line under them; no coloured halo (Naman: no neon, no glow)."""
     p = T["p"]
     f = ImageFont.truetype(DISPLAY_TTF[name], size)
     if name == "xianxia":
@@ -63,10 +64,6 @@ def wordmark(name, T, size, path, spacing=0.18, glow=True, sub=None):
         d.text((x - f.getbbox(ch)[0], int(size * 0.12)), ch, font=f, fill=hexrgb(p["text"]) + (255,)); x += cw + sp
     if sub:
         d.text(((w - sw) // 2, int(size * 1.32)), sub, font=fs, fill=hexrgb(p["accent2"]) + (235,))
-    if glow:
-        g = im.split()[3].filter(ImageFilter.GaussianBlur(size * 0.12))
-        gl = Image.new("RGBA", im.size, hexrgb(p["accent"]) + (0,)); gl.putalpha(g.point(lambda v: int(v * 0.55)))
-        im = Image.alpha_composite(gl, im)
     im.save(path)
     return im
 

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Tenka boot menu (GRUB): a title-card screen per theme.
 
-The key art is graded, the wordmark is baked in as art (glow, ink bleed, gold hairline,
-tracked tagline), and the menu floats in Marcellus over a soft ink falloff. The selected
-entry gets a vermilion dry-brush stroke (Tenka) or a jade glow with a gold bead (Tianxia).
+The key art is graded, the wordmark is baked in as art (ink shadow, ink bleed, gold hairline,
+tracked tagline; no glow), and the menu floats in Marcellus over a soft ink falloff. The selected
+entry gets a vermilion dry-brush stroke (Tenka) or a flat pale-jade band with a jade rule (Tianxia).
 Writes a 1080p theme (theme.txt) and a 4K one (theme-4k.txt) per pack, plus the live ISO menu.
 
     python3 scripts/gen-boot.py

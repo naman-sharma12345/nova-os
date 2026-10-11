@@ -237,7 +237,8 @@ def scene(theme, s=1.0, particles_on=True):
 
 
 def wordmark(canvas, theme, x, y, size, s=1.0, style=None):
-    """Bake the wordmark: optional dry-brush swipe, ink shadow, glow, and washi-to-gold letters with ink-bled edges."""
+    """Bake the wordmark: optional dry-brush swipe, a plain ink shadow, and washi-to-gold letters with ink-bled edges.
+    Flat and crisp (Naman: no neon, no glow): no coloured halo around the letters, the swipe or the bead."""
     P = PAL[theme]; word = P["word"]; style = style or P["style"]
     fp, tr = (MARC, 0.30) if style == "marcellus" else (CIND, 0.10)
     m, bb = text_mask(word, fp, size, tr, pad=int(80 * s))
@@ -247,12 +248,10 @@ def wordmark(canvas, theme, x, y, size, s=1.0, style=None):
         sm = mask_img(brush_stroke(bw, bh, seed=11, dry=0.55, head=0.035, tail=0.55, wave=0.05)).rotate(-2.0, expand=True, resample=Image.BICUBIC)
         smf = Image.new("L", canvas.size, 0); smf.paste(sm, (x - int(40 * s), y + int(wH * 0.38)))
         col = hexc(P["acc"])
-        canvas = screen_glow(canvas, col, smf, 30 * s, 0.30); canvas = add_layer(canvas, col, smf, 0.80)
+        canvas = add_layer(canvas, col, smf, 0.80)
     m = m.crop((bb[0] - int(60 * s), bb[1] - int(60 * s), bb[2] + int(60 * s), bb[3] + int(60 * s)))
     full = Image.new("L", canvas.size, 0); full.paste(m, (x - int(60 * s), y - int(60 * s)))
     canvas = add_layer(canvas, (0, 0, 0), full.filter(ImageFilter.GaussianBlur(14 * s)), 0.85)
-    canvas = screen_glow(canvas, hexc(P["gold"]) if theme == "samurai" else hexc(P["acc"]), full, 40 * s, 0.55)
-    canvas = screen_glow(canvas, hexc(P["gold"]), full, 10 * s, 0.35)
     bled = ink_bleed(full, seed=5, amt=1.2 * s)
     top, g = hexc(P["text"]), hexc(P["gold"]); Hc = canvas.height
     fill = grad_fill(canvas.size, [(0, top[:3]), (y / Hc, top[:3]),
@@ -273,10 +272,10 @@ def title_block(canvas, theme, s=1.0, x=None, base_y=330, target_w=820, max_size
     gold = hexc(P["gold"]); hy = int((base_y + 42) * s)
     hl = hairline(int(wW + 60 * s), gold, thick=max(1, int(s)))
     pos = (int(x * s - 30 * s), hy - hl.height // 2)
-    canvas.alpha_composite(hl.filter(ImageFilter.GaussianBlur(3 * s)), pos); canvas.alpha_composite(hl, pos)
+    canvas.alpha_composite(hl, pos)
     bx = int(x * s + wW / 2); r = int(5 * s)
     bead = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
     ImageDraw.Draw(bead).polygon([(bx, hy - r), (bx + r, hy), (bx, hy + r), (bx - r, hy)], fill=gold)
-    canvas = screen_glow(canvas, gold, bead.getchannel("A"), 6 * s, 0.9); canvas.alpha_composite(bead)
+    canvas.alpha_composite(bead)
     place_text(canvas, (x * s + wW / 2, hy + int(22 * s)), P["tag"], MARC, int(21 * s), hexc(P["gold"], 235), track_em=0.62, anchor="c")
     return canvas, (int(x * s), y0, wW, wH)

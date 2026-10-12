@@ -355,6 +355,8 @@ TENKA_NOW=2026-10-12T23:00 DISPLAY=:9 ni tick | grep -q '^XRR gamma 1.0:0.8[0-9]
 ni cycle | grep -q '"mode": "on"' && ni cycle | grep -q '"mode": "off"' && TENKA_NOW=2026-10-12T23:00 ni state | grep -q '"kelvin": 6500' &&
 grep -q '^tenka-nightink run' "$BIN/tenka-session" && grep -q 'setsid tenka-nightink run' "$BIN/tenka-lite-apply" &&
 grep -q '"tenka-nightink", "state"' "$ROOT/shell/quickshell/tenka/ControlCenter.qml" && ! grep -q 'hyprsunset -t 4200' "$ROOT/shell/quickshell/tenka/ControlCenter.qml" &&
-grep -q '^Exec=tenka-nightink toggle --say$' "$IC/usr/share/applications/tenka-nightink.desktop" || { echo "FAIL: night ink"; fail=1; }
+grep -q '^Exec=tenka-nightink toggle --say$' "$IC/usr/share/applications/tenka-nightink.desktop" &&
+grep -q '"SUPER + SHIFT + N"\|" + SHIFT + N",   hl.dsp.exec_cmd("tenka-nightink cycle --say")' "$IC/etc/skel/.config/hypr/hyprland.lua" &&
+grep -q 'value="tenka-nightink cycle --say"' "$IC/etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml" || { echo "FAIL: night ink"; fail=1; }
 [ "$fail" = 0 ] && echo "check-session: ok"
 exit $fail

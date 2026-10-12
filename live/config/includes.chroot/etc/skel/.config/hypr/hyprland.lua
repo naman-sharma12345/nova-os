@@ -152,6 +152,7 @@ hl.bind("Print",               hl.dsp.exec_cmd("tenka-shot area"))
 hl.bind("SHIFT + Print",       hl.dsp.exec_cmd("tenka-shot screen"))
 hl.bind(M .. " + SHIFT + E",   hl.dsp.exec_cmd("tenka-power"))
 hl.bind(M .. " + SHIFT + P",   hl.dsp.exec_cmd("tenka-perf toggle"))
+hl.bind(M .. " + SHIFT + N",   hl.dsp.exec_cmd("tenka-nightink cycle --say"))   -- night ink: off, with the sun, warm
 hl.bind(M .. " + Z",           hl.dsp.exec_cmd("tenka-focus toggle"))   -- focus: 25 min, desk dims, notes wait
 
 for _, d in ipairs({ "left", "right", "up", "down" }) do

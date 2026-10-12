@@ -265,6 +265,7 @@ sys.exit(0 if ok else 1)' || { echo "FAIL: tenka-almanac wheel dates"; fail=1; }
 grep -q '^ *Almanac {}' "$ROOT/shell/quickshell/tenka/shell.qml" && grep -q '^Exec=tenka-almanac open$' "$IC/usr/share/applications/tenka-almanac.desktop" &&
 [ -f "$IC/usr/share/tenka/almanac/LiteAlmanac.qml" ] || { echo "FAIL: almanac card wiring"; fail=1; }
 grep -q '"tenka-almanac", "json"' "$ROOT/shell/quickshell/tenka/DeskLedger.qml" && grep -q "tenka-almanac json" "$IC/usr/share/tenka/conky/desk.lua" || { echo "FAIL: almanac not on the desks"; fail=1; }
+[ "$(grep -c '^ *AlmanacLine {' "$ROOT/shell/quickshell/tenka/LockFace.qml")" = 3 ] && grep -q '"tenka-almanac", "json"' "$ROOT/shell/quickshell/tenka/almanac/AlmanacLine.qml" || { echo "FAIL: almanac not on the lock"; fail=1; }
 # 14. The Incense: light, read, put out; wiring
 mkdir -p "$T/inc/rt"; chmod 700 "$T/inc/rt"
 HOME="$T/inc" XDG_RUNTIME_DIR="$T/inc/rt" python3 "$BIN/tenka-incense" light 2

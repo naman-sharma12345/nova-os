@@ -5,6 +5,7 @@
 import Quickshell
 import QtQuick
 import QtQuick.Effects
+import "almanac"
 
 Item {
     id: face
@@ -57,7 +58,12 @@ Item {
         Text { id: dt; anchors.top: cr.bottom; anchors.topMargin: -18 * face.s; x: 6 * face.s
                text: Qt.formatDate(Theme.now, "MMMM yyyy").toUpperCase(); color: Theme.alpha(Theme.t.text, 0.8)
                font.family: Theme.display; font.pixelSize: 19 * face.s; font.letterSpacing: 9 * face.s }
-        Text { id: ttl; anchors.top: dt.bottom; anchors.topMargin: 40 * face.s; x: 6 * face.s
+        // the season and tonight's moon, from the almanac
+        AlmanacLine { id: alm1; anchors.top: dt.bottom; anchors.topMargin: 16 * face.s; x: 6 * face.s
+                      running: face.visible && face.style === "card"; theme: Theme.t.name || ""
+                      px: 17 * face.s; face: Theme.display; textColor: Theme.alpha(Theme.t.text, 0.62)
+                      lit: Theme.alpha(Theme.t.text, 0.86); dark: Theme.alpha(Theme.t.text, 0.10); rim: Theme.alpha(Theme.gold, 0.5) }
+        Text { id: ttl; anchors.top: alm1.bottom; anchors.topMargin: 26 * face.s; x: 6 * face.s
                text: Theme.xia ? "The sect gate is sealed." : "The blade rests."
                color: Theme.t.text; font.family: Theme.display; font.pixelSize: 34 * face.s }
 
@@ -138,6 +144,10 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter; y: parent.height * 0.5 + 110 * face.s; spacing: 18 * face.s
             Text { anchors.horizontalCenter: parent.horizontalCenter; text: face.motto; color: Theme.t.text
                    font.family: Theme.display; font.pixelSize: 26 * face.s; font.letterSpacing: 2 }
+            AlmanacLine { anchors.horizontalCenter: parent.horizontalCenter
+                          running: face.visible && face.style === "brush"; theme: Theme.t.name || ""
+                          px: 16 * face.s; face: Theme.display; textColor: Theme.alpha(Theme.t.text, 0.62)
+                          lit: Theme.alpha(Theme.t.text, 0.86); dark: Theme.alpha(Theme.t.text, 0.10); rim: Theme.alpha(Theme.gold, 0.5) }
             Rectangle {
                 anchors.horizontalCenter: parent.horizontalCenter
                 width: 360 * face.s; height: 50 * face.s; radius: height / 2
@@ -213,6 +223,10 @@ Item {
             Item { width: 1; height: 22 * face.s }
             Text { text: face.motto; color: Theme.alpha(Theme.t.text, 0.9); font.family: Theme.display
                    font.pixelSize: 24 * face.s; font.letterSpacing: 1 }
+            Item { width: 1; height: 14 * face.s }
+            AlmanacLine { running: face.visible && face.style === "ledger"; theme: Theme.t.name || ""
+                          px: 16 * face.s; face: Theme.display; textColor: Theme.alpha(Theme.t.text, 0.6)
+                          lit: Theme.alpha(Theme.t.text, 0.86); dark: Theme.alpha(Theme.t.text, 0.10); rim: Theme.alpha(Theme.gold, 0.5) }
             Item { width: 1; height: 44 * face.s }
             // 02 · the field: a label, the marks, one underline
             Row {

@@ -80,7 +80,8 @@ placessidebar row:selected, .navigation-sidebar > row:selected { background-colo
 columnview > header > button { background-color: transparent; background-image: none; border: none; border-radius: 0; border-bottom: 1px solid rgba(201, 163, 90, 0.2); box-shadow: none; color: #b8ab96; font-family: Marcellus; }
 columnview, columnview > listview, gridview { background-color: transparent; }
 headerbar button.suggested-action, .dialog-action-area > button.suggested-action { background-color: rgba(201, 163, 90, 0.22); border-color: rgba(201, 163, 90, 0.45); color: #efe6d6; }
-pathbar > button, .path-bar > button { font-family: Marcellus; }
+/* T23: the path is a row of folder names, and Marcellus draws 0 like O and 1 like l; set it in Inter, as in GTK 3 and Thunar */
+pathbar > button, .path-bar > button, pathbar > button label { font-family: Inter; letter-spacing: 0; }
 progressbar trough { min-height: 4px; background-color: rgba(239, 230, 214, 0.1); border: none; border-radius: 99px; box-shadow: none; }
 progressbar progress { min-height: 4px; background-color: #c9a35a; background-image: none; border: none; border-radius: 99px; box-shadow: none; }
 /* T20: the answer button (Open, Save, Select) is the one solid gold mark on the glass, ink on gold. */

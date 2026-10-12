@@ -450,7 +450,8 @@ def gen(name, T):
     columnview > header > button {{ background-color: transparent; background-image: none; border: none; border-radius: 0; border-bottom: 1px solid {rgba(p['accent2'], 0.20)}; box-shadow: none; color: {p['subtext']}; font-family: Marcellus; }}
     columnview, columnview > listview, gridview {{ background-color: transparent; }}
     headerbar button.suggested-action, .dialog-action-area > button.suggested-action {{ background-color: {rgba(p['accent2'], 0.22)}; border-color: {rgba(p['accent2'], 0.45)}; color: {p['text']}; }}
-    pathbar > button, .path-bar > button {{ font-family: Marcellus; }}
+    /* T23: the path is a row of folder names, and Marcellus draws 0 like O and 1 like l; set it in Inter, as in GTK 3 and Thunar */
+    pathbar > button, .path-bar > button, pathbar > button label {{ font-family: Inter; letter-spacing: 0; }}
     progressbar trough {{ min-height: 4px; background-color: {rgba(p['text'], 0.10)}; border: none; border-radius: 99px; box-shadow: none; }}
     progressbar progress {{ min-height: 4px; background-color: {p['accent2']}; background-image: none; border: none; border-radius: 99px; box-shadow: none; }}
     /* T20: the answer button (Open, Save, Select) is the one solid gold mark on the glass, ink on gold. */
@@ -555,6 +556,10 @@ def gen(name, T):
        ink strip; it joins the sheet with one hairline above it. */
     {GS('toolbar.inline-toolbar', '.inline-toolbar', 'toolbar.inline-toolbar:backdrop', '.inline-toolbar:backdrop')} {{ background-color: transparent; background-image: none; border-style: solid none none none; border-width: 1px; border-color: {rgba(p['accent2'], 0.16)}; box-shadow: none; }}
     {GS('frame > label', 'frame > box > label')} {{ font-family: Marcellus; letter-spacing: 0.6px; color: {rgba(p['accent2'], 0.92)}; }}
+    /* T23: a status bar's text sits in frame > box > label too, so the rule above set Ristretto's "3840 x 2160  1.5 MB  20.8%" as a gold Marcellus heading
+       (0 read as O); status lines and the file chooser's path read in quiet Inter instead, like Thunar's */
+    {GS('statusbar frame > box > label', 'statusbar frame > box > box > label', 'statusbar frame > label', 'statusbar label')} {{ font-family: Inter; letter-spacing: 0; color: {rgba(p['subtext'], 0.9)}; }}
+    {GS('.path-bar button', '.path-bar button label', 'filechooser .path-bar button label')} {{ font-family: Inter; letter-spacing: 0; }}
     menubar {{ background-color: transparent; background-image: none; padding: 2px 8px; border-bottom: 1px solid {rgba(p['accent2'], 0.14)}; box-shadow: none; }}
     menubar > menuitem {{ padding: 6px 12px; border-radius: {Rs}px; font-family: Marcellus; color: {rgba(p['text'], 0.82)}; }}
     menubar > menuitem:hover {{ background-color: {rgba(p['accent2'], 0.14)}; color: {p['text']}; box-shadow: none; }}

@@ -501,5 +501,19 @@ grep -q 'command: \["tenka-feasts", "state"\]' "$ROOT/shell/quickshell/tenka/alm
 # 32. A fixed clock: tenka-almanac honours TENKA_NOW (as tenka-moon and tenka-feasts do), so a render or a test of a
 #     given day shows that day's term and moon, not today's. Unset on a real desk.
 [ "$(TENKA_NOW=1788964200 HOME="$T/feastsam" python3 "$BIN/tenka-almanac" line)" = "White Dew  ·  Dew glistens white on grass  ·  Waning crescent" ] || { echo "FAIL: almanac fixed clock"; fail=1; }
+# 33. The Season's Poem (Tianxia: The Verse of the Season): one public-domain classic per solar term (haiku and waka on
+#     Tenka, Tang and Song verse on Tianxia, English versions written for Tenka), picked here by tenka-almanac's term;
+#     turned half a year below the equator; the card is wired in both sessions (Super + Y).
+PS="$T/poemsam"; mkdir -p "$PS/.config/tenka"; PX="$T/poemxia"; mkdir -p "$PX/.config/tenka"; echo '{"name": "xianxia"}' > "$PX/.config/tenka/shell-theme.json"
+po() { TZ=Asia/Kolkata TENKA_PLACE="${PL:-28.6,77.2,Delhi}" TENKA_ALMANAC="$BIN/tenka-almanac" python3 "$BIN/tenka-poem" "$@"; }
+HOME="$PS" po 2026-10-12 | grep -q '"term": "Cold Dew".*"lines": \["Along this road", "goes no one —", "autumn evening."\], "poet": "Matsuo Bashō"' &&
+HOME="$PX" po 2026-12-22 | grep -q '"title": "The Verse of the Season", "term": "Winter Solstice".*"poet": "Bai Juyi", "era": "Tang"' &&
+HOME="$PS" PL=-33.9,151.2,Sydney po 2026-06-25 | grep -q '"term": "Summer Solstice", "term_index": 6, "poem_index": 18, "south": true' &&
+[ "$(HOME="$PS" po all | wc -l)" = 24 ] && [ "$(HOME="$PX" po all | wc -l)" = 24 ] && HOME="$PX" po 2026-04-05 text | grep -q '— Du Mu (Tang)' &&
+! grep -q 'urllib\|http\|curl' "$BIN/tenka-poem" &&
+grep -q '^ *Poem {}' "$ROOT/shell/quickshell/tenka/shell.qml" && [ -f "$ROOT/shell/quickshell/tenka/poem/PoemCard.qml" ] &&
+grep -q '"tenka:poem"' "$IC/etc/skel/.config/hypr/hyprland.lua" && [ -f "$IC/usr/share/tenka/poem/LitePoem.qml" ] &&
+grep -q 'value="tenka-poem open"' "$IC/etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml" &&
+grep -q 'tenka:poem' "$IC/usr/bin/tenka-codex" && grep -q '^Exec=tenka-poem open$' "$IC/usr/share/applications/tenka-poem.desktop" || { echo "FAIL: season's poem"; fail=1; }
 [ "$fail" = 0 ] && echo "check-session: ok"
 exit $fail

@@ -44,6 +44,7 @@ ShellRoot {
     Breath {}
     Clocks {}
     Moon {}
+    Poem {}
     SkyWeek {}
     ControlCenter {}
     Notifications {}

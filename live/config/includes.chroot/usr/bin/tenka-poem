@@ -1,0 +1,164 @@
+#!/usr/bin/python3
+"""tenka-poem: The Season's Poem (Tianxia: The Verse of the Season), Super + Y.
+One classic poem for each of the year's 24 solar terms, changing with the term tenka-almanac names: haiku and waka
+(Basho, Buson, Issa, Chiyo-ni, Shiki...) on Tenka, Tang and Song poems (Li Bai, Du Fu, Wang Wei, Du Mu...) on
+Tianxia. The poems are centuries old and in the public domain; the English versions were written for Tenka. Below the
+equator the poem is turned half a year, so it follows the season you are in. Nothing is fetched.
+
+  tenka-poem                         this term's poem (JSON)
+  tenka-poem text                    the poem as text
+  tenka-poem all                     all 24, term by term
+  tenka-poem open                    the card (qs ipc on the flagship, a small Qt window on Tenka Lite)
+  tenka-poem [YYYY-MM-DD] [state|text]   another day
+"""
+import datetime as dt, json, os, subprocess, sys
+
+RT = os.environ.get("XDG_RUNTIME_DIR") or "/tmp"
+CONF = os.path.join(os.environ.get("XDG_CONFIG_HOME") or os.path.expanduser("~/.config"), "tenka")
+_alm = None
+
+def almanac():
+    global _alm
+    if _alm is None:
+        from importlib.machinery import SourceFileLoader
+        _alm = SourceFileLoader("tenka_almanac", os.environ.get("TENKA_ALMANAC", "/usr/bin/tenka-almanac")).load_module()
+    return _alm
+
+def theme():
+    try: return json.load(open(os.path.join(CONF, "shell-theme.json"))).get("name") or "samurai"
+    except (OSError, ValueError): return "samurai"
+
+# one poem per term, in tenka-almanac's order (0 = the Spring Equinox): (lines, poet, era)
+POEMS = {
+    "samurai": [
+        (["The old pond —", "a frog leaps in,", "the sound of water."], "Matsuo Bashō", "Edo"),
+        (["A cloud of blossom —", "is that bell from Ueno,", "or from Asakusa?"], "Matsuo Bashō", "Edo"),
+        (["The spring sea —", "all day it rises and falls,", "rises and falls."], "Yosa Buson", "Edo"),
+        (["Green leaves for the eye,", "the cuckoo in the hills,", "the first bonito."], "Yamaguchi Sodō", "Edo"),
+        (["Summer grasses —", "all that is left", "of soldiers' dreams."], "Matsuo Bashō", "Edo"),
+        (["Gathering the rains", "of early summer, how swift", "the Mogami River."], "Matsuo Bashō", "Edo"),
+        (["The early summer rains —", "facing the great river,", "two houses."], "Yosa Buson", "Edo"),
+        (["Such stillness —", "the cicada's voice", "seeps into the rocks."], "Matsuo Bashō", "Edo"),
+        (["Nothing in its voice", "tells how soon it will die —", "the cicada."], "Matsuo Bashō", "Edo"),
+        (["That autumn has come", "the eye cannot clearly see,", "yet I am startled", "by the sound of the wind."], "Fujiwara no Toshiyuki", "Heian"),
+        (["The morning glory", "has taken the well bucket —", "I beg water elsewhere."], "Fukuda Chiyo-ni", "Edo"),
+        (["This world of dew", "is a world of dew,", "and yet, and yet…"], "Kobayashi Issa", "Edo"),
+        (["The harvest moon —", "I walk around the pond", "all night long."], "Matsuo Bashō", "Edo"),
+        (["Along this road", "goes no one —", "autumn evening."], "Matsuo Bashō", "Edo"),
+        (["I bite a persimmon,", "and a bell rings out", "at Hōryū-ji."], "Masaoka Shiki", "Meiji"),
+        (["First winter rain —", "even the monkey seems to want", "a little straw coat."], "Matsuo Bashō", "Edo"),
+        (["Well then, let us go", "snow-viewing, till we stumble", "and fall."], "Matsuo Bashō", "Edo"),
+        (["So this, then,", "is my last home —", "five feet of snow."], "Kobayashi Issa", "Edo"),
+        (["Sick on a journey,", "my dreams go wandering", "over withered fields."], "Matsuo Bashō", "Edo"),
+        (["The water jar cracks —", "in the night the ice", "wakes me."], "Matsuo Bashō", "Edo"),
+        (["The sound of a mouse", "stepping on a plate —", "how cold it is."], "Yosa Buson", "Edo"),
+        (["My happiness", "is only middling —", "my spring."], "Kobayashi Issa", "Edo"),
+        (["The snow melts,", "and the village fills", "with children."], "Kobayashi Issa", "Edo"),
+        (["Skinny frog,", "don't lose —", "Issa is here!"], "Kobayashi Issa", "Edo"),
+    ],
+    "xianxia": [
+        (["Spring sleep, unaware of dawn;", "everywhere I hear the birds.", "Last night, the sound of wind and rain —", "how many blossoms fell?"], "Meng Haoran", "Tang"),
+        (["At Qingming the rain falls thick and fine;", "on the road, the travellers' hearts are breaking.", "I ask where a wine shop might be —", "a herd boy points to Apricot Blossom Village."], "Du Mu", "Tang"),
+        (["Good rain knows its season:", "it comes when spring is due,", "steals in with the wind by night,", "and soaks all things without a sound."], "Du Fu", "Tang"),
+        (["The spring's eye, sparing, lets the trickle go;", "the trees' shade loves the clear and the soft.", "The small lotus has just shown its sharp tip,", "and a dragonfly already stands on top."], "Yang Wanli", "Song"),
+        (["Hoeing the grain under the noon sun,", "sweat drips onto the earth.", "Who knows that in the bowl", "each grain was won with toil?"], "Li Shen", "Tang"),
+        (["Green the hills and plains, white the streams;", "in the cuckoo's call, a rain like mist.", "In the village in the fourth month, few are idle:", "the silkworms tended, and the rice to plant."], "Weng Juan", "Song"),
+        (["West Lake in the sixth month", "is like no other season:", "lotus leaves meet the sky in endless green,", "lotus flowers in the sun, a different red."], "Yang Wanli", "Song"),
+        (["Green trees, deep shade, the long summer day;", "the tower's reflection falls into the pond.", "A crystal curtain stirs, a light breeze rises;", "a frame of roses fills the court with scent."], "Gao Pian", "Tang"),
+        (["Lazily I wave a white feather fan,", "bare in the green wood.", "I take off my cap, hang it on a rock,", "and let the pine wind wash my head."], "Li Bai", "Tang"),
+        (["In the empty hills after fresh rain,", "the evening air brings autumn.", "The bright moon shines between the pines;", "clear springs run over the stones."], "Wang Wei", "Tang"),
+        (["A silver candle, autumn light on a painted screen;", "a light silk fan to catch the drifting fireflies.", "The night on the stone steps is cool as water;", "she lies and watches the Herdsman and the Weaver."], "Du Mu", "Tang"),
+        (["War drums have stopped all travel;", "at the frontier in autumn, one wild goose cries.", "From tonight the dew is white;", "the moon is brighter over home."], "Du Fu", "Tang"),
+        (["Before my bed, the bright moonlight —", "I took it for frost on the ground.", "I raise my head and gaze at the moon,", "lower it, and think of home."], "Li Bai", "Tang"),
+        (["Alone, a stranger in a strange land,", "at every festival I miss my family more.", "Far off, I know, my brothers climb the heights,", "wearing dogwood, and one of them is missing."], "Wang Wei", "Tang"),
+        (["Far up the cold mountain a stone path slants;", "where white clouds rise, there are houses.", "I stop my carriage, loving the maple wood at dusk:", "the frosted leaves are redder than spring flowers."], "Du Mu", "Tang"),
+        (["The moon sets, crows caw, frost fills the sky;", "river maples, fishing fires; I lie awake in sorrow.", "Beyond Gusu, from Cold Mountain Temple,", "the midnight bell reaches the traveller's boat."], "Zhang Ji", "Tang"),
+        (["New wine, green with foam,", "a small red clay stove.", "Evening comes, it looks like snow —", "will you drink a cup with me?"], "Bai Juyi", "Tang"),
+        (["A thousand hills, no birds in flight;", "ten thousand paths, no trace of men.", "A lone boat, an old man in straw cape and hat,", "fishing alone in the cold river snow."], "Liu Zongyuan", "Tang"),
+        (["At the Handan inn on the Winter Solstice,", "knees hugged by the lamp, my shadow beside me.", "I think how at home, deep into the night,", "they are talking of the one who is far away."], "Bai Juyi", "Tang"),
+        (["In the corner, a few sprays of plum", "open alone in the cold.", "From afar I know it is not snow,", "for a faint fragrance comes."], "Wang Anshi", "Song"),
+        (["Dusk, and the blue hills far;", "a cold sky, a poor white hut.", "At the brushwood gate a dog barks:", "through wind and snow, someone comes home at night."], "Liu Changqing", "Tang"),
+        (["Amid firecrackers the old year goes;", "the spring wind brings warmth to the new wine.", "A thousand doors in the rising sun", "all change the old peach charms for new."], "Wang Anshi", "Song"),
+        (["Fine rain on the Heaven Street, soft as cream;", "seen from afar the grass is green; up close, none.", "This is the best of the year's spring,", "far better than the willow mist over the capital."], "Han Yu", "Tang"),
+        (["Dressed in jade, the tall tree;", "ten thousand ribbons of green silk hang down.", "Who cut these slender leaves?", "The spring wind of the second month, like scissors."], "He Zhizhang", "Tang"),
+    ],
+}
+
+def state(t=None):
+    a = almanac()
+    th = theme(); xia = th == "xianxia"
+    s = a.almanac(t, th)
+    i = s["term_index"]
+    p = None
+    try: p = a.place()
+    except Exception: pass
+    south = bool(p and p["lat"] < 0)
+    k = (i + 12) % 24 if south else i
+    lines, poet, era = POEMS["xianxia" if xia else "samurai"][k]
+    d = s["next_in_days"]
+    return {
+        "theme": th,
+        "title": "The Verse of the Season" if xia else "The Season's Poem",
+        "term": s["term"], "term_index": i, "poem_index": k, "south": south,
+        "detail": s["detail"],
+        "lines": lines, "poet": poet, "era": era,
+        "next_term": s["next_term"], "next_in_days": d,
+        "next": "%s %s" % (s["next_term"], "tomorrow" if d <= 1 else "in %d days" % d),
+        "note": "turned half a year for the southern seasons" if south else "",
+    }
+
+def text(s):
+    print("%s  \u00b7  %s" % (s["title"], s["term"]))
+    print()
+    for l in s["lines"]: print("  " + l)
+    print()
+    print("  \u2014 %s (%s)" % (s["poet"], s["era"]))
+    if s["note"]: print("  (" + s["note"] + ")")
+    print()
+    print("Next: " + s["next"])
+
+def open_card():
+    if os.environ.get("WAYLAND_DISPLAY") and subprocess.run(["pgrep", "-x", "qs"], capture_output=True).returncode == 0:
+        subprocess.run(["qs", "-c", "tenka", "ipc", "call", "poem", "toggle"], capture_output=True); return 0
+    if not os.environ.get("DISPLAY"): text(state()); return 0
+    lock = os.path.join(RT, "tenka-poem-card.pid")
+    try:                                                # asked again while open: close it
+        pid = int(open(lock).read().strip())
+        if b"LitePoem.qml" not in open("/proc/%d/cmdline" % pid, "rb").read(): raise ValueError
+        os.kill(pid, 15); os.remove(lock); return 0
+    except (OSError, ValueError):
+        pass
+    facts = os.path.join(RT, "tenka-poem.json")
+    with open(facts, "w", encoding="utf-8") as f: json.dump(state(), f, ensure_ascii=False)
+    env = dict(os.environ, QML_XHR_ALLOW_FILE_READ="1", QT_QPA_PLATFORM="xcb")
+    p = subprocess.Popen(["/usr/lib/qt6/bin/qml", "/usr/share/tenka/poem/LitePoem.qml", "--", facts, os.path.join(CONF, "shell-theme.json")],
+                         stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=env)
+    with open(lock, "w") as f: f.write(str(p.pid))
+    p.wait()
+    for f in (lock, facts):
+        try: os.remove(f)
+        except OSError: pass
+    return 0
+
+def main(a):
+    when, mode = None, "state"
+    for x in a:
+        if x in ("state", "text", "json", "all"): mode = x
+        elif x == "open": return open_card()
+        elif x in ("-h", "--help", "help"): print(__doc__.strip()); return 0
+        else:
+            try: when = dt.datetime.strptime(x, "%Y-%m-%d").replace(hour=12).timestamp()
+            except ValueError: print("tenka-poem: not a date (YYYY-MM-DD): " + x, file=sys.stderr); return 2
+    if when is None and os.environ.get("TENKA_NOW"): when = float(os.environ["TENKA_NOW"])
+    if mode == "all":
+        names = almanac().TERMS
+        for i, (lines, poet, era) in enumerate(POEMS["xianxia" if theme() == "xianxia" else "samurai"]):
+            print("%-22s %s  \u2014 %s" % (names[i], " / ".join(lines), poet))
+        return 0
+    s = state(when)
+    if mode == "text": text(s)
+    else: print(json.dumps(s, ensure_ascii=False))
+    return 0
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

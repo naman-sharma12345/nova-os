@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=The Season's Poem
+GenericName=Seasonal Poem
+Comment=A classic poem for each of the 24 solar terms: haiku on Tenka, Tang and Song verse on Tianxia (Super + Y)
+Exec=tenka-poem open
+Icon=accessories-text-editor-symbolic
+Categories=Utility;
+Keywords=poem;haiku;waka;poetry;season;solar term;basho;issa;li bai;du fu;verse;

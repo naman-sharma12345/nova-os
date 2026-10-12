@@ -152,6 +152,7 @@ hl.bind(M .. " + O",           hl.dsp.global("tenka:breath"))          -- the br
 hl.bind(M .. " + U",           hl.dsp.global("tenka:clocks"))          -- under heaven: the hour in the places you keep
 hl.bind(M .. " + M",           hl.dsp.global("tenka:moon"))            -- moon viewing: tonight's moon
 hl.bind(M .. " + H",           hl.dsp.global("tenka:skyweek"))         -- seven skies: the coming week's weather
+hl.bind(M .. " + Y",           hl.dsp.global("tenka:poem"))            -- the season's poem: a classic poem for the solar term
 hl.bind("Print",               hl.dsp.exec_cmd("tenka-shot area"))
 hl.bind("SHIFT + Print",       hl.dsp.exec_cmd("tenka-shot screen"))
 hl.bind(M .. " + SHIFT + E",   hl.dsp.exec_cmd("tenka-power"))

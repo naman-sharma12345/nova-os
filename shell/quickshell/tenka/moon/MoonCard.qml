@@ -13,6 +13,7 @@ Item {
     property color accent: "#d8412f"
     property real radius: 6
     property string face: "Marcellus"
+    readonly property url maria: Qt.resolvedUrl("../assets/maria.png")
     property bool xia: false
     property var s: ({ title: "Moon Viewing", phase: "", illumination: 0, age_days: 0, fraction: 0, waxing: true, south: false,
                        day: 1, month_name: "", night: "", rise: null, set: null, place: "", full: { date: "", name: "", in_days: 0 } })
@@ -38,6 +39,8 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter; y: 104
         width: 236; height: 236
         renderTarget: Canvas.Image
+        Component.onCompleted: loadImage(card.maria)
+        onImageLoaded: requestPaint()
         onPaint: {
             const ctx = getContext("2d"); ctx.reset()
             const cx = width / 2, cy = height / 2, R = width / 2 - 4
@@ -58,13 +61,12 @@ Item {
             ctx.closePath()
             ctx.fillStyle = Qt.rgba(T.r, T.g, T.b, 0.92); ctx.fill()
             ctx.clip()
-            // a few seas, very faint, where they lie on the near side (the south sees the face turned over)
-            const seas = [[-0.28, -0.36, 0.26, 0.19], [0.08, -0.30, 0.15, 0.13], [0.27, -0.05, 0.17, 0.14], [0.60, -0.20, 0.10, 0.08],
-                          [-0.52, 0.04, 0.20, 0.30], [-0.14, 0.32, 0.17, 0.11], [0.32, 0.32, 0.11, 0.08], [0.10, 0.08, 0.08, 0.07],
-                          [-0.20, -0.08, 0.10, 0.08]]
-            const flip = card.s.south === true ? -1 : 1
-            ctx.fillStyle = Qt.rgba(B.r, B.g, B.b, 0.07)
-            for (const m of seas) { ctx.beginPath(); ctx.ellipse(cx + flip * m[0] * R - m[2] * R, cy + flip * m[1] * R - m[3] * R, 2 * m[2] * R, 2 * m[3] * R); ctx.fill() }
+            // the seas, where they really lie (assets/maria.png: the near side's maria, a flat mask made from NASA's
+            // public-domain LRO map), over the lit part only; the south sees the face turned over
+            if (isImageLoaded(card.maria)) {
+                ctx.translate(cx, cy); if (card.s.south === true) ctx.rotate(Math.PI)
+                ctx.globalAlpha = 0.17; ctx.drawImage(card.maria, -R, -R, 2 * R, 2 * R); ctx.globalAlpha = 1
+            }
             ctx.restore()
             // the rim, a hairline
             ctx.beginPath(); ctx.arc(cx, cy, R, 0, 2 * Math.PI)

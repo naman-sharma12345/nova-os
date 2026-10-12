@@ -125,7 +125,8 @@ def sun_radec(j):
 def sky_place(j, lat, lon):
     """where the moon stands in this sky: (altitude, azimuth from north through east, tilt), all in degrees.
     tilt = the angle of the middle of the lit limb, measured from straight up toward the left (east when facing
-    south): 0 lit on top, 90 lit on the left, 180 lit underneath (the boat moon of the tropics), 270 lit on the right"""
+    south): 0 lit on top, 90 lit on the left, 180 lit underneath (the boat moon of the tropics), 270 lit on the right;
+    turn = the parallactic angle, how far the moon's north-up face is turned clockwise as it stands in this sky"""
     ra, dec, par = moon_radec(j); sra, sdec = sun_radec(j)
     gmst = math.radians((280.46061837 + 360.98564736629 * (j - 2451545.0)) % 360)
     H = gmst + math.radians(lon) - ra; f = math.radians(lat)
@@ -134,7 +135,7 @@ def sky_place(j, lat, lon):
     chi = math.atan2(math.cos(sdec) * math.sin(sra - ra),                      # bright limb, north through east (Meeus 48.5)
                      math.sin(sdec) * math.cos(dec) - math.cos(sdec) * math.sin(dec) * math.cos(sra - ra))
     q = math.atan2(math.sin(H), math.tan(f) * math.cos(dec) - math.sin(dec) * math.cos(H))   # parallactic angle
-    return (math.degrees(alt) - (0.7275 * par - 0.5667), math.degrees(az) % 360, math.degrees(chi - q) % 360)
+    return (math.degrees(alt) - (0.7275 * par - 0.5667), math.degrees(az) % 360, math.degrees(chi - q) % 360, math.degrees(q))
 
 def rise_set(t, lat, lon):
     """moonrise and moonset in the local calendar day around t, as unix seconds (None when it does not happen)"""
@@ -197,8 +198,8 @@ def state(t=None):
     if p:
         r, s, up = rise_set(t, p["lat"], p["lon"])
         hm = lambda u: dt.datetime.fromtimestamp(u).strftime("%H:%M") if u else None
-        al, az, tilt = sky_place(A.jd(t), p["lat"], p["lon"])
-        out.update(rise=hm(r), set=hm(s), up=up, alt=round(al, 1), az=round(az, 1), tilt=round(tilt, 1))
+        al, az, tilt, turn = sky_place(A.jd(t), p["lat"], p["lon"])
+        out.update(rise=hm(r), set=hm(s), up=up, alt=round(al, 1), az=round(az, 1), tilt=round(tilt, 1), turn=round(turn, 1))
     return out
 
 def text(s):

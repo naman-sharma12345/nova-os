@@ -106,7 +106,7 @@ PanelWindow {
     // tilt of its lit limb, worked out on the machine, nothing asked online); the desk sets it in the picture's
     // open sky: rising at the left of that space, setting at the right (turned over in the southern half of
     // the world), higher as it climbs. The phase and the tilt are tonight's own: the low boat moon of the tropics,
-    // the upright quarter of the north. Flat: paper and a breath of ink, a hairline rim, no glow. It shows only
+    // the upright quarter of the north, its seas turned as they stand. Flat: paper and a breath of ink, a hairline rim, no glow. It shows only
     // at night when the sky is clear or barely clouded (paler then), and when the sky is unknown (tenka-sky off or
     // offline) it trusts the heavens; cloud, rain, snow, mist or a storm hide it. It rests with the petals.
     property var moon: ({})
@@ -154,7 +154,10 @@ PanelWindow {
         Behavior on opacity { NumberAnimation { duration: 2400 } }
         antialiasing: true
         renderTarget: Canvas.Image
-        readonly property string key: [desk.moon.fraction, desk.moon.tilt, desk.type, d].join("|")
+        readonly property url maria: Qt.resolvedUrl("assets/maria.png")
+        Component.onCompleted: loadImage(maria)
+        onImageLoaded: requestPaint()
+        readonly property string key: [desk.moon.fraction, desk.moon.tilt, desk.moon.turn, desk.type, desk.lightArt, d].join("|")
         onKeyChanged: requestPaint()
         onPaint: {
             const ctx = getContext("2d"); ctx.reset()
@@ -174,15 +177,12 @@ PanelWindow {
             for (let i = 0; i <= N; i++) { const t = Math.PI / 2 - Math.PI * i / N; ctx.lineTo(R * c * Math.cos(t), R * Math.sin(t)) }
             ctx.closePath()
             ctx.fillStyle = Qt.rgba(T.r, T.g, T.b, 0.94); ctx.fill()
-            ctx.restore()
-            ctx.save()
-            ctx.beginPath(); ctx.arc(cx, cy, R, 0, 2 * Math.PI); ctx.clip()
-            // a few seas, very faint, over the lit part only (the dark part is near-transparent anyway)
-            const seas = [[-0.28, -0.36, 0.26, 0.19], [0.08, -0.30, 0.15, 0.13], [0.27, -0.05, 0.17, 0.14],
-                          [-0.52, 0.04, 0.20, 0.30], [-0.14, 0.32, 0.17, 0.11], [0.10, 0.08, 0.08, 0.07]]
-            const flip = desk.moon.south === true ? -1 : 1, B = desk.lightArt ? Theme.t.text : Theme.t.base
-            ctx.fillStyle = Qt.rgba(B.r, B.g, B.b, 0.06)
-            for (const m of seas) { ctx.beginPath(); ctx.ellipse(cx + flip * m[0] * R - m[2] * R, cy + flip * m[1] * R - m[3] * R, 2 * m[2] * R, 2 * m[3] * R); ctx.fill() }
+            // the seas where they really lie (assets/maria.png, from NASA's public-domain LRO map), on the lit part only,
+            // the face turned as it stands in this sky (turn: the parallactic angle); on pale art the ink moon goes without
+            if (!desk.lightArt && isImageLoaded(deskMoon.maria)) {
+                ctx.clip(); ctx.rotate(-Math.atan2(-Math.cos(z), -Math.sin(z)) + (desk.moon.turn || 0) * Math.PI / 180)
+                ctx.globalAlpha = 0.17; ctx.drawImage(deskMoon.maria, -R, -R, 2 * R, 2 * R); ctx.globalAlpha = 1
+            }
             ctx.restore()
             ctx.beginPath(); ctx.arc(cx, cy, R, 0, 2 * Math.PI)
             ctx.lineWidth = 1; ctx.strokeStyle = Qt.rgba(T.r, T.g, T.b, 0.24); ctx.stroke()

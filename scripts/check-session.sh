@@ -379,5 +379,14 @@ tp pause every 25 | grep -q '"every": 25' && ! tp pause every 5 2>/dev/null &&
 grep -q 'on-timeout = tenka-breath away' "$IC/etc/skel/.config/hypr/hypridle.conf" && grep -q 'on-resume = tenka-breath back' "$IC/etc/skel/.config/hypr/hypridle.conf" &&
 grep -q '^tenka-breath run' "$BIN/tenka-session" && grep -q 'setsid tenka-breath run' "$BIN/tenka-lite-apply" &&
 grep -q '"tenka-breath", "pause"' "$ROOT/shell/quickshell/tenka/ControlCenter.qml" && grep -q 'id: lfl' "$ROOT/shell/quickshell/tenka/ControlCenter.qml" || { echo "FAIL: the pause"; fail=1; }
+# 22. The Sky: the weather in the desk's words, by season and hemisphere; rain and snow take over the desk's fall
+SK="$T/sky"; mkdir -p "$SK"
+sk() { HOME="$SK" TZ="${Z:-Asia/Kolkata}" TENKA_ALMANAC="$BIN/tenka-almanac" python3 "$BIN/tenka-sky" "$@"; }
+[ "$(TENKA_SKY_FIXTURE=61,24 sk line)" = "Kolkata  24°  ·  Autumn rain" ] && [ "$(TENKA_SKY_FIXTURE=53,20 sk line)" = "Kolkata  20°  ·  Fine autumn rain" ] &&
+[ "$(TENKA_SKY_FIXTURE=0,12,0 sk line)" = "Kolkata  12°  ·  A clear night" ] && [ "$(TENKA_SKY_FIXTURE=45,9 sk line)" = "Kolkata  9°  ·  Mist on the hills" ] &&
+[ "$(Z=Australia/Sydney TENKA_SKY_FIXTURE=63,18 sk line)" = "Sydney  18°  ·  Spring rain" ] && TENKA_SKY_FIXTURE=95,30 sk | grep -q '"kind": "storm"' &&
+sk off && sk | grep -q '"off": true' && [ ! -e "$SK/.cache/tenka/sky.json" ] && sk on && grep -q 'latitude=%.1f&longitude=%.1f' "$BIN/tenka-sky" &&
+grep -q '"tenka-sky"' "$ROOT/shell/quickshell/tenka/Theme.qml" && grep -q 'Theme.sky.kind === "rain"' "$ROOT/shell/quickshell/tenka/Desk.qml" &&
+grep -q 'kind: "rain"' "$ROOT/shell/quickshell/tenka/Desk.qml" && [ -f "$ROOT/shell/quickshell/tenka/assets/rain.png" ] && grep -q 'Theme.sky.word' "$ROOT/shell/quickshell/tenka/DeskLedger.qml" || { echo "FAIL: the sky"; fail=1; }
 [ "$fail" = 0 ] && echo "check-session: ok"
 exit $fail

@@ -98,6 +98,17 @@ Singleton {
     readonly property color gold: mix(adapter.gold, seasonLight[season] || adapter.gold, 0.30)
     readonly property color seasonInk: mix(adapter.gold, seasonLight[season] || adapter.gold, 0.6)   // the season's own word
     readonly property string seasonWord: ({ plum: "Plum", lotus: "Lotus", maple: "Maple", snow: "Snow" })[season] || ""
+
+    // The sky outside (tenka-sky): the weather in the desk's own words, asked at most every 30 minutes. When it rains
+    // or snows, the desk's falling petals and leaves give way to rain or snow; mist lays a haze over the art.
+    // TENKA_SKY=off (or `tenka-sky off`) keeps the desk to the season alone.
+    property var sky: ({ kind: "", word: "" })
+    Process {
+        id: skyP
+        command: ["tenka-sky"]
+        stdout: StdioCollector { onStreamFinished: { try { const k = JSON.parse(text); if (k && k.kind !== undefined) root.sky = k } catch (e) {} } }
+    }
+    Timer { interval: 600000; repeat: true; running: Quickshell.env("TENKA_SKY") !== "off"; triggeredOnStart: true; onTriggered: skyP.running = true }
     // the wallpaper's veil: flat colour, a few percent, never a glow
     readonly property color veil: ({ dawn: "#f2c9a0", day: adapter.base, dusk: "#b8662a", night: adapter.base })[phase] || adapter.base
     readonly property real veilAmount: ({ dawn: 0.08, day: 0, dusk: 0.12, night: 0.30 })[phase] || 0

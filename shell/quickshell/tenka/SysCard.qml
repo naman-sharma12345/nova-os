@@ -86,7 +86,7 @@ Glass {
         Rectangle { width: parent.width; height: 1; color: Theme.alpha(Theme.gold, 0.18) }
         Column {
             spacing: 6
-            Text { visible: card.weather !== ""; text: card.weather; color: Theme.alpha(Theme.t.text, 0.85); font.family: Theme.ui; font.pixelSize: 12 }
+            Text { visible: card.weather !== "" || !!Theme.sky.word; text: card.weather !== "" ? card.weather : Theme.sky.place + "  " + Theme.sky.temp + "  \u00b7  " + Theme.sky.word; color: Theme.alpha(Theme.t.text, 0.85); font.family: Theme.ui; font.pixelSize: 12 }
             Text { text: card.power; color: Theme.alpha(Theme.t.text, 0.55); font.family: Theme.ui; font.pixelSize: 12 }
         }
     }

@@ -37,13 +37,18 @@ PanelWindow {
     ParticleSystem { id: ps; running: !Theme.perf; paused: Theme.working || Theme.hush || Theme.focus }
     // what falls follows the season (Theme.season): plum petals in spring, Tianxia's rising motes or Tenka's
     // petals in summer, maple leaves in autumn (in the season's own ink), snow in winter. Flat sprites, no glow.
-    readonly property string fall: Theme.season === "maple" ? "leaf" : Theme.season === "snow" ? "flake"
+    // ...unless the sky outside says otherwise (Theme.sky, tenka-sky): rain or a storm brings fine rain, snow brings snow
+    readonly property string fall: Theme.sky.kind === "rain" || Theme.sky.kind === "storm" ? "rain" : Theme.sky.kind === "snow" ? "flake"
+                                 : Theme.season === "maple" ? "leaf" : Theme.season === "snow" ? "flake"
                                  : (Theme.xia && Theme.season === "lotus") ? "mote" : "petal"
     component Fall: Emitter {
         required property string kind
         system: ps; group: kind; enabled: desk.fall === kind
         lifeSpan: 18000; lifeSpanVariation: 3000
-        Component.onCompleted: if (enabled) burst(kind === "mote" ? 18 : kind === "flake" ? 24 : 6)
+        // the first handful once the season and the sky are known (a burst at creation scattered whatever the
+        // defaults named for the first instant: petals and snow in autumn)
+        Timer { interval: 1500; running: true; onTriggered: if (parent.enabled) parent.burst(parent.kind === "mote" ? 18 : parent.kind === "flake" ? 24 : parent.kind === "rain" ? 60 : 6) }
+        onEnabledChanged: if (enabled && kind === "rain") burst(60)
     }
     Fall { kind: "petal"; x: desk.width * 0.3; y: -40; width: desk.width * 0.8; height: 1
            emitRate: 0.9; size: 15; sizeVariation: 6
@@ -57,7 +62,12 @@ PanelWindow {
     Fall { kind: "flake"; x: 0; y: -20; width: desk.width; height: 1
            emitRate: 3.0; size: 13; sizeVariation: 5
            velocity: AngleDirection { angle: 96; angleVariation: 10; magnitude: 38; magnitudeVariation: 12 } }
-    Wander { system: ps; xVariance: 60; pace: 40; affectedParameter: Wander.Velocity }
+    // rain: thin slanted strokes, quick and many, a heavier fall in a storm; drawn in the art's own pale ink
+    Fall { kind: "rain"; x: -desk.width * 0.1; y: -60; width: desk.width * 1.15; height: 1
+           lifeSpan: 2200; lifeSpanVariation: 300
+           emitRate: Theme.sky.kind === "storm" ? 70 : (Theme.sky.code >= 51 && Theme.sky.code <= 57) ? 22 : 42; size: 34; sizeVariation: 12
+           velocity: AngleDirection { angle: 102; angleVariation: 2; magnitude: 760; magnitudeVariation: 120 } }
+    Wander { system: ps; groups: ["petal", "mote", "leaf", "flake"]; xVariance: 60; pace: 40; affectedParameter: Wander.Velocity }
     component Sprite: ImageParticle {
         system: ps
         entryEffect: ImageParticle.Fade
@@ -69,9 +79,27 @@ PanelWindow {
     Sprite { groups: ["mote"]; source: "assets/mote.png"; alpha: 0.5; alphaVariation: 0.3 }
     Sprite { groups: ["leaf"]; source: "assets/leaf.png"; color: Theme.seasonInk; colorVariation: 0.08
              alpha: 0.92; alphaVariation: 0.1; rotationVariation: 180; rotationVelocityVariation: 40 }   // the leaf carries a flat ink edge
+    Sprite { groups: ["rain"]; source: "assets/rain.png"; color: desk.lightArt ? Theme.t.base : Theme.t.text; alpha: 0.34; alphaVariation: 0.14
+             autoRotation: true; entryEffect: ImageParticle.None }
     Sprite { groups: ["flake"]; source: "assets/flake.png"; alpha: 0.85; alphaVariation: 0.2   // white with a thin ink rim: reads on pale art too
              rotationVariation: 30; rotationVelocityVariation: 20 }
 
+
+    // mist: a pale haze rising from the foot of the art, no blur and no glow; it breathes very slowly
+    Rectangle {
+        anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom
+        height: parent.height * 0.62
+        opacity: Theme.sky.kind === "mist" && !Theme.hush && !Theme.focus ? 1 : 0
+        Behavior on opacity { NumberAnimation { duration: 2400 } }
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: "transparent" }
+            GradientStop { position: 0.5; color: Theme.alpha(Theme.t.text, 0.14) }
+            GradientStop { position: 1.0; color: Theme.alpha(Theme.t.text, 0.30) }
+        }
+        SequentialAnimation on anchors.bottomMargin { running: Theme.sky.kind === "mist" && !Theme.perf; loops: Animation.Infinite
+            NumberAnimation { from: 0; to: -40; duration: 14000; easing.type: Easing.InOutSine }
+            NumberAnimation { from: -40; to: 0; duration: 14000; easing.type: Easing.InOutSine } }
+    }
 
     // ---- the art's tone behind the type. A tiny canvas reads the wallpaper (48x27) and averages the
     // luminance under the title block; on a pale picture (snow, mist) the desk's type turns to the

@@ -1,0 +1,112 @@
+#!/usr/bin/python3
+"""tenka-sky: the weather outside, in the desk's own words ("Autumn rain", "Mist on the hills", "A clear night").
+The place is the almanac's (the city your time zone is named for, or ~/.config/tenka/place.json), rounded to
+about 10 km before it leaves the machine; the sky comes from Open-Meteo (no account, no key) at most once every
+30 minutes and is kept in ~/.cache/tenka/sky.json, so the desk reads a file, not the network. When it rains or
+snows outside, the desk's falling petals and leaves give way to rain or snow; mist lays a haze over the art.
+  tenka-sky                the sky now, as JSON (fetches when the kept one is older than 30 minutes)
+  tenka-sky line           one line: "Kolkata  27°  ·  Autumn rain"
+  tenka-sky --force        fetch now
+  tenka-sky off | on       never ask the network / ask again (~/.config/tenka/sky.json)
+"""
+import datetime, json, os, sys, time, urllib.request
+
+HOME = os.path.expanduser("~")
+CONF = os.path.join(os.environ.get("XDG_CONFIG_HOME") or os.path.join(HOME, ".config"), "tenka")
+CACHE = os.path.join(os.environ.get("XDG_CACHE_HOME") or os.path.join(HOME, ".cache"), "tenka", "sky.json")
+FRESH, KEEP = 30 * 60, 6 * 3600                  # ask again after 30 minutes; trust a kept sky for 6 hours offline
+_alm = None
+
+def almanac():
+    global _alm
+    if _alm is None:
+        from importlib.machinery import SourceFileLoader
+        _alm = SourceFileLoader("tenka_almanac", os.environ.get("TENKA_ALMANAC", "/usr/bin/tenka-almanac")).load_module()
+    return _alm
+
+def season(lat):
+    m = datetime.date.today().month
+    if lat is not None and lat < 0: m = (m + 5) % 12 + 1
+    return "plum" if 3 <= m <= 5 else "lotus" if 6 <= m <= 8 else "maple" if 9 <= m <= 11 else "snow"
+
+def kind(code):
+    """the WMO weather code as what the desk can draw"""
+    if code in (0, 1): return "clear"
+    if code in (2, 3): return "cloud"
+    if code in (45, 48): return "mist"
+    if 51 <= code <= 67 or 80 <= code <= 82: return "rain"
+    if 71 <= code <= 77 or code in (85, 86): return "snow"
+    if code >= 95: return "storm"
+    return "cloud"
+
+RAIN = {"plum": "Spring rain", "lotus": "Summer rain", "maple": "Autumn rain", "snow": "Winter rain"}
+
+def word(code, day, sea):
+    k = kind(code)
+    if k == "clear": return "A clear sky" if day else "A clear night"
+    if k == "cloud": return "Drifting clouds" if code == 2 else "A grey sky"
+    if k == "mist": return "Mist on the hills"
+    if k == "rain":
+        w = RAIN[sea]
+        if 51 <= code <= 57: return "Fine " + w.lower()           # drizzle
+        if code in (65, 67, 82): return "Heavy " + w.lower()
+        return w
+    if k == "snow": return "Snow falling" if code not in (71, 85) else "Light snow"
+    return "Thunder in the hills"
+
+def enabled():
+    try: return bool(json.load(open(os.path.join(CONF, "sky.json"))).get("on", True))
+    except (OSError, ValueError): return True
+
+def fetch(p):
+    fx = os.environ.get("TENKA_SKY_FIXTURE")        # tests and renders: "code,temp[,is_day]"
+    if fx:
+        f = fx.split(","); return int(f[0]), float(f[1]), (f[2] != "0") if len(f) > 2 else True
+    url = ("https://api.open-meteo.com/v1/forecast?latitude=%.1f&longitude=%.1f&current=temperature_2m,weather_code,is_day"
+           % (p["lat"], p["lon"]))
+    with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "tenka-sky"}), timeout=8) as r:
+        c = json.load(r)["current"]
+    return int(c["weather_code"]), float(c["temperature_2m"]), bool(c.get("is_day", 1))
+
+def kept():
+    try: return json.load(open(CACHE))
+    except (OSError, ValueError): return None
+
+def now(force=False):
+    if not enabled(): return {"kind": "", "word": "", "off": True}
+    k = kept(); t = time.time()
+    if k and not force and t - k.get("at", 0) < FRESH and not os.environ.get("TENKA_SKY_FIXTURE"): return k
+    p = almanac().place()
+    if not p: return {"kind": "", "word": "", "why": "no place (set ~/.config/tenka/place.json)"}
+    try:
+        code, temp, day = fetch(p)
+    except Exception as e:
+        if k and t - k.get("at", 0) < KEEP: return dict(k, stale=True)
+        return {"kind": "", "word": "", "why": "offline"}
+    sea = season(p["lat"])
+    s = {"kind": kind(code), "word": word(code, day, sea), "code": code, "temp": "%d\u00b0" % round(temp),
+         "day": day, "place": p.get("name") or "", "season": sea, "at": int(t)}
+    os.makedirs(os.path.dirname(CACHE), exist_ok=True)
+    with open(CACHE + ".new", "w") as f: json.dump(s, f)
+    os.replace(CACHE + ".new", CACHE)
+    return s
+
+def main():
+    a = sys.argv[1:]
+    if a and a[0] in ("off", "on"):
+        os.makedirs(CONF, exist_ok=True)
+        with open(os.path.join(CONF, "sky.json"), "w") as f: json.dump({"on": a[0] == "on"}, f)
+        if a[0] == "off":
+            try: os.remove(CACHE)
+            except OSError: pass
+        return 0
+    s = now(force="--force" in a)
+    if a and a[0] == "line":
+        if s.get("word"): print("%s  %s  \u00b7  %s" % (s.get("place", ""), s.get("temp", ""), s["word"]))
+        return 0
+    if a and a[0] not in ("--force",):
+        print(__doc__.strip(), file=sys.stderr); return 2
+    print(json.dumps(s)); return 0
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -1,6 +1,7 @@
 #!/bin/sh
 # Started by Hyprland at login.
 tenka-theme --init
+/usr/libexec/tenka/tenka-places   # the sidebar's usual places (Documents, Downloads, ...), once
 rm -f "${XDG_RUNTIME_DIR:-/tmp}/tenka-seal"   # set again by the shell once it holds the polkit agent
 # Lite's denser file-manager glass is for xfwm4 and for performance mode (no blur); with blur on,
 # Hyprland's glass goes back to clear

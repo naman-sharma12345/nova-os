@@ -1,0 +1,15 @@
+#!/bin/sh
+# The file manager's sidebar, once per person: Documents, Downloads, Pictures, Music, Videos as
+# bookmarks, so Thunar and every GTK file chooser open with the usual places one click away.
+# Written only when there are no GTK bookmarks yet; the person's own list is never touched.
+B="$HOME/.config/gtk-3.0/bookmarks"
+[ -e "$B" ] && exit 0
+command -v xdg-user-dirs-update >/dev/null 2>&1 && xdg-user-dirs-update >/dev/null 2>&1
+mkdir -p "$HOME/.config/gtk-3.0" || exit 0
+: > "$B.tmp" || exit 0
+for k in DOCUMENTS DOWNLOAD PICTURES MUSIC VIDEOS; do
+  d=$(xdg-user-dir "$k" 2>/dev/null)
+  [ -n "$d" ] && [ "$d" != "$HOME" ] && [ -d "$d" ] || continue
+  printf 'file://%s\n' "$(printf '%s' "$d" | sed 's/%/%25/g; s/ /%20/g')" >> "$B.tmp"
+done
+mv -f "$B.tmp" "$B"

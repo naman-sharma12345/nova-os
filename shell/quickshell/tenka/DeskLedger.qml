@@ -52,7 +52,24 @@ Item {
     }
     // the term turns every ~15 days and the moon by the hour: once on open, then every 20 minutes while up
     Timer { interval: 1200000; running: dl.visible; repeat: true; triggeredOnStart: true; onTriggered: almP.running = true }
-    Connections { target: Theme.t; function onNameChanged() { almP.running = true } }
+    Connections { target: Theme.t; function onNameChanged() { almP.running = true; feastP.running = true } }
+    // The Feast Days (Tianxia: The Festivals): the old festivals of the year from tenka-feasts (worked out here, no
+    // network). Each feast day of the month carries a small gold dot under its number; hovering it puts the feast's
+    // day, name and custom in the almanac's gold line, which on the day itself names the feast.
+    property var feasts: null
+    property var hoverFeast: null
+    Process {
+        id: feastP
+        command: ["tenka-feasts", "state"]
+        stdout: StdioCollector { onStreamFinished: { try { dl.feasts = JSON.parse(text) } catch (e) {} } }
+    }
+    Timer { interval: 1200000; running: dl.visible; repeat: true; triggeredOnStart: true; onTriggered: feastP.running = true }
+    function feastOn(day) {
+        if (!dl.feasts || !dl.feasts.month) return null
+        const ym = Qt.formatDate(dl.d, "yyyy-MM")
+        for (const f of dl.feasts.month) if (f.day === day && f.date.indexOf(ym) === 0) return f
+        return null
+    }
     // The Pillow Book (Tianxia: The Jade Record): whether today's page is written, and its first words
     property string page: ""
     Process { id: pageP; command: ["tenka-journal", "today"]; stdout: StdioCollector { onStreamFinished: dl.page = text.trim() } }
@@ -107,7 +124,13 @@ Item {
                             readonly property bool real: day >= 1 && day <= dl.days
                             readonly property bool today: day === dl.d.getDate()
                             readonly property bool past: day < dl.d.getDate()
+                            readonly property var feast: real ? dl.feastOn(day) : null
                             width: grid.cw; height: 26
+                            Rectangle { visible: parent.feast !== null; anchors.horizontalCenter: parent.horizontalCenter; y: parent.height - 3
+                                        width: 3; height: 3; radius: 1.5; color: Theme.alpha(Theme.gold, parent.past ? 0.4 : 0.9) }
+                            MouseArea { anchors.fill: parent; enabled: parent.feast !== null; hoverEnabled: true
+                                        onEntered: dl.hoverFeast = parent.feast
+                                        onExited: if (dl.hoverFeast === parent.feast) dl.hoverFeast = null }
                             Rectangle { anchors.centerIn: parent; width: 24; height: 24; visible: parent.today && parent.real
                                         color: "transparent"; border.width: 1; border.color: Theme.accent; radius: Theme.xia ? 12 : 2 }
                             Text { anchors.centerIn: parent; text: parent.real ? parent.day : ""
@@ -140,7 +163,10 @@ Item {
                                    font.family: Theme.display; font.pixelSize: 10; font.letterSpacing: 2; anchors.baseline: termT.baseline }
                         }
                         Text { width: parent.width; wrapMode: Text.WordWrap; maximumLineCount: 2; elide: Text.ElideRight
-                               lineHeight: 1.1; text: dl.almanac ? dl.almanac.detail : ""
+                               lineHeight: 1.1
+                               text: dl.hoverFeast ? dl.hoverFeast.day + " " + Qt.formatDate(dl.d, "MMM") + "  \u00b7  " + dl.hoverFeast.name + "  \u00b7  " + dl.hoverFeast.note
+                                     : dl.feasts && dl.feasts.today ? dl.feasts.today.name + "  \u00b7  " + dl.feasts.today.note
+                                     : dl.almanac ? dl.almanac.detail : ""
                                color: Theme.alpha(Theme.gold, 0.9); font.family: Theme.display; font.pixelSize: 12 }
                     }
                 }

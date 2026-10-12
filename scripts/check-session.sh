@@ -404,12 +404,13 @@ grep -q '^ *Clocks {}' "$ROOT/shell/quickshell/tenka/shell.qml" && [ -f "$ROOT/s
 grep -q '"tenka:clocks"' "$IC/etc/skel/.config/hypr/hyprland.lua" && [ -f "$IC/usr/share/tenka/clocks/LiteClocks.qml" ] &&
 grep -q 'value="tenka-clocks open"' "$IC/etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml" &&
 grep -q 'tenka:clocks' "$IC/usr/bin/tenka-codex" && grep -q 'Theme.ipc("clocks", "open")' "$ROOT/shell/quickshell/tenka/ControlCenter.qml" && grep -q '^Exec=tenka-clocks open$' "$IC/usr/share/applications/tenka-clocks.desktop" || { echo "FAIL: under heaven"; fail=1; }
-# 24. Moon Viewing (Tianxia: The Moon Palace): the phase, the old lunar night, moonrise and moonset, all worked out here
+# 24. Moon Viewing (Tianxia: The Moon Palace): the phase, the old lunar night, moonrise and moonset, all worked out here.
+#     Tenka counts the nights on Japan's old calendar (UTC+9: the Long Month of 2026 began on 11 Oct there, 10 Oct in China).
 MO="$T/moon"; mkdir -p "$MO/.config/tenka"
 mo() { HOME="$MO" TZ="${Z:-Asia/Kolkata}" TENKA_ALMANAC="$BIN/tenka-almanac" python3 "$BIN/tenka-moon" "$@"; }
 mo 2026-02-17 | grep -q '"month": 1, "leap": false, "day": 1,' && mo 2025-10-06 text | grep -q '^The mid-autumn moon, the 15th night' &&
 mo 2025-08-01 | grep -q '"month_name": "Leap Month of Water"' && mo 2023-03-25 | grep -q '"month": 2, "leap": true' &&
-mo 2026-10-12T08:00 text | grep -q '^Next full moon: Mon 26 Oct 09:4[0-4]' && mo 2026-10-12T08:00 text | grep -q '^The crescent of the third night of the Long Month' &&
+mo 2026-10-12T08:00 text | grep -q '^Next full moon: Mon 26 Oct 09:4[0-4]' && mo 2026-10-13T08:00 text | grep -q '^The crescent of the third night of the Long Month' &&
 Z=Australia/Sydney mo 2026-10-12 | grep -q '"south": true' && ! grep -q 'urllib\|http' "$BIN/tenka-moon" &&
 echo '{"name": "xianxia"}' > "$MO/.config/tenka/shell-theme.json" && mo 2026-10-12 | grep -q '"title": "The Moon Palace".*"month_name": "Chrysanthemum Month"' &&
 grep -q '^ *Moon {}' "$ROOT/shell/quickshell/tenka/shell.qml" && [ -f "$ROOT/shell/quickshell/tenka/moon/MoonCard.qml" ] &&
@@ -479,5 +480,21 @@ fi
 if command -v jq >/dev/null 2>&1; then
   echo '{"a":1}' | JQ_COLORS='90:31:32:36:33:39:39:31' jq -C . 2>&1 | grep -q 'Failed to set' && { echo "FAIL: JQ_COLORS refused"; fail=1; }
 fi
+# 31. The Feast Days (Tianxia: The Festivals): the old festivals worked out here (Japan's old calendar at UTC+9 for Tenka,
+#     China's at UTC+8 for Tianxia; checked against the Hong Kong Observatory's tables via lunardate, 70 of 70 Chinese
+#     lunar festivals 2024-2030); the desk's month dots each feast day and the almanac line names it.
+FS="$T/feastsam"; mkdir -p "$FS/.config/tenka"; FX="$T/feastxia"; mkdir -p "$FX/.config/tenka"; echo '{"name": "xianxia"}' > "$FX/.config/tenka/shell-theme.json"
+YS=$(HOME="$FS" TENKA_MOON="$BIN/tenka-moon" TENKA_ALMANAC="$BIN/tenka-almanac" python3 "$BIN/tenka-feasts" year 2026)
+YS5=$(HOME="$FS" TENKA_MOON="$BIN/tenka-moon" TENKA_ALMANAC="$BIN/tenka-almanac" python3 "$BIN/tenka-feasts" year 2025)
+YX=$(HOME="$FX" TENKA_MOON="$BIN/tenka-moon" TENKA_ALMANAC="$BIN/tenka-almanac" python3 "$BIN/tenka-feasts" year 2026)
+SX=$(HOME="$FX" TENKA_MOON="$BIN/tenka-moon" TENKA_ALMANAC="$BIN/tenka-almanac" python3 "$BIN/tenka-feasts" 2027-02-05)
+echo "$YS" | grep -q '^Fri 25 Sep  Moon Viewing' && echo "$YS" | grep -q '^Fri 23 Oct  The Thirteenth Night' &&
+echo "$YS" | grep -q '^Tue 03 Feb  Setsubun' && echo "$YS5" | grep -q '^Sun 02 Feb  Setsubun' && echo "$YS" | grep -q '^Tue 22 Dec  The Winter Solstice' &&
+echo "$YX" | grep -q '^Tue 17 Feb  The Spring Festival' && echo "$YX" | grep -q '^Sun 05 Apr  Qingming' &&
+echo "$YX" | grep -q '^Fri 25 Sep  The Mid-Autumn Festival' && echo "$YX" | grep -q '^Sun 18 Oct  The Double Ninth' &&
+echo "$SX" | grep -q '"today": {"date": "2027-02-05", "day": 5, "name": "New Year.s Eve"' && echo "$SX" | grep -q '"next": \[{"date": "2027-02-06", "day": 6, "name": "The Spring Festival"' &&
+! grep -q 'urllib\|http\|curl' "$BIN/tenka-feasts" &&
+grep -q 'command: \["tenka-feasts", "state"\]' "$ROOT/shell/quickshell/tenka/DeskLedger.qml" && grep -q 'dl.feastOn(day)' "$ROOT/shell/quickshell/tenka/DeskLedger.qml" &&
+grep -q 'dl.feasts.today.name' "$ROOT/shell/quickshell/tenka/DeskLedger.qml" || { echo "FAIL: feast days"; fail=1; }
 [ "$fail" = 0 ] && echo "check-session: ok"
 exit $fail

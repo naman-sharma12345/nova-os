@@ -1,0 +1,116 @@
+#!/usr/bin/python3
+"""tenka-feasts: The Feast Days (Tianxia: The Festivals). The old festivals of the year, worked out on this machine:
+on Tenka, Japan's seasonal days (the five sekku, Setsubun, Bon, the two moon viewings, the winter solstice...) with
+the moon's days counted on Japan's old calendar (kept at UTC+9); on Tianxia, China's festivals of the lunar year (the
+Spring Festival, the Lantern Festival, Qingming, the Dragon Boat, the Double Seventh, Mid-Autumn, the Double Ninth,
+the winter solstice, Laba...) counted at UTC+8. The moon and the sun come from tenka-moon and tenka-almanac; nothing
+is fetched or sent anywhere. The desk's month marks each feast day with a small gold dot (hover it for its name) and
+the almanac line names the day itself.
+  tenka-feasts [state] [YYYY-MM-DD]   JSON: today's feast, this month's feast days, the next three
+  tenka-feasts year [YYYY]            every feast of a year, one per line
+"""
+import datetime as dt, json, os, sys
+from importlib.machinery import SourceFileLoader
+
+M = SourceFileLoader("tenka_moon", os.environ.get("TENKA_MOON", "/usr/bin/tenka-moon")).load_module()
+JST = dt.timezone(dt.timedelta(hours=9)); CST = dt.timezone(dt.timedelta(hours=8))
+
+# (kind, when, name, note): kind "d" = a fixed day (month, day); "l" = a day of the old lunar month (month, day; -1 =
+# the month's last day); "t" = the day a solar term begins (the sun's longitude), "t-1" = the eve of that day
+FEASTS = {
+    "samurai": [
+        ("d", (1, 1), "New Year's Day", "the first sunrise of the year"),
+        ("d", (1, 7), "The Seven Herbs", "rice porridge with the seven herbs of spring"),
+        ("t-1", 315, "Setsubun", "beans thrown out the door on the eve of spring"),
+        ("d", (3, 3), "The Doll Festival", "peach blossom and the dolls on their tiers"),
+        ("d", (5, 5), "The Iris Festival", "carp streamers in the May wind"),
+        ("d", (7, 7), "Tanabata", "the Weaver and the Herdsman meet across the River of Heaven"),
+        ("d", (8, 13), "Bon", "lanterns lit to guide the ancestors home"),
+        ("l", (8, 15), "Moon Viewing", "the harvest moon of the fifteenth night"),
+        ("d", (9, 9), "The Chrysanthemum Festival", "chrysanthemum wine for a long life"),
+        ("l", (9, 13), "The Thirteenth Night", "chestnuts and beans for the later moon"),
+        ("d", (11, 15), "Seven-Five-Three", "children in their best, long sweets for a long life"),
+        ("t", 270, "The Winter Solstice", "a yuzu bath on the longest night"),
+        ("d", (12, 31), "New Year's Eve", "the hundred and eight bells"),
+    ],
+    "xianxia": [
+        ("l", (1, 1), "The Spring Festival", "the new year of the moon, red paper on every door"),
+        ("l", (1, 15), "The Lantern Festival", "lanterns and riddles under the first full moon"),
+        ("t", 15, "Qingming", "the tombs swept, a walk on the green"),
+        ("l", (5, 5), "The Dragon Boat Festival", "boats race on the river, rice wrapped in bamboo leaves"),
+        ("l", (7, 7), "The Double Seventh", "the Weaver and the Cowherd cross the Magpie Bridge"),
+        ("l", (7, 15), "The Ghost Festival", "lanterns set on the water for wandering spirits"),
+        ("l", (8, 15), "The Mid-Autumn Festival", "mooncakes under the roundest moon"),
+        ("l", (9, 9), "The Double Ninth", "climbing high, chrysanthemum wine"),
+        ("t", 270, "The Winter Solstice", "sweet rice balls, the family round the table"),
+        ("l", (12, 8), "Laba", "the porridge of eight treasures"),
+        ("l", (12, 23), "The Little New Year", "the Kitchen God goes up to heaven"),
+        ("l", (12, -1), "New Year's Eve", "the reunion dinner, the old year seen out"),
+    ],
+}
+TITLE = {"samurai": "The Feast Days", "xianxia": "The Festivals"}
+
+def term_day(year, lon, tz):
+    """The calendar day (in tz) on which the sun reaches longitude lon in this year."""
+    A = M.almanac()
+    guess = dt.datetime(year, 3, 21, tzinfo=dt.timezone.utc) + dt.timedelta(days=(lon / 360.0) * 365.2422)
+    if guess.year > year: guess -= dt.timedelta(days=365.2422)
+    lo = A.jd(guess.timestamp()) - 20; hi = lo + 40
+    for _ in range(50):
+        mid = (lo + hi) / 2
+        if (A.sun_longitude(mid) - lon + 180) % 360 - 180 < 0: lo = mid
+        else: hi = mid
+    return dt.datetime.fromtimestamp((lo - 2440587.5) * 86400, tz).date()
+
+def year_feasts(year, th):
+    """[(date, name, note)] for every feast of the Gregorian year, in order."""
+    tz = JST if th == "samurai" else CST
+    M.CN = tz                                         # the old calendar's days are kept in Japan's or China's time
+    A = M.almanac(); out = []
+    lunar = {}                                        # (month, day) -> date, for non-leap months; last day of each month
+    last = {}
+    for k in range(-1, 367):
+        d = dt.date(year, 1, 1) + dt.timedelta(days=k)
+        j = A.jd(dt.datetime(d.year, d.month, d.day, 12, tzinfo=tz).timestamp())
+        m, leap, day = M.lunar(j)
+        if leap: continue
+        if d.year == year: lunar.setdefault((m, day), d)
+        if day == 1 and d.year == year:
+            prev = d - dt.timedelta(days=1)
+            last[(m - 2) % 12 + 1] = prev                # the eve of a month's first day is the last day of the one before
+    for kind, when, name, note in FEASTS[th]:
+        if kind == "d": d = dt.date(year, *when)
+        elif kind == "l": d = last.get(when[0]) if when[1] == -1 else lunar.get(when)
+        else:
+            d = term_day(year, when, tz)
+            if kind == "t-1": d -= dt.timedelta(days=1)
+        if d is not None and d.year == year: out.append((d, name, note))
+    return sorted(out)
+
+def state(today, th):
+    fs = year_feasts(today.year - 1, th) + year_feasts(today.year, th) + year_feasts(today.year + 1, th)
+    item = lambda f: {"date": f[0].isoformat(), "day": f[0].day, "name": f[1], "note": f[2], "in": (f[0] - today).days}
+    return {"title": TITLE[th], "theme": th, "date": today.isoformat(),
+            "today": next((item(f) for f in fs if f[0] == today), None),
+            "month": [item(f) for f in fs if f[0].year == today.year and f[0].month == today.month],
+            "next": [item(f) for f in fs if f[0] > today][:3]}
+
+def main(a):
+    th = M.theme(); mode = "state"; when = None; year = None
+    for x in a:
+        if x in ("state", "year"): mode = x
+        elif x in ("-h", "--help", "help"): print(__doc__.strip()); return 0
+        elif mode == "year" and x.isdigit(): year = int(x)
+        else:
+            try: when = dt.datetime.strptime(x, "%Y-%m-%d").date()
+            except ValueError: print("tenka-feasts: not a date (YYYY-MM-DD): " + x, file=sys.stderr); return 2
+    if when is None:
+        when = (dt.datetime.fromtimestamp(float(os.environ["TENKA_NOW"])) if os.environ.get("TENKA_NOW") else dt.datetime.now()).date()
+    if mode == "year":
+        for d, name, note in year_feasts(year or when.year, th): print("%s  %s  ·  %s" % (d.strftime("%a %d %b"), name, note))
+        return 0
+    print(json.dumps(state(when, th), ensure_ascii=False))
+    return 0
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

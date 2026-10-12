@@ -267,7 +267,10 @@ def state(t=None):
     th = theme(); xia = th == "xianxia"
     m = A.almanac(t, th)["moon"]
     p = A.place()
-    month, leap, day = lunar(j)
+    global CN
+    CN = dt.timezone(dt.timedelta(hours=8 if xia else 9))   # China's old calendar at UTC+8, Japan's at UTC+9 (tenka-feasts agrees)
+    ld = dt.datetime.fromtimestamp(t).date()                # tonight is the night of your own calendar day
+    month, leap, day = lunar(A.jd(dt.datetime(ld.year, ld.month, ld.day, 12, tzinfo=CN).timestamp()))
     mname = MONTHS[th if th in MONTHS else "samurai"][month - 1]
     night = FEASTS.get((th, month, day)) or NIGHTS[th if th in NIGHTS else "samurai"].get(day) or ("The %s night" % ordinal(day))
     fj = full_after(j); fu = (fj - 2440587.5) * 86400

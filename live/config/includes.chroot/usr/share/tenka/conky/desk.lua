@@ -75,6 +75,23 @@ local function moon(cr, cx, cy, r, e, tr, tg, tb, gr, gg, gb)
     cairo_new_path(cr); cairo_arc(cr, cx, cy, r, 0, 2 * math.pi)
     cairo_set_source_rgba(cr, gr, gg, gb, 0.5); cairo_set_line_width(cr, 1); cairo_stroke(cr)
 end
+-- The Pillow Book (Tianxia: The Jade Record): today's page from tenka-journal's own file, read every 20 s
+local pg, pg_at = '', -1000
+local function page()
+    local now = os.time()
+    if now - pg_at < 20 then return pg end
+    pg_at = now
+    local dir = os.getenv('TENKA_JOURNAL_DIR')
+    if not dir or dir == '' then
+        local xd = os.getenv('XDG_DATA_HOME')
+        dir = ((xd and xd ~= '') and xd or (os.getenv('HOME') .. '/.local/share')) .. '/tenka/journal'
+    end
+    local f = io.open(dir .. '/' .. (os.getenv('TENKA_TODAY') or os.date('%Y-%m-%d')) .. '.txt')
+    local s = f and f:read('*a') or ''
+    if f then f:close() end
+    pg = (s:match('^%s*([^\n]*)') or ''):gsub('%s+$', '')
+    return pg
+end
 local HOURS = { 'Rat','Ox','Tiger','Rabbit','Dragon','Snake','Horse','Goat','Monkey','Rooster','Dog','Pig' }
 
 local function text(cr, s, x, y, size, r, g, b, a, track)
@@ -150,6 +167,7 @@ function conky_tenka_desk()
         end
     end
     -- the day's proverb (one a day, the same line the flagship desk and lock show), wrapped at ~560 px
+    local pend = Y + 312
     if #t.proverbs > 0 then
         local p = t.proverbs[(d.yday % #t.proverbs) + 1]
         local line, yy = '', Y + 342
@@ -161,6 +179,29 @@ function conky_tenka_desk()
             else line = try end
         end
         if line ~= '' then text(cr, line, X + 9, yy + 1.5, 22, 0, 0, 0, 0.5); text(cr, line, X + 8, yy, 22, tr, tg, tb, 0.75) end
+        pend = yy
+    end
+    -- today's page in the Pillow Book (mirrors the flagship desk's MONTH row): its first words marked TODAY,
+    -- or the book's name marked UNWRITTEN; Super+K opens it
+    do
+        local first = page()
+        local words = first ~= '' and first or (t.name == 'xianxia' and 'The Jade Record' or 'The Pillow Book')
+        local tag = first ~= '' and 'TODAY' or 'UNWRITTEN'
+        if width(cr, words, 18) > 440 then
+            local cut = ''
+            for ch in words:gmatch(utf8.charpattern) do
+                if width(cr, cut .. ch .. '…', 18) > 440 then break end
+                cut = cut .. ch
+            end
+            words = cut:gsub('%s+$', '') .. '…'
+        end
+        local ry = pend + 52
+        cairo_rectangle(cr, X + 8, ry - 6, 22, 1); cairo_set_source_rgba(cr, gr, gg, gb, 0.7); cairo_fill(cr)
+        text(cr, words, X + 41, ry + 1.5, 18, 0, 0, 0, 0.5)
+        local ww2 = text(cr, words, X + 40, ry, 18, tr, tg, tb, first ~= '' and 0.9 or 0.6)
+        text(cr, tag, X + 40 + ww2 + 19, ry - 1 + 1.5, 10, 0, 0, 0, 0.5, 4)
+        text(cr, tag, X + 40 + ww2 + 18, ry - 1, 10, gr, gg, gb, first ~= '' and 1 or 0.7, 4)
+        pend = ry
     end
     -- the slip (the flagship's note to self, ~/.config/tenka/slip.txt; Super+N): a flat ink plate under the proverb
     local sf = io.open(os.getenv('HOME') .. '/.config/tenka/slip.txt')
@@ -175,7 +216,7 @@ function conky_tenka_desk()
             end
             if line ~= '' then table.insert(lines, line) end
             while #lines > 4 do table.remove(lines) end
-            local px, py, pw = X + 8, Y + 470, 468
+            local px, py, pw = X + 8, math.max(Y + 470, pend + 30), 468
             local ph = 58 + #lines * 25
             local br, bg, bb = hex(t.base or '#14110f')
             cairo_rectangle(cr, px + 0.5, py + 0.5, pw - 1, ph - 1)

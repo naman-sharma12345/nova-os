@@ -50,9 +50,10 @@ hl.config({
             enabled = true,
             new_optimizations = true,
             xray = false,
-            noise = 0.025,
-            contrast = 1.05,
-            brightness = 0.85,
+            -- frosted, not smoked: the wallpaper's colour reads through (Rice V); the tint lives in the window sheets
+            noise = 0.03,
+            contrast = 1.0,
+            brightness = 1.0,
             vibrancy_darkness = 0.4,
             popups = true,
         },

@@ -21,11 +21,11 @@
    every window is one sheet of tinted glass over the art. Hyprland blurs what is behind it (more passes, a
    little grain), the sheet darkens toward the bottom so text always sits on enough ink, and type carries a
    soft drop shadow so it reads over any wallpaper. One tint per window, no patchwork of panes. No glow. ---- */
-window.background:not(.xfce4-panel):not(.thunar) { background-color: rgba(15, 13, 12, 0.72); color: #efe6d6; }
-window.background:not(.xfce4-panel):not(.thunar) textview text, window.background:not(.xfce4-panel):not(.thunar) .view:not(iconview) { background-color: rgba(10, 9, 8, 0.3); }
-.sidebar { background-color: rgba(10, 9, 8, 0.16); color: #efe6d6; }
-headerbar, .titlebar { background-color: rgba(27, 24, 22, 0.22); background-image: none; color: #efe6d6; box-shadow: none; border-bottom: 1px solid rgba(201, 163, 90, 0.18); }
-selection { background-color: rgba(201, 163, 90, 0.3); color: #efe6d6; }
+window.background:not(.xfce4-panel):not(.thunar) { background-color: rgba(15, 13, 12, 0.42); background-image: linear-gradient(to bottom, rgba(239, 230, 214, 0.07), transparent 40%); box-shadow: inset 0 1px rgba(239, 230, 214, 0.14); color: #efe6d6; }
+window.background:not(.xfce4-panel):not(.thunar) textview text, window.background:not(.xfce4-panel):not(.thunar) .view:not(iconview) { background-color: rgba(10, 9, 8, 0.22); }
+.sidebar { background-color: rgba(10, 9, 8, 0.3); color: #efe6d6; }
+headerbar, .titlebar { background-color: rgba(239, 230, 214, 0.05); background-image: none; color: #efe6d6; box-shadow: none; border-bottom: 1px solid rgba(201, 163, 90, 0.18); }
+selection { background-color: rgba(216, 65, 47, 0.34); color: #efe6d6; }
 menu, .menu, .context-menu, popover.background > contents, popover > contents { background-color: rgba(27, 24, 22, 0.92); border: 1px solid rgba(201, 163, 90, 0.22); border-radius: 10px; padding: 6px; }
 menu menuitem, .menu menuitem, .context-menu menuitem { padding: 7px 14px; border-radius: 6px; min-height: 18px; }
 menu menuitem:hover, .menu menuitem:hover, .context-menu menuitem:hover { background-color: rgba(201, 163, 90, 0.16); color: #efe6d6; }
@@ -53,7 +53,7 @@ notebook > header tab:checked { color: #efe6d6; box-shadow: inset 0 -1px #c9a35a
 /* the text editor: the page is the window's glass (its colour scheme draws no page of its own); the gutter
    sits on the same glass, the numbers in a quieter ink */
 window.mousepad notebook scrolledwindow { border-left: 12px solid transparent; }
-window.mousepad textview.view, window.mousepad textview text { background-color: rgba(10, 9, 8, 0.3); }
+window.mousepad textview.view, window.mousepad textview text { background-color: rgba(10, 9, 8, 0.22); }
 window.mousepad textview border { background-color: transparent; }
 /* ---- the file manager: the same washi sheet; a header band with the path as quiet breadcrumbs (the folder
    you are in reads in full ink with a short accent rule under it); the side pane as a list of places on the
@@ -61,23 +61,24 @@ window.mousepad textview border { background-color: transparent; }
    a tinted lift for the chosen file. ---- */
 window.thunar.background, window.thunar.background:not(.xfce4-panel) {
     background-color: transparent;
-    background-image: linear-gradient(to bottom, rgba(15, 13, 12, 0.44), rgba(15, 13, 12, 0.62));
+    background-image: linear-gradient(to bottom, rgba(239, 230, 214, 0.07), transparent 40%), linear-gradient(to bottom, rgba(15, 13, 12, 0.24), rgba(15, 13, 12, 0.38));
+    box-shadow: inset 0 1px rgba(239, 230, 214, 0.14);
     color: #efe6d6; }
 .thunar * { font-family: Marcellus; }
 .thunar iconview, .thunar iconview.view, .thunar .view, .thunar treeview.view, .thunar scrolledwindow, .thunar viewport,
 .thunar notebook, .thunar notebook > stack, .thunar notebook > header { background-color: transparent; background-image: none; border: none; box-shadow: none; color: #efe6d6; }
 .thunar iconview { padding: 26px 22px; }
-.thunar iconview.view { font-size: 13px; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55); }
-.thunar iconview:selected, .thunar .view:selected:not(treeview) { background-color: rgba(201, 163, 90, 0.2); color: #efe6d6; border-radius: 10px; }
+.thunar iconview.view { font-size: 13px; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7); }
+.thunar iconview:selected, .thunar .view:selected:not(treeview) { background-color: rgba(216, 65, 47, 0.34); color: #efe6d6; border-radius: 10px; }
 .thunar treeview.view:selected:not(.sidebar) { background-color: rgba(201, 163, 90, 0.18); color: #efe6d6; }
 .thunar treeview.view header button { background: transparent; border: none; border-bottom: 1px solid rgba(201, 163, 90, 0.2); color: rgba(184, 171, 150, 0.9); font-size: 11px; letter-spacing: 1.2px; padding: 6px 10px; }
 .thunar .sidebar *, .thunar .shortcuts-pane * { background-color: transparent; }
-.thunar .sidebar, .thunar .shortcuts-pane { background-color: rgba(10, 9, 8, 0.16); }
-.thunar .sidebar treeview.view { padding: 7px 12px; color: rgba(239, 230, 214, 0.82); font-size: 13px; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45); }
-.thunar .sidebar treeview.view:selected, .thunar .sidebar treeview.view:selected:focus { background-color: rgba(201, 163, 90, 0.16); background-image: none; color: #efe6d6; border-radius: 0; border: none; }
+.thunar .sidebar, .thunar .shortcuts-pane { background-color: rgba(10, 9, 8, 0.3); }
+.thunar .sidebar treeview.view { padding: 7px 12px; color: rgba(239, 230, 214, 0.82); font-size: 13px; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6); }
+.thunar .sidebar treeview.view:selected, .thunar .sidebar treeview.view:selected:focus { background-color: rgba(216, 65, 47, 0.34); background-image: none; color: #efe6d6; border-radius: 0; border: none; }
 .thunar .sidebar treeview.view:hover { background-color: rgba(239, 230, 214, 0.06); border-radius: 0; }
 .thunar .sidebar treeview.view.expander { color: rgba(201, 163, 90, 0.6); }
-.thunar toolbar, .thunar .toolbar { background-color: rgba(27, 24, 22, 0.22); border-bottom: 1px solid rgba(201, 163, 90, 0.2); padding: 9px 14px; }
+.thunar toolbar, .thunar .toolbar { background-color: rgba(239, 230, 214, 0.05); border-bottom: 1px solid rgba(201, 163, 90, 0.2); padding: 9px 14px; }
 .thunar toolbar button, .thunar button { border-radius: 6px; background: transparent; border: none; box-shadow: none; color: rgba(239, 230, 214, 0.78); -gtk-icon-shadow: none; min-width: 30px; min-height: 30px; }
 .thunar toolbar button:hover, .thunar button:hover { background-color: rgba(239, 230, 214, 0.08); color: #efe6d6; }
 .thunar .path-bar button, .thunar .path-bar-button { padding: 4px 11px; margin: 0 1px; color: rgba(239, 230, 214, 0.66); font-size: 13px; letter-spacing: 0.4px; border-radius: 6px; }

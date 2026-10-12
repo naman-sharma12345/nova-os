@@ -30,7 +30,7 @@ hl.config({
             special = true,
             popups_ignorealpha = 0.2,
             input_methods = true,
-            vibrancy = 0.26,
+            vibrancy = 0.34,
         },
         shadow = {
             color = 0x8c050c0b,

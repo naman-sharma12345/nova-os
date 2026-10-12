@@ -2,7 +2,9 @@
 """tenka-moon: Moon Viewing (Tianxia: The Moon Palace), tonight's moon, Super + M.
 The moon drawn at its real phase (the lit side turned for your hemisphere), how much of it is lit and how old it
 is, when it rises and sets where you are, the night of the old lunar month it is (the third night's crescent, the
-hesitating moon of the sixteenth...) and the next full moon with its month's old name. Everything is worked out on
+hesitating moon of the sixteenth...), the next full moon with its month's old name, and what else is up tonight:
+the bright planets (Venus as the evening or morning star; the old Chinese names on Tianxia) and a meteor shower near
+its peak. Everything is worked out on
 this machine from the time, the date and your place (the almanac's place: ~/.config/tenka/place.json or the city
 your time zone is named for); nothing is fetched or sent anywhere.
   tenka-moon [state]    tonight's moon as JSON (for the card)
@@ -137,6 +139,89 @@ def sky_place(j, lat, lon):
     q = math.atan2(math.sin(H), math.tan(f) * math.cos(dec) - math.sin(dec) * math.cos(H))   # parallactic angle
     return (math.degrees(alt) - (0.7275 * par - 0.5667), math.degrees(az) % 360, math.degrees(chi - q) % 360, math.degrees(q))
 
+# ---- the bright planets and the meteor showers: what else is up tonight
+# Keplerian elements and rates per Julian century (JPL, E. M. Standish, "Approximate Positions of the Planets",
+# table 1, valid 1800-2050): a, e, I, L, long. perihelion, long. node
+ELEM = {
+    "Mercury": ((0.38709927, 0.00000037), (0.20563593, 0.00001906), (7.00497902, -0.00594749), (252.25032350, 149472.67411175), (77.45779628, 0.16047689), (48.33076593, -0.12534081)),
+    "Venus":   ((0.72333566, 0.00000390), (0.00677672, -0.00004107), (3.39467605, -0.00078890), (181.97909950, 58517.81538729), (131.60246718, 0.00268329), (76.67984255, -0.27769418)),
+    "Earth":   ((1.00000261, 0.00000562), (0.01671123, -0.00004392), (-0.00001531, -0.01294668), (100.46457166, 35999.37244981), (102.93768193, 0.32327364), (0.0, 0.0)),
+    "Mars":    ((1.52371034, 0.00001847), (0.09339410, 0.00007882), (1.84969142, -0.00813131), (-4.55343205, 19140.30268499), (-23.94362959, 0.44441088), (49.55953891, -0.29257343)),
+    "Jupiter": ((5.20288700, -0.00011607), (0.04838624, -0.00013253), (1.30439695, -0.00183714), (34.39644051, 3034.74612775), (14.72847983, 0.21252668), (100.47390909, 0.20469106)),
+    "Saturn":  ((9.53667594, -0.00125060), (0.05386179, -0.00050991), (2.48599187, 0.00193609), (49.95424423, 1222.49362201), (92.59887831, -0.41897216), (113.66242448, -0.28867794)),
+}
+# the old names: Tianxia keeps the Chinese ones in English; Tenka's Venus is the evening or the morning star
+OLD = {"Mercury": "the Hour Star", "Venus": "the Great White", "Mars": "the Sparkling Deluder", "Jupiter": "the Year Star", "Saturn": "the Settling Star"}
+SHOWERS = [((1, 3), "the Quadrantids"), ((4, 22), "the Lyrids"), ((5, 6), "the Eta Aquariids"), ((8, 12), "the Perseids"),
+           ((10, 21), "the Orionids"), ((11, 17), "the Leonids"), ((12, 14), "the Geminids"), ((12, 22), "the Ursids")]
+
+def helio(name, j):
+    T = (j - 2451545.0) / 36525
+    a, e, I, L, wb, Om = (x0 + x1 * T for x0, x1 in ELEM[name])
+    w = wb - Om; M = math.radians((L - wb + 180) % 360 - 180)
+    E = M + e * math.sin(M)
+    for _ in range(8): E -= (E - e * math.sin(E) - M) / (1 - e * math.cos(E))
+    xp, yp = a * (math.cos(E) - e), a * math.sqrt(1 - e * e) * math.sin(E)
+    w, Om, I = math.radians(w), math.radians(Om), math.radians(I)
+    x = (math.cos(w) * math.cos(Om) - math.sin(w) * math.sin(Om) * math.cos(I)) * xp + (-math.sin(w) * math.cos(Om) - math.cos(w) * math.sin(Om) * math.cos(I)) * yp
+    y = (math.cos(w) * math.sin(Om) + math.sin(w) * math.cos(Om) * math.cos(I)) * xp + (-math.sin(w) * math.sin(Om) + math.cos(w) * math.cos(Om) * math.cos(I)) * yp
+    z = math.sin(w) * math.sin(I) * xp + math.cos(w) * math.sin(I) * yp
+    return x, y, z
+
+def planet_radec(name, j):
+    x, y, z = helio(name, j); ex, ey, ez = helio("Earth", j)
+    x, y, z = x - ex, y - ey, z - ez
+    p = math.radians(1.396971 * (j - 2451545.0) / 36525)  # the elements are of J2000: precess to the equinox of date
+    x, y = x * math.cos(p) - y * math.sin(p), x * math.sin(p) + y * math.cos(p)
+    e = math.radians(23.43928)
+    y, z = y * math.cos(e) - z * math.sin(e), y * math.sin(e) + z * math.cos(e)
+    return math.atan2(y, x), math.atan2(z, math.hypot(x, y))
+
+def alt_of(ra, dec, j, lat, lon):
+    H = math.radians((280.46061837 + 360.98564736629 * (j - 2451545.0)) % 360) + math.radians(lon) - ra; f = math.radians(lat)
+    return math.degrees(math.asin(math.sin(f) * math.sin(dec) + math.cos(f) * math.cos(dec) * math.cos(H)))
+
+def tonight(t, lat, lon, xia=False):
+    """the bright planets worth looking up for tonight (dusk to dawn) and a meteor shower near its peak"""
+    A = almanac(); d = dt.datetime.fromtimestamp(t)
+    noon = d.replace(hour=12, minute=0, second=0, microsecond=0) - dt.timedelta(days=1 if d.hour < 6 else 0)
+    base = noon.timestamp(); step = 600
+    dark = []                                             # sample times when the sun is 8 degrees down or more
+    for k in range(24 * 3600 // step + 1):
+        u = base + k * step; j = A.jd(u); sra, sdec = sun_radec(j)
+        if alt_of(sra, sdec, j, lat, lon) < -8: dark.append(u)
+    out = []
+    if not dark: return out, None
+    hm = lambda u: dt.datetime.fromtimestamp(u).strftime("%H:%M")
+    for name in ("Venus", "Jupiter", "Mars", "Saturn", "Mercury"):
+        up = [u for u in dark if alt_of(*planet_radec(name, A.jd(u)), A.jd(u), lat, lon) > 10]
+        if not up: continue
+        if name == "Mercury" and len(up) < 3: continue    # a glimpse in the twilight is not worth sending you out
+        first, last = up[0] == dark[0], up[-1] == dark[-1]
+        if first and last: when = "all night"
+        elif first: when = "after dusk" if up[-1] - dark[0] < 9000 else "until %s" % hm(up[-1])      # a short evening: "after dusk"
+        elif last: when = "before dawn" if dark[-1] - up[0] < 9000 else "from %s" % hm(up[0])         # a short morning: "before dawn"
+        else: when = "%s to %s" % (hm(up[0]), hm(up[-1]))
+        shown = OLD[name] if xia else ("the evening star" if name == "Venus" and first else "the morning star" if name == "Venus" and last else name)
+        out.append({"name": name, "shown": shown, "when": when})
+        if len(out) == 3: break                           # the three brightest are enough for one line
+    shower = None
+    for (mo, dy), nm in SHOWERS:
+        for yr in (d.year - 1, d.year, d.year + 1):
+            peak = dt.date(yr, mo, dy); gap = (peak - (noon + dt.timedelta(hours=12)).date()).days
+            if -1 <= gap <= 3:
+                shower = {"name": nm, "peak": peak.strftime("%a %-d %b"), "in_days": gap}
+    return out, shower
+
+def sky_line(planets, shower):
+    s = []
+    for i, p in enumerate(planets):
+        w = p["shown"]; s.append((w[0].upper() + w[1:] if i == 0 else w) + " " + p["when"])
+    if shower:
+        w = shower["name"]; when = "peak tonight" if shower["in_days"] == 0 else "peaked last night" if shower["in_days"] < 0 else "peak on " + shower["peak"].split(" ")[0]
+        s.append((w[0].upper() + w[1:] if not s else w) + " " + when)
+    return "  \u00b7  ".join(s)
+
 def rise_set(t, lat, lon):
     """moonrise and moonset in the local calendar day around t, as unix seconds (None when it does not happen)"""
     A = almanac()
@@ -200,6 +285,8 @@ def state(t=None):
         hm = lambda u: dt.datetime.fromtimestamp(u).strftime("%H:%M") if u else None
         al, az, tilt, turn = sky_place(A.jd(t), p["lat"], p["lon"])
         out.update(rise=hm(r), set=hm(s), up=up, alt=round(al, 1), az=round(az, 1), tilt=round(tilt, 1), turn=round(turn, 1))
+        pl, sh = tonight(t, p["lat"], p["lon"], xia)
+        out.update(planets=pl, shower=sh, also=sky_line(pl, sh))
     return out
 
 def text(s):

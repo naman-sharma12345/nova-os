@@ -18,7 +18,7 @@ Item {
     property var s: ({ title: "Moon Viewing", phase: "", illumination: 0, age_days: 0, fraction: 0, waxing: true, south: false,
                        day: 1, month_name: "", night: "", rise: null, set: null, place: "", full: { date: "", name: "", in_days: 0 } })
     signal dismissed()
-    width: 520; height: 628
+    width: 520; height: card.s.also ? 690 : 628
 
     function alpha(c, a) { return Qt.rgba(c.r, c.g, c.b, a) }
     onSChanged: moon.requestPaint()
@@ -118,5 +118,14 @@ Item {
         Text { anchors.horizontalCenter: parent.horizontalCenter; width: parent.width; horizontalAlignment: Text.AlignHCenter; elide: Text.ElideRight
                text: ((card.s.full || {}).name || "") + (card.s.place ? "   \u00b7   over " + card.s.place : "")
                color: card.alpha(card.text, 0.45); font.family: card.face; font.pixelSize: 12; font.letterSpacing: 0.5 }
+        // what else is up tonight: the bright planets (with their old names on Tianxia) and a meteor shower near its peak
+        Item { width: 1; height: 22; visible: !!card.s.also }
+        Text { anchors.horizontalCenter: parent.horizontalCenter; visible: !!card.s.also
+               text: card.xia ? "ALSO IN THE HEAVENS" : "ALSO TONIGHT"; color: card.gold; font.family: card.face; font.pixelSize: 10; font.letterSpacing: 2.5 }
+        Item { width: 1; height: 8; visible: !!card.s.also }
+        Text { anchors.horizontalCenter: parent.horizontalCenter; width: parent.width; visible: !!card.s.also
+               horizontalAlignment: Text.AlignHCenter; wrapMode: Text.WordWrap; maximumLineCount: 2; elide: Text.ElideRight
+               // each sight keeps its words together: the line breaks only between them
+               text: (card.s.also || "").split("  \u00b7  ").map(w => w.replace(/ /g, "\u00a0")).join("  \u00b7  "); color: card.alpha(card.text, 0.78); font.family: card.face; font.pixelSize: 14; lineHeight: 1.15 }
     }
 }

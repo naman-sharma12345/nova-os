@@ -444,5 +444,14 @@ grep -q 'command: \["tenka-moon", "state"\]' "$ROOT/shell/quickshell/tenka/SkyMo
 grep -q 'line.m.night + ' "$ROOT/shell/quickshell/tenka/almanac/AlmanacLine.qml" &&
 grep -q 'command: \["tenka-moon", "state"\]' "$ROOT/shell/quickshell/tenka/almanac/AlmanacLine.qml" &&
 mo 2026-10-19T20:30 | grep -q '"night": "The 10th night"' || { echo "FAIL: lock moon line"; fail=1; }
+# 28. Also tonight: the bright planets and a meteor shower near its peak, worked out here (Standish elements, precessed
+#     to the date; checked against PyEphem to under 0.1 degree). Over London on 5 Dec 2026 Jupiter clears 10 degrees
+#     at 22:57 UTC and Mars at 23:29; the Orionids peak on the night of 20 Oct; Tianxia gives the old names.
+MX="$T/moonxia"; mkdir -p "$MX/.config/tenka" "$T/moonsam"; echo '{"name": "xianxia"}' > "$MX/.config/tenka/shell-theme.json"
+AL=$(HOME="$T/moonsam" TZ=Europe/London TENKA_PLACE=51.5,-0.13,London TENKA_ALMANAC="$BIN/tenka-almanac" python3 "$BIN/tenka-moon" 2026-12-05T20:00)
+AK=$(HOME="$MX" TZ=Asia/Kolkata TENKA_PLACE=22.57,88.36,Kolkata TENKA_ALMANAC="$BIN/tenka-almanac" python3 "$BIN/tenka-moon" 2026-10-20T21:00)
+echo "$AL" | grep -q '"also": "The morning star before dawn  ·  Jupiter from 23:00  ·  Mars from 23:30"' &&
+echo "$AK" | grep -q '"also": "The Year Star from 01:50  ·  the Sparkling Deluder from 01:00  ·  the Settling Star until 03:30  ·  the Orionids peak tonight"' &&
+grep -q 'card.s.also' "$ROOT/shell/quickshell/tenka/moon/MoonCard.qml" || { echo "FAIL: also tonight"; fail=1; }
 [ "$fail" = 0 ] && echo "check-session: ok"
 exit $fail

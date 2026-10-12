@@ -120,7 +120,9 @@ done
 install -d /root/.config/Kvantum
 # the solid twin: the installer must read cleanly on Tenka Lite too, where nothing blurs behind it
 printf '[General]\ntheme=Tenka-SamuraiSolid\n' > /root/.config/Kvantum/kvantum.kvconfig
-[ -f /usr/bin/calamares-install-debian ] && sed -i 's/^pkexec calamares$/pkexec env QT_STYLE_OVERRIDE=kvantum calamares/' /usr/bin/calamares-install-debian
+# (as Qt's own -style argument: "pkexec env QT_STYLE_OVERRIDE=... calamares" ran /usr/bin/env, i.e. pkexec's generic
+# action without calamares' allow_gui, so pkexec dropped DISPLAY/XAUTHORITY and the installer never opened)
+[ -f /usr/bin/calamares-install-debian ] && sed -i 's/^pkexec calamares$/pkexec calamares -style kvantum/' /usr/bin/calamares-install-debian
 
 # ---------------------------------------------------------------- user defaults
 grep -q 'bashrc.d' /etc/skel/.bashrc || cat >> /etc/skel/.bashrc <<'EOF'

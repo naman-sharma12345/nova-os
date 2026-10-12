@@ -479,6 +479,8 @@ def gen(name, T):
        its logo is the one `image.icon-dropshadow`, and the name label sits right after it. */
     dialog.background > headerbar.titlebar, dialog.background > .titlebar {{ background-color: transparent; background-image: none; border-color: transparent; box-shadow: none; }}
     dialog.background > box > box > image.icon-dropshadow + label {{ font-family: "Cinzel Decorative"; font-size: 20px; letter-spacing: 1px; color: {p['text']}; }}
+    /* T22: the version line in Inter, so its figures read as figures (Marcellus set 0.1.0 as "O.I.O") */
+    dialog.background > box > box > stack > box > label:first-child {{ font-family: "Inter"; font-size: 12px; letter-spacing: 1px; color: {rgba(p['text'], 0.66)}; }}
     dialog.background *:link, dialog.background label > link:link {{ color: {p['accent2']}; }}
     dialog.background *:visited, dialog.background label > link:visited {{ color: {rgba(p['accent2'], 0.75)}; }}
     dialog.background label > selection {{ background-color: {rgba(p['accent2'], 0.28)}; color: {p['text']}; }}

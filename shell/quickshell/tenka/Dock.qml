@@ -1,5 +1,5 @@
-// The dock, auto-hiding: hidden it is a faint 40 px line at the bottom edge; touch the edge (or open
-// the desk) and a long, low frosted shelf rises with hand-drawn gold line icons, no tiles. A small
+// The dock: a long, low frosted shelf that keeps its own strip of the screen (windows tile above it;
+// under a full overlay it sinks to a faint 40 px line at the bottom edge), with hand-drawn gold line icons, no tiles. A small
 // accent dot marks what is open. The crest stands apart on the left in a gold ring: the launcher.
 // That is the "glass" face; the default "ledger" face is at the end of this file.
 import Quickshell
@@ -8,11 +8,15 @@ import QtQuick
 
 PanelWindow {
     id: dock
-    // the dock shows by itself on an empty workspace and steps aside while you work (edge hover brings it back)
-    readonly property bool shown: Theme.deskOpen || (!Theme.working && !Theme.hush)
+    // the dock stays up and its shelf's height is reserved (a layer-shell exclusive zone), so tiled windows
+    // stop above it instead of sliding under it (Thunar's status line, Mousepad's last lines). A full overlay
+    // (launcher, power) still hushes it; fullscreen windows cover it as usual.
+    readonly property bool shown: Theme.deskOpen || !Theme.hush
     anchors { bottom: true; left: true; right: true }
     implicitHeight: 120
-    exclusiveZone: 0
+    // the shelf's top edge from the screen bottom: ledger 64 + 18 margin, glass 76 + 16 (Hyprland adds gaps_out)
+    readonly property int reserve: ledgerFace ? 82 : 92
+    exclusiveZone: reserve
     color: "transparent"
     WlrLayershell.layer: WlrLayer.Top
     WlrLayershell.namespace: "tenka-dock"

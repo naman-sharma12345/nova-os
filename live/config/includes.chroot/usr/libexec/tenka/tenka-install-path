@@ -8,8 +8,12 @@ ROOT="${1:-}"
 T=$(cat /etc/tenka/theme 2>/dev/null)
 case "$T" in samurai|xianxia) ;; *) exit 0 ;; esac
 [ -d "$ROOT/usr/share/tenka/themes/$T" ] || exit 0
-mkdir -p "$ROOT/etc/tenka" && echo "$T" > "$ROOT/etc/tenka/theme"
-# os-release, login screen, installed GRUB theme and splash; the installer's own GRUB and initramfs
-# steps run after this one and pick them up
-chroot "$ROOT" env TENKA_INSTALLING=1 /usr/libexec/tenka/tenka-theme-system "$T" >/dev/null 2>&1
+[ -x "$ROOT/usr/libexec/tenka/tenka-theme-system" ] || exit 0
+[ "$(cat "$ROOT/etc/tenka/theme" 2>/dev/null)" = "$T" ] && exit 0   # already the image's default
+# os-release, login screen, installed GRUB theme, splash and /etc/tenka/theme, all from one script; the
+# installer's own GRUB and initramfs steps run after this one and pick them up
+if ! chroot "$ROOT" env TENKA_INSTALLING=1 /usr/libexec/tenka/tenka-theme-system "$T" >/dev/null 2>&1; then
+  # half-applied is worse than either path: put the target back on the image's default as a whole
+  chroot "$ROOT" env TENKA_INSTALLING=1 /usr/libexec/tenka/tenka-theme-system samurai >/dev/null 2>&1
+fi
 exit 0

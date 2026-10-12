@@ -61,7 +61,8 @@ menu separator, .menu separator { background-color: rgba(226, 189, 107, 0.18); m
 tooltip, tooltip.background { background-color: rgba(18, 33, 30, 0.92); border: 1px solid rgba(226, 189, 107, 0.25); border-radius: 12px; }
 /* tooltips speak in the UI face too. This has to live here: GTK applies the xsettings font above the theme,
    so a tooltip rule in the theme's gtk.css loses; the user sheet sits above both. */
-tooltip label { font-family: Marcellus; font-size: 12px; letter-spacing: 0.3px; }
+/* T23: tooltips carry numbers (sizes, times, percentages) and Marcellus draws 0 like O, so they speak Inter, as GTK 4's already do */
+tooltip label { font-family: Inter; font-size: 12px; letter-spacing: 0; }
 /* the Lite dock's window list (its own sheet, class .menu) speaks Marcellus too */
 .menu label { font-family: Marcellus; }
 button { border-radius: 12px; }

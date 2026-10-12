@@ -120,7 +120,9 @@ window.thunar.background, window.thunar.background:not(.xfce4-panel) {
 .thunar treeview.view:selected:not(.sidebar) { background-color: rgba(226, 189, 107, 0.18); color: #eef3ec; }
 .thunar treeview.view header button { background: transparent; border: none; border-bottom: 1px solid rgba(226, 189, 107, 0.2); color: rgba(169, 189, 180, 0.9); font-size: 11px; letter-spacing: 1.2px; padding: 6px 10px; }
 .thunar .sidebar *, .thunar .shortcuts-pane * { background-color: transparent; }
-.thunar .sidebar, .thunar .shortcuts-pane { background-color: rgba(7, 16, 14, 0.3); }
+/* T22: the pane and the tree both took gl_side, so the sidebar stacked two dark sheets (46% of the wallpaper through vs 66% in the file view). One sheet, lighter. */
+.thunar .sidebar { background-color: transparent; }
+.thunar .shortcuts-pane { background-color: rgba(7, 16, 14, 0.16); }
 .thunar .sidebar treeview.view { padding: 7px 12px; color: rgba(238, 243, 236, 0.82); font-size: 13px; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6); }
 /* the chosen place: a quiet accent wash with a 2 px accent rule at its left edge, like a ledger's margin mark */
 .thunar .sidebar treeview.view:selected, .thunar .sidebar treeview.view:selected:focus { background-color: rgba(95, 201, 160, 0.2); background-image: none; box-shadow: inset 2px 0 #5fc9a0; color: #eef3ec; border-radius: 0; border: none; }

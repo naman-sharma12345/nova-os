@@ -520,6 +520,17 @@ def gen(name, T):
     scrollbar, scrollbar trough {{ background: transparent; border: none; }}
     scrollbar slider {{ background-color: {rgba(p['accent2'], 0.35)}; border-radius: 99px; min-width: 3px; min-height: 3px; border: none; }}
     scrollbar slider:hover {{ background-color: {rgba(p['accent2'], 0.6)}; }}
+    /* the file chooser (Open / Save in every GTK app): the base theme filled the whole chooser with a flat grey slab and
+       its path row with a darker one. It is the dialog's glass now, the path row a frosted band with a hairline. */
+    {GS('filechooser')} {{ background-color: transparent; background-image: none; }}
+    {GS('filechooser #pathbarbox')} {{ background-color: {gl_head}; background-image: linear-gradient(to bottom, {rgba(p['text'], 0.06)}, transparent); border-bottom: 1px solid {rgba(p['accent2'], 0.20)}; }}
+    {GS('filechooser .dialog-action-box')} {{ border-top: 1px solid {rgba(p['accent2'], 0.16)}; }}
+    /* info bars (a file changed on disk, a folder you can't write to): the base theme's flat material yellow, red and grey
+       slabs. On the glass they are a faint lift with a margin mark at the left, gold for a warning or a question, the
+       accent for an error, and the words stay in the page's ink. */
+    {GS('infobar > revealer > box', 'infobar:hover > revealer > box', 'infobar:backdrop > revealer > box')} {{ background-color: {rgba(p['text'], 0.06)}; background-image: none; border: none; border-bottom: 1px solid {rgba(p['accent2'], 0.14)}; box-shadow: inset 2px 0 {rgba(p['accent2'], 0.7)}; color: {p['text']}; }}
+    {GS('infobar.error > revealer > box', 'infobar.error:hover > revealer > box', 'infobar.error:backdrop > revealer > box')} {{ background-color: {rgba(p['accent'], 0.12)}; box-shadow: inset 2px 0 {p['accent']}; }}
+    {GS('infobar > revealer > box label')} {{ color: {p['text']}; }}
     """))
     W(f"{H}/.config/gtk-3.0/settings.ini", textwrap.dedent(f"""\
     [Settings]

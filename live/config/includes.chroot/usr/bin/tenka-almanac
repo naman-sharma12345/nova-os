@@ -10,7 +10,11 @@ saying (Tianxia), the moon's phase and how far off the next term is. Computed he
   tenka-almanac line       one short line ("Cold Dew  ·  Wild geese return  ·  Waxing crescent")
   tenka-almanac wheel      the JSON plus the year's 24 term dates and this month's four moons (for the card)
   tenka-almanac open       the card: the wheel of the year and the moon (the desk's MONTH row opens it too)
-  tenka-almanac DATE ...   any of the above for a date (YYYY-MM-DD), e.g. tenka-almanac text 2027-03-21
+  tenka-almanac sun        sunrise, sunset and twilight for your place, as one line
+  tenka-almanac phase      dawn, day, dusk or night by the real sun (tenka-hour reads this)
+  tenka-almanac DATE ...   any of the above for a date (YYYY-MM-DD, or YYYY-MM-DDTHH:MM), e.g. tenka-almanac text 2027-03-21
+Your place, for the sun, needs no location service: ~/.config/tenka/place.json ({"name", "lat", "lon"}) when you set
+one, otherwise the city your time zone is named for (from the system's zone1970.tab), so it is close, not exact.
 """
 import json, math, os, sys, time, datetime as dt
 
@@ -145,7 +149,83 @@ def almanac(t=None, theme=None):
         "next_term": TERMS[(term + 1) % 24], "next_in_days": days,
         "moon": {"phase": phase, "age_days": round(age, 1), "illumination": round(illum, 3),
                  "fraction": round(frac, 4), "elongation": round(e, 1), "waxing": e < 180},
+        "sun": sun(t),
     }
+
+# ---- the sun over your place: sunrise, sunset and the civil twilights (NOAA's low-precision method, ~1 min) ----
+def place():
+    p = os.environ.get("TENKA_PLACE")                  # tests and renders: "lat,lon[,name]"
+    if p:
+        f = p.split(",")
+        return {"name": f[2] if len(f) > 2 else "", "lat": float(f[0]), "lon": float(f[1]), "from": "env"}
+    try:
+        d = json.load(open(os.path.expanduser("~/.config/tenka/place.json"), encoding="utf-8"))
+        return {"name": str(d.get("name") or ""), "lat": float(d["lat"]), "lon": float(d["lon"]), "from": "place.json"}
+    except (OSError, ValueError, KeyError, TypeError):
+        pass
+    tz = os.environ.get("TZ", "").lstrip(":")
+    if not tz or "/" not in tz:
+        try: tz = os.path.realpath("/etc/localtime").split("/zoneinfo/", 1)[1]
+        except IndexError:
+            try: tz = open("/etc/timezone").read().strip()
+            except OSError: tz = ""
+    for tab in ("/usr/share/zoneinfo/zone1970.tab", "/usr/share/zoneinfo/zone.tab"):
+        try:
+            for line in open(tab, encoding="utf-8"):
+                f = line.rstrip("\n").split("\t")
+                if len(f) >= 3 and not line.startswith("#") and f[2] == tz:
+                    c = f[1]
+                    k = 1 + next(i for i, ch in enumerate(c[1:]) if ch in "+-")
+                    def deg(s):
+                        sg = -1 if s[0] == "-" else 1; s = s[1:]
+                        w = 2 if len(s) in (4, 6) else 3
+                        v = int(s[:w]) + int(s[w:w + 2]) / 60 + (int(s[w + 2:w + 4]) / 3600 if len(s) > w + 2 else 0)
+                        return sg * v
+                    return {"name": tz.split("/")[-1].replace("_", " "), "lat": deg(c[:k]), "lon": deg(c[k:]), "from": "timezone"}
+        except OSError:
+            continue
+    return None
+
+def sun_day(t, lat, lon):
+    """The local calendar day around t: civil dawn, sunrise, noon, sunset, civil dusk as unix seconds (None when
+    the sun does not cross that altitude that day: the midnight sun or the polar night)."""
+    day = dt.datetime.fromtimestamp(t).date()
+    n = (day - dt.date(2000, 1, 1)).days + 0.0008     # days since J2000.0 (noon UTC, 1 Jan 2000)
+    js = n - lon / 360
+    M = (357.5291 + 0.98560028 * js) % 360
+    Mr = math.radians(M)
+    C = 1.9148 * math.sin(Mr) + 0.02 * math.sin(2 * Mr) + 0.0003 * math.sin(3 * Mr)
+    lr = math.radians((M + C + 180 + 102.9372) % 360)
+    jt = 2451545.0 + js + 0.0053 * math.sin(Mr) - 0.0069 * math.sin(2 * lr)
+    dec = math.asin(math.sin(lr) * math.sin(math.radians(23.4397)))
+    def cross(alt):
+        c = (math.sin(math.radians(alt)) - math.sin(math.radians(lat)) * math.sin(dec)) / (math.cos(math.radians(lat)) * math.cos(dec))
+        if c < -1 or c > 1: return None, None
+        w = math.degrees(math.acos(c)) / 360
+        return to_unix(jt - w), to_unix(jt + w)
+    rise, set_ = cross(-0.833)
+    dawn, dusk = cross(-6.0)
+    return {"dawn": dawn, "rise": rise, "noon": to_unix(jt), "set": set_, "dusk": dusk,
+            "up": math.degrees(math.asin(math.sin(math.radians(lat)) * math.sin(dec) + math.cos(math.radians(lat)) * math.cos(dec))) > 0}
+
+def sun(t=None):
+    t = time.time() if t is None else t
+    p = place()
+    if not p: return None
+    s = sun_day(t, p["lat"], p["lon"])
+    hm = lambda u: dt.datetime.fromtimestamp(u).strftime("%H:%M") if u else None
+    if s["rise"] and s["set"]:
+        lean = 45 * 60                                    # the soft hour either side of the sun's edge
+        ph = ("dawn" if (s["dawn"] or s["rise"] - lean) <= t < s["rise"] + lean else
+              "day" if s["rise"] + lean <= t < s["set"] - lean else
+              "dusk" if s["set"] - lean <= t < (s["dusk"] or s["set"] + lean) else "night")
+        length = int(s["set"] - s["rise"]) // 60
+    else:
+        ph = "day" if s["up"] else "night"
+        length = 24 * 60 if s["up"] else 0
+    return {"place": p["name"], "place_from": p["from"], "lat": round(p["lat"], 2), "lon": round(p["lon"], 2),
+            "dawn": hm(s["dawn"]), "rise": hm(s["rise"]), "noon": hm(s["noon"]), "set": hm(s["set"]), "dusk": hm(s["dusk"]),
+            "day_length": "%dh %02dm" % (length // 60, length % 60), "phase": ph}
 
 def _root(f, target, j, speed):
     """Julian day near j where the angle f reaches `target` (Newton steps at the mean speed, deg/day)."""
@@ -216,12 +296,23 @@ def open_card():
 def main(argv):
     mode, when = "json", None
     for a in argv:
-        if a in ("json", "text", "line", "wheel"): mode = a
+        if a in ("json", "text", "line", "wheel", "sun", "phase"): mode = a
         elif a == "open": return open_card()
         elif a in ("-h", "--help", "help"): print(__doc__.strip()); return 0
         else:
-            try: when = dt.datetime.strptime(a, "%Y-%m-%d").replace(hour=12).timestamp()
-            except ValueError: print("tenka-almanac: not a date (YYYY-MM-DD): " + a, file=sys.stderr); return 2
+            try: when = (dt.datetime.strptime(a, "%Y-%m-%dT%H:%M") if "T" in a else
+                         dt.datetime.strptime(a, "%Y-%m-%d").replace(hour=12)).timestamp()
+            except ValueError: print("tenka-almanac: not a date (YYYY-MM-DD or YYYY-MM-DDTHH:MM): " + a, file=sys.stderr); return 2
+    if mode in ("sun", "phase"):
+        s = sun(when)
+        if not s: print("tenka-almanac: no place for the sun (set ~/.config/tenka/place.json)", file=sys.stderr); return 1
+        if mode == "phase": print(s["phase"]); return 0
+        at = (" over " + s["place"]) if s["place"] else ""
+        if s["rise"]:
+            print("Sunrise %s  ·  Sunset %s  ·  %s of light%s" % (s["rise"], s["set"], s["day_length"], at))
+        else:
+            print(("The sun stays up all day" if s["phase"] == "day" else "The sun does not rise today") + at)
+        return 0
     a = wheel(when) if mode == "wheel" else almanac(when)
     m = a["moon"]
     if mode in ("json", "wheel"):
@@ -235,6 +326,9 @@ def main(argv):
         print("  " + ("Saying      " if a["detail_kind"] == "saying" else "Season      ") + a["detail"])
         print("  Moon        %s, %d%% lit, %.1f days old" % (m["phase"], round(m["illumination"] * 100), m["age_days"]))
         print("  Next        %s, %s" % (a["next_term"], nxt))
+        s = a.get("sun")
+        if s and s["rise"]:
+            print("  Sun         up %s, down %s (%s)%s" % (s["rise"], s["set"], s["day_length"], (", " + s["place"]) if s["place"] else ""))
     return 0
 
 if __name__ == "__main__":

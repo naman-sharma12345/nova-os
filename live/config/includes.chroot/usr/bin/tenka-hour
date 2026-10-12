@@ -1,6 +1,8 @@
 #!/bin/bash
 # tenka-hour: the hour and the season the desk wears. Run by a user timer every 15 minutes and at login.
 # Writes ~/.config/tenka/hour.json: { "phase": dawn|day|dusk|night, "season": plum|lotus|maple|snow }.
+# The phase follows the real sun where you are (dawn and dusk are the civil twilight and the soft 45 minutes
+# either side of sunrise and sunset), worked out by tenka-almanac with no location service.
 # The Tenka shell tints its accent, its gold and the wallpaper's veil from it, slowly and a little.
 #   tenka-hour            write it now
 #   tenka-hour off|on     stop or resume the shift (off pins the plain day look; the season stays)
@@ -10,7 +12,9 @@ case "${1:-}" in
   on) rm -f "$S/hour-off" ;;
 esac
 h=$((10#$(date +%H))); m=$((10#$(date +%m)))
+sun=$(tenka-almanac phase 2>/dev/null)   # the real sun over your place (tenka-almanac sun); the clock when it can't say
 if   [ -e "$S/hour-off" ];        then phase=day
+elif [ "$sun" = dawn ] || [ "$sun" = day ] || [ "$sun" = dusk ] || [ "$sun" = night ]; then phase=$sun
 elif [ $h -ge 5 ] && [ $h -lt 8 ];  then phase=dawn
 elif [ $h -ge 8 ] && [ $h -lt 17 ]; then phase=day
 elif [ $h -ge 17 ] && [ $h -lt 20 ]; then phase=dusk

@@ -18,7 +18,7 @@ Item {
     property string uiFace: "Marcellus"
     property bool xia: false
     property var d: null
-    width: 860; height: 440
+    width: 860; height: 500
     signal dismissed()
 
     function alpha(c, a) { const q = Qt.color(c); return Qt.rgba(q.r, q.g, q.b, a) }
@@ -40,7 +40,7 @@ Item {
     // ---- the wheel
     Canvas {
         id: wheel
-        x: 24; y: 24; width: 392; height: 392
+        x: 24; y: (card.height - height) / 2; width: 392; height: 392
         antialiasing: true
         readonly property real lam: card.d ? card.d.sun_longitude : 0
         onLamChanged: requestPaint()
@@ -120,6 +120,7 @@ Item {
         Text { id: ml; anchors.top: rule.bottom; anchors.topMargin: 16; text: "THIS MONTH'S MOONS"; color: card.alpha(card.gold, 0.85)
                font.family: card.face; font.pixelSize: 10; font.letterSpacing: 4 }
         Row {
+            id: moonsRow
             anchors.top: ml.bottom; anchors.topMargin: 14; spacing: 0
             Repeater {
                 model: card.d && card.d.moons ? card.d.moons.slice(1) : []
@@ -132,6 +133,47 @@ Item {
                     Text { text: card.shortDay(modelData.at); color: card.alpha(card.text, parent.past ? 0.38 : 0.85); font.family: card.uiFace; font.pixelSize: 13 }
                     Text { text: ["First quarter", "Full", "Last quarter", "New"][parent.index]; color: card.alpha(card.text, 0.4)
                            font.family: card.uiFace; font.pixelSize: 11 }
+                }
+            }
+        }
+        // ---- the sun over your place: the day as one hairline, the light on it in gold, the twilight fainter, now a dot
+        readonly property var sun: card.d ? card.d.sun : null
+        function fx(hm) { if (!hm) return 0; const p = hm.split(":"); return (+p[0] * 60 + +p[1]) / 1440 }
+        Rectangle { id: rule2; anchors.top: moonsRow.bottom; anchors.topMargin: 22; width: parent.width; height: 1; color: card.alpha(card.text, 0.08)
+                    visible: parent.sun !== null }
+        Row {
+            id: sunHead; anchors.top: rule2.bottom; anchors.topMargin: 16; spacing: 12; visible: parent.sun !== null
+            Text { text: parent.parent.sun && parent.parent.sun.place ? "THE SUN OVER " + parent.parent.sun.place.toUpperCase() : "THE SUN"
+                   color: card.alpha(card.gold, 0.85); font.family: card.face; font.pixelSize: 10; font.letterSpacing: 4 }
+            Text { text: parent.parent.sun ? (parent.parent.sun.rise ? parent.parent.sun.day_length.replace(" ", " ") + " of light"
+                                                  : parent.parent.sun.phase === "day" ? "up all day" : "below all day") : ""
+                   color: card.alpha(card.text, 0.45); font.family: card.uiFace; font.pixelSize: 11; anchors.baseline: parent.children[0].baseline }
+        }
+        Item {
+            id: dayBar; anchors.top: sunHead.bottom; anchors.topMargin: 18; width: parent.width; height: 34
+            visible: parent.sun !== null
+            readonly property var s: parent.sun
+            readonly property real nowF: { const t = new Date((card.d ? card.d.now : 0) * 1000); return (t.getHours() * 60 + t.getMinutes()) / 1440 }
+            Rectangle { y: 6; width: parent.width; height: 1; color: card.alpha(card.text, 0.14) }
+            Repeater {   // the quarters of the day: midnight, six, noon, eighteen, midnight
+                model: 5
+                Rectangle { required property int index; x: Math.min(dayBar.width - 1, dayBar.width * index / 4); y: 3; width: 1; height: 7
+                            color: card.alpha(card.text, 0.18) }
+            }
+            Rectangle { visible: !!(dayBar.s && dayBar.s.dawn); y: 6; height: 1; color: card.alpha(card.gold, 0.45)
+                        x: dayBar.width * dayBar.parent.fx(dayBar.s ? dayBar.s.dawn : null)
+                        width: dayBar.width * (dayBar.parent.fx(dayBar.s ? dayBar.s.dusk : null) - dayBar.parent.fx(dayBar.s ? dayBar.s.dawn : null)) }
+            Rectangle { visible: !!(dayBar.s && (dayBar.s.rise || dayBar.s.phase === "day")); y: 5; height: 3; color: card.alpha(card.gold, 0.85)
+                        x: dayBar.s && dayBar.s.rise ? dayBar.width * dayBar.parent.fx(dayBar.s.rise) : 0
+                        width: dayBar.s && dayBar.s.rise ? dayBar.width * (dayBar.parent.fx(dayBar.s.set) - dayBar.parent.fx(dayBar.s.rise)) : dayBar.width }
+            Rectangle { x: dayBar.width * dayBar.nowF - 4; y: 2; width: 9; height: 9; radius: 4.5; color: card.text
+                        border.width: 2; border.color: card.base }
+            Repeater {
+                model: dayBar.s && dayBar.s.rise ? [["Sunrise", dayBar.s.rise], ["Sunset", dayBar.s.set]] : []
+                Text {
+                    required property var modelData; required property int index
+                    x: Math.max(0, Math.min(dayBar.width - width, dayBar.width * dayBar.parent.fx(modelData[1]) - (index === 0 ? 0 : width)))
+                    y: 16; text: modelData[0] + "  " + modelData[1].replace(/^0/, ""); color: card.alpha(card.text, 0.7); font.family: card.uiFace; font.pixelSize: 12
                 }
             }
         }

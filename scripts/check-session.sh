@@ -329,5 +329,16 @@ for t in samurai xianxia; do f="$IC/usr/share/sounds/tenka-watch/$t.ogg"; [ -s "
 grep -q 'OnCalendar=\*-\*-\* 01,03,05,07,09,11,13,15,17,19,21,23:00:00' "$IC/usr/lib/systemd/user/tenka-watch.timer" &&
 grep -q 'enable tenka-watch.timer' "$ROOT/live/config/hooks/live/0100-base-setup.hook.chroot" &&
 grep -q '"tenka-watch", "state"' "$ROOT/shell/quickshell/tenka/ControlCenter.qml" || { echo "FAIL: watch wiring"; fail=1; }
+# 18. The sun over your place: sunrise and sunset from the time zone's city (or place.json), and the phase it gives
+al() { HOME="$T/sun" TZ=Asia/Kolkata python3 "$BIN/tenka-almanac" "$@"; }
+mkdir -p "$T/sun"
+[ "$(al sun 2026-10-12)" = "Sunrise 05:32  ·  Sunset 17:15  ·  11h 43m of light over Kolkata" ] &&
+[ "$(al phase 2026-10-12T04:30)" = night ] && [ "$(al phase 2026-10-12T05:20)" = dawn ] && [ "$(al phase 2026-10-12T12:00)" = day ] &&
+[ "$(al phase 2026-10-12T17:30)" = dusk ] && [ "$(al phase 2026-10-12T19:00)" = night ] &&
+[ "$(HOME="$T/sun" TZ=Arctic/Longyearbyen python3 "$BIN/tenka-almanac" phase 2026-06-21T00:30)" = day ] &&
+[ "$(HOME="$T/sun" TZ=Arctic/Longyearbyen python3 "$BIN/tenka-almanac" phase 2026-12-21T12:00)" = night ] &&
+mkdir -p "$T/sun/.config/tenka" && echo '{ "name": "London", "lat": 51.5, "lon": -0.13 }' > "$T/sun/.config/tenka/place.json" &&
+HOME="$T/sun" TZ=Europe/London python3 "$BIN/tenka-almanac" sun 2026-10-12 | grep -q '^Sunrise 07:[12][0-9]  ·  Sunset 18:[01][0-9]  ·  .* over London$' &&
+grep -q 'tenka-almanac phase' "$BIN/tenka-hour" && grep -q 'card.d.sun' "$ROOT/shell/quickshell/tenka/almanac/AlmanacCard.qml" || { echo "FAIL: the sun"; fail=1; }
 [ "$fail" = 0 ] && echo "check-session: ok"
 exit $fail

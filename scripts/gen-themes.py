@@ -440,6 +440,12 @@ def gen(name, T):
     window.background:not(.xfce4-panel):not(.thunar) iconview, dialog.background iconview, window.background:not(.xfce4-panel):not(.thunar) iconview.view, dialog.background iconview.view,
     window.background:not(.xfce4-panel):not(.thunar) scrolledwindow, dialog.background scrolledwindow, window.background:not(.xfce4-panel):not(.thunar) viewport, dialog.background viewport,
     window.background:not(.xfce4-panel):not(.thunar) .background, dialog.background .background {{ background-color: transparent; }}
+    /* ExoIconView (the Settings Manager, App Finder) is a plain `widget.view` node, and exo paints every label's cell with the
+       view ink too: stacked over the content ink that made dark bands under each category and a dark box behind every name.
+       The icons sit straight on the one sheet; only hover and selection draw, as a quiet wash. */
+    window.background:not(.xfce4-panel):not(.thunar) widget.view:not(treeview), dialog.background widget.view:not(treeview) {{ background-color: transparent; }}
+    window.background:not(.xfce4-panel):not(.thunar) widget.view.cell:hover, dialog.background widget.view.cell:hover {{ background-color: {rgba(p['text'], 0.07)}; border-radius: {Rs}px; }}
+    window.background:not(.xfce4-panel):not(.thunar) widget.view.cell:selected, dialog.background widget.view.cell:selected {{ background-color: {gl_sel}; color: {p['text']}; border-radius: {Rs}px; }}
     menubar {{ background-color: transparent; background-image: none; padding: 2px 8px; border-bottom: 1px solid {rgba(p['accent2'], 0.14)}; box-shadow: none; }}
     menubar > menuitem {{ padding: 6px 12px; border-radius: {Rs}px; font-family: Marcellus; color: {rgba(p['text'], 0.82)}; }}
     menubar > menuitem:hover {{ background-color: {rgba(p['accent2'], 0.14)}; color: {p['text']}; box-shadow: none; }}

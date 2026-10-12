@@ -343,6 +343,8 @@ PanelWindow {
                        onHit: { cc.open = false; Theme.ipc("codex", "open") } }
                 Row2 { k: Theme.xia ? "The Joss Stick" : "The Incense"; v: "a timer"
                        onHit: { cc.open = false; Theme.ipc("incense", "open") } }
+                Row2 { k: Theme.xia ? "The Mountain Hall" : "The Garden"; v: "rain  ·  stream  ·  pines"
+                       onHit: { cc.open = false; Theme.ipc("garden", "open") } }
                 Row2 { k: Theme.xia ? "The Lineage" : "The Colophon"; v: "this machine"; last: true
                        onHit: { cc.open = false; Theme.ipc("colophon", "open") } }
             }

@@ -1,0 +1,148 @@
+#!/usr/bin/python3
+"""tenka-ambience: The Garden (Tianxia: The Mountain Hall), sounds to work or rest by. Four beds made by
+Tenka itself (scripts/gen-ambience.py): rain on a wooden roof, a stream over stones, wind in pines, a low fire.
+They loop with no seam, fade in, and fade out when stopped. No daemon: one quiet player while one is on.
+  tenka-ambience play NAME     rain | stream | pines | embers (another one playing is replaced)
+  tenka-ambience stop          fade out and stop
+  tenka-ambience toggle [NAME] stop if playing, else play NAME (or the last one)
+  tenka-ambience volume N      0..100, live
+  tenka-ambience state         {"playing", "name", "volume", "names"} as JSON
+  tenka-ambience open          the card (Super + G): qs ipc on Hyprland, a small Qt window on Tenka Lite
+State: ~/.config/tenka/ambience.json. The card reads it; this program is the only writer.
+"""
+import json, os, signal, socket, subprocess, sys, time
+
+NAMES = ["rain", "stream", "pines", "embers"]
+DIR = os.environ.get("TENKA_AMBIENCE_DIR", "/usr/share/sounds/tenka-ambience")
+HOME = os.path.expanduser("~")
+S = os.path.join(os.environ.get("XDG_CONFIG_HOME") or os.path.join(HOME, ".config"), "tenka")
+J = os.path.join(S, "ambience.json")
+RT = os.environ.get("XDG_RUNTIME_DIR") or "/tmp"
+PID = os.path.join(RT, "tenka-ambience.pid")
+SOCK = os.path.join(RT, "tenka-ambience.sock")
+
+def read():
+    try:
+        d = json.load(open(J))
+    except (OSError, ValueError):
+        d = {}
+    d.setdefault("name", "rain"); d.setdefault("volume", 60); d.setdefault("playing", False)
+    return d
+
+def write(d):
+    os.makedirs(S, exist_ok=True)
+    with open(J + ".new", "w") as f:
+        json.dump(d, f)
+    os.replace(J + ".new", J)
+
+def player():
+    """the pid of our player, or None"""
+    try:
+        pid = int(open(PID).read().strip())
+        if b"tenka-ambience" in open("/proc/%d/cmdline" % pid, "rb").read():
+            return pid
+    except (OSError, ValueError):
+        pass
+    return None
+
+def ipc(*cmd):
+    try:
+        s = socket.socket(socket.AF_UNIX); s.settimeout(0.5); s.connect(SOCK)
+        s.sendall((json.dumps({"command": list(cmd)}) + "\n").encode()); s.close()
+        return True
+    except OSError:
+        return False
+
+def stop(fade=True):
+    pid = player()
+    if pid:
+        v = read()["volume"]
+        if fade:
+            for i in range(12, -1, -1):                 # about a second down to silence
+                if not ipc("set_property", "volume", v * i / 12): break
+                time.sleep(0.08)
+        try: os.kill(pid, signal.SIGTERM)
+        except OSError: pass
+    for p in (PID, SOCK):
+        try: os.remove(p)
+        except OSError: pass
+    d = read(); d["playing"] = False; write(d)
+
+def play(name):
+    if name not in NAMES:
+        print("tenka-ambience: one of " + ", ".join(NAMES), file=sys.stderr); return 2
+    path = os.path.join(DIR, name + ".ogg")
+    if not os.path.exists(path):
+        print("tenka-ambience: missing " + path, file=sys.stderr); return 1
+    stop(fade=player() is not None)
+    d = read()
+    # mpv runs with argv0 "tenka-ambience-player", so `player()` can tell it is ours from its cmdline
+    p = subprocess.Popen(
+                         ["tenka-ambience-player", "--no-video", "--no-terminal", "--really-quiet", "--loop-file=inf", "--audio-fallback-to-null=yes",
+                          "--volume=%d" % d["volume"], "--af=afade=t=in:d=2.5", "--input-ipc-server=" + SOCK,
+                          "--audio-client-name=tenka-ambience", path],
+                         executable="mpv", stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                         start_new_session=True)
+    with open(PID, "w") as f:
+        f.write(str(p.pid))
+    d.update(name=name, playing=True); write(d)
+    return 0
+
+def volume(v):
+    v = max(0, min(100, int(v)))
+    d = read(); d["volume"] = v; write(d)
+    if player(): ipc("set_property", "volume", v)
+
+def state():
+    d = read()
+    alive = player() is not None
+    if d["playing"] != alive:
+        d["playing"] = alive; write(d)
+    return {"playing": alive, "name": d["name"], "volume": d["volume"], "names": NAMES}
+
+def open_card():
+    if os.environ.get("WAYLAND_DISPLAY") and subprocess.run(["pgrep", "-x", "qs"], capture_output=True).returncode == 0:
+        subprocess.run(["qs", "-c", "tenka", "ipc", "call", "garden", "toggle"], capture_output=True)
+        return 0
+    if not os.environ.get("DISPLAY"):
+        print(json.dumps(state())); return 0
+    lock = os.path.join(RT, "tenka-ambience-card.pid")
+    try:                                                # pressed again while open: close it
+        pid = int(open(lock).read().strip())
+        if b"LiteGarden.qml" not in open("/proc/%d/cmdline" % pid, "rb").read():
+            raise ValueError
+        os.kill(pid, signal.SIGTERM); os.remove(lock); return 0
+    except (OSError, ValueError):
+        pass
+    state()                                             # make the file true before the card reads it
+    env = dict(os.environ, QML_XHR_ALLOW_FILE_READ="1", QT_QPA_PLATFORM="xcb", QT_MESSAGE_PATTERN="%{message}")
+    p = subprocess.Popen(["/usr/lib/qt6/bin/qml", "/usr/share/tenka/garden/LiteGarden.qml", "--", J, os.path.join(S, "shell-theme.json")],
+                         stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, env=env, text=True)
+    with open(lock, "w") as f:
+        f.write(str(p.pid))
+    for line in p.stderr:                               # the card asks: "PLAY <name>", "STOP" or "VOL <n>"
+        w = line.split()
+        if w[:1] == ["PLAY"] and len(w) > 1: play(w[1])
+        elif w[:1] == ["STOP"]: stop()
+        elif w[:1] == ["VOL"] and len(w) > 1 and w[1].isdigit(): volume(int(w[1]))
+    p.wait()
+    try: os.remove(lock)
+    except OSError: pass
+    return 0
+
+def main():
+    a = sys.argv[1:]
+    c = a[0] if a else "state"
+    if c == "play" and len(a) > 1: sys.exit(play(a[1]))
+    elif c == "stop": stop()
+    elif c == "toggle":
+        if player(): stop()
+        else: sys.exit(play(a[1] if len(a) > 1 else read()["name"]))
+    elif c == "volume" and len(a) > 1 and a[1].isdigit(): volume(int(a[1]))
+    elif c == "state": print(json.dumps(state()))
+    elif c == "open": sys.exit(open_card())
+    else:
+        print(__doc__.strip()); sys.exit(2)
+
+if __name__ == "__main__":
+    main()

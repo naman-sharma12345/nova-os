@@ -1,0 +1,30 @@
+[Desktop Entry]
+Type=Application
+Name=The Garden
+GenericName=Ambient sounds
+Comment=Rain, a stream, wind in pines or a low fire, to work or rest by (Super + G)
+Exec=tenka-ambience open
+Icon=audio-x-generic-symbolic
+Categories=AudioVideo;Audio;Utility;
+Keywords=ambience;ambient;rain;stream;water;wind;pines;fire;embers;focus;noise;background;sounds;garden;
+Actions=rain;stream;pines;embers;stop;
+
+[Desktop Action rain]
+Name=Rain
+Exec=tenka-ambience play rain
+
+[Desktop Action stream]
+Name=Stream
+Exec=tenka-ambience play stream
+
+[Desktop Action pines]
+Name=Pines
+Exec=tenka-ambience play pines
+
+[Desktop Action embers]
+Name=Embers
+Exec=tenka-ambience play embers
+
+[Desktop Action stop]
+Name=Stop
+Exec=tenka-ambience stop

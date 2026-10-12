@@ -22,6 +22,8 @@
 # 14. tenka-incense lights a stick (state burning, about the minutes asked), puts it out (no sleeper left behind),
 #     and is wired in both sessions; Incense.qml imports Quickshell.Hyprland (its GlobalShortcut needs it, or the
 #     whole shell fails to load)
+# 15. The Garden: the four beds exist and loop clean (48 s, Vorbis), tenka-ambience knows them, refuses an
+#     unknown one, and is wired in both sessions (Super+G, the card in shell.qml, Lite's window, the menu entry)
 set -u
 ROOT=$(cd "$(dirname "$0")/.." && pwd); BIN="$ROOT/live/config/includes.chroot/usr/bin"
 fail=0; T=$(mktemp -d); trap 'rm -rf "$T"' EXIT
@@ -276,5 +278,16 @@ echo "$S2" | python3 -c 'import json,sys; s=json.load(sys.stdin); sys.exit(0 if 
 grep -q '^import Quickshell.Hyprland$' "$ROOT/shell/quickshell/tenka/Incense.qml" && grep -q '"tenka:incense"' "$IC/etc/skel/.config/hypr/hyprland.lua" &&
 grep -q 'value="tenka-incense open"' "$IC/etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml" &&
 [ -f "$IC/usr/share/tenka/incense/LiteIncense.qml" ] && grep -q '^ *Incense {}' "$ROOT/shell/quickshell/tenka/shell.qml" || { echo "FAIL: incense wiring"; fail=1; }
+# 15. The Garden
+for n in rain stream pines embers; do f="$IC/usr/share/sounds/tenka-ambience/$n.ogg"
+  [ -s "$f" ] && head -c 64 "$f" | grep -q vorbis || { echo "FAIL: ambience bed $n"; fail=1; }; done
+mkdir -p "$T/amb/rt"; chmod 700 "$T/amb/rt"
+G=$(HOME="$T/amb" XDG_RUNTIME_DIR="$T/amb/rt" python3 "$BIN/tenka-ambience" state)
+echo "$G" | python3 -c 'import json,sys; s=json.load(sys.stdin); sys.exit(0 if s["names"]==["rain","stream","pines","embers"] and not s["playing"] else 1)' &&
+! HOME="$T/amb" XDG_RUNTIME_DIR="$T/amb/rt" python3 "$BIN/tenka-ambience" play nope 2>/dev/null || { echo "FAIL: tenka-ambience state/refusal: $G"; fail=1; }
+grep -q '^import Quickshell.Hyprland$' "$ROOT/shell/quickshell/tenka/Garden.qml" && grep -q '"tenka:garden"' "$IC/etc/skel/.config/hypr/hyprland.lua" &&
+grep -q 'value="tenka-ambience open"' "$IC/etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml" &&
+[ -f "$IC/usr/share/tenka/garden/LiteGarden.qml" ] && grep -q '^ *Garden {}' "$ROOT/shell/quickshell/tenka/shell.qml" &&
+grep -q '^Exec=tenka-ambience open$' "$IC/usr/share/applications/tenka-ambience.desktop" || { echo "FAIL: garden wiring"; fail=1; }
 [ "$fail" = 0 ] && echo "check-session: ok"
 exit $fail

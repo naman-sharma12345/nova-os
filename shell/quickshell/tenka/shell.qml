@@ -39,6 +39,7 @@ ShellRoot {
     Drift {}
     Incense {}
     Almanac {}
+    Garden {}
     ControlCenter {}
     Notifications {}
     Osd {}

@@ -45,6 +45,10 @@ checkbutton check:checked, radiobutton radio:checked, check:checked, radio:check
 checkbutton check:checked, checkbutton radio:checked, check:checked, radio:checked, switch slider, scale slider { background-image: none; }
 text > selection, text > selection:focus-within, entry > text > selection, textview > text > selection { background-color: rgba(216, 65, 47, 0.34); color: #efe6d6; }
 link, link:link, button.link, button.link > label { color: #c9a35a; }
+/* T22: GTK 4 measures an ellipsizing label without its letter-spacing, so every window title was cut short ("Widgets" drew as "Widge…"); no tracking on GTK 4 titles */
+headerbar .title, windowtitle .title { letter-spacing: 0; }
+/* T22: one control language across GTK 3 and GTK 4: checks and radios in gold with ink marks, as GTK 3 already drew them */
+checkbutton check:checked, checkbutton radio:checked, check:checked, radio:checked { background-color: #c9a35a; border-color: #c9a35a; color: #0f0d0c; }
 switch { background-color: rgba(239, 230, 214, 0.14); border: none; border-radius: 99px; }
 switch:checked { background-color: #d8412f; }
 switch slider { background-color: #efe6d6; border-radius: 99px; box-shadow: none; }

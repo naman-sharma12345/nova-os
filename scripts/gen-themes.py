@@ -415,6 +415,10 @@ def gen(name, T):
     checkbutton check:checked, checkbutton radio:checked, check:checked, radio:checked, switch slider, scale slider {{ background-image: none; }}
     text > selection, text > selection:focus-within, entry > text > selection, textview > text > selection {{ background-color: {gl_sel}; color: {p['text']}; }}
     link, link:link, button.link, button.link > label {{ color: {p['accent2']}; }}
+    /* T22: GTK 4 measures an ellipsizing label without its letter-spacing, so every window title was cut short ("Widgets" drew as "Widge…"); no tracking on GTK 4 titles */
+    headerbar .title, windowtitle .title {{ letter-spacing: 0; }}
+    /* T22: one control language across GTK 3 and GTK 4: checks and radios in gold with ink marks, as GTK 3 already drew them */
+    checkbutton check:checked, checkbutton radio:checked, check:checked, radio:checked {{ background-color: {p['accent2']}; border-color: {p['accent2']}; color: {p['base']}; }}
     switch {{ background-color: {rgba(p['text'], 0.14)}; border: none; border-radius: 99px; }}
     switch:checked {{ background-color: {p['accent']}; }}
     switch slider {{ background-color: {p['text']}; border-radius: 99px; box-shadow: none; }}

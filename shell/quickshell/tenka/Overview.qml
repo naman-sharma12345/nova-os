@@ -96,7 +96,7 @@ PanelWindow {
         id: field
         anchors.fill: parent
         opacity: ov.open ? 1 : 0
-        Behavior on opacity { NumberAnimation { duration: Theme.perf ? 0 : 200; easing.type: Easing.OutCubic } }
+        Behavior on opacity { NumberAnimation { duration: Theme.perf ? 0 : 200; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
         Rectangle { anchors.fill: parent; color: Theme.t.base; opacity: 0.86 }
         MouseArea { anchors.fill: parent; onClicked: ov.hide() }
 

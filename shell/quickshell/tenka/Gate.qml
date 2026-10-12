@@ -40,7 +40,7 @@ Item {
     function stamp() { stampAnim.restart() }
     ParallelAnimation {
         id: stampAnim
-        NumberAnimation { target: gate; property: "sealOpacity"; from: 0; to: 1; duration: 180; easing.type: Easing.OutQuad }
-        NumberAnimation { target: gate; property: "sealScale"; from: 1.08; to: 1; duration: 360; easing.type: Easing.OutCubic }
+        NumberAnimation { target: gate; property: "sealOpacity"; from: 0; to: 1; duration: Theme.ms(180); easing.type: Easing.OutQuad }
+        NumberAnimation { target: gate; property: "sealScale"; from: 1.08; to: 1; duration: Theme.ms(360); easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease }
     }
 }

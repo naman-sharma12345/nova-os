@@ -36,14 +36,14 @@ PanelWindow {
         NumberAnimation { target: gate; property: "opacity"; from: 0; to: 1; duration: 320 * th.k; easing.type: Easing.OutQuad }
         ScriptAction { script: gate.stamp() }
         PauseAnimation { duration: 620 * th.k }
-        NumberAnimation { target: scene; property: "opacity"; to: 0; duration: 1400 * th.k; easing.type: Easing.OutCubic }
+        NumberAnimation { target: scene; property: "opacity"; to: 0; duration: 1400 * th.k; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease }
         ScriptAction { script: th.playing = false }
     }
     // after an unlock the lock face has just shown the gate with its seal: only the falling away
     SequentialAnimation {
         id: release
         ScriptAction { script: { gate.sealOpacity = 1; gate.sealScale = 1; gate.ensoOpacity = 0.14; gate.opacity = 1; veil.visible = false; scene.opacity = 1; th.playing = true } }
-        NumberAnimation { target: scene; property: "opacity"; to: 0; duration: 900 * th.k; easing.type: Easing.OutCubic }
+        NumberAnimation { target: scene; property: "opacity"; to: 0; duration: 900 * th.k; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease }
         ScriptAction { script: th.playing = false }
     }
     function play(kind) {

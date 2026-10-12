@@ -128,9 +128,9 @@ PanelWindow {
         y: (parent.height - height) / 2 - 10 + (launcher.open ? 0 : 26)
         opacity: launcher.open ? 1 : 0
         scale: launcher.open ? 1 : 0.97
-        Behavior on y { NumberAnimation { duration: 280; easing.type: Easing.OutCubic } }
-        Behavior on opacity { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
-        Behavior on scale { NumberAnimation { duration: 280; easing.type: Easing.OutCubic } }
+        Behavior on y { NumberAnimation { duration: Theme.ms(280); easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
+        Behavior on opacity { NumberAnimation { duration: Theme.ms(220); easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
+        Behavior on scale { NumberAnimation { duration: Theme.ms(280); easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
         onYChanged: place()
         MouseArea { anchors.fill: parent }   // swallow clicks
 
@@ -187,7 +187,7 @@ PanelWindow {
                 anchors.fill: parent; anchors.margins: 4; radius: 22
                 color: tile.on ? Theme.alpha(Theme.accent, 0.20) : (ma.containsMouse ? Theme.alpha(Theme.t.text, 0.06) : "transparent")
                 border.width: tile.on ? 1 : 0; border.color: Theme.alpha(Theme.accent, 0.85)
-                Behavior on color { ColorAnimation { duration: 140 } }
+                Behavior on color { ColorAnimation { duration: Theme.ms(140) } }
             }
             Rectangle {
                 id: chip
@@ -311,8 +311,8 @@ PanelWindow {
         anchors.horizontalCenter: parent.horizontalCenter
         y: parent.height * 0.22 + (launcher.open ? 0 : 20)
         opacity: launcher.open ? 1 : 0
-        Behavior on y { NumberAnimation { duration: 280; easing.type: Easing.OutCubic } }
-        Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
+        Behavior on y { NumberAnimation { duration: Theme.ms(280); easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
+        Behavior on opacity { NumberAnimation { duration: Theme.ms(200); easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
         MouseArea { anchors.fill: parent }
         Rectangle { anchors.fill: parent; radius: Theme.ledgerR; color: Theme.alpha(Theme.t.base, Theme.selfBlur ? 0.88 : 0.70)
                     border.width: 1; border.color: Theme.alpha(Theme.gold, 0.45) }

@@ -38,7 +38,7 @@ PanelWindow {
     function reveal() { open = true; readP.running = false; readP.running = true; card.forceActiveFocus() }
 
     Rectangle { anchors.fill: parent; color: Theme.alpha(Theme.t.base, sw.open ? 0.5 : 0)
-                Behavior on color { enabled: !Theme.perf; ColorAnimation { duration: 260 } } }
+                Behavior on color { enabled: !Theme.perf; ColorAnimation { duration: Theme.ms(260) } } }
     MouseArea { anchors.fill: parent; enabled: sw.open; onClicked: sw.open = false }
 
     SkyWeekCard {
@@ -47,8 +47,8 @@ PanelWindow {
         y: Math.max(40, (parent.height - height) * 0.42) + (sw.open ? 0 : 16)
         opacity: sw.open ? 1 : 0
         focus: sw.open
-        Behavior on y { enabled: !Theme.perf; NumberAnimation { duration: 260; easing.type: Easing.OutCubic } }
-        Behavior on opacity { enabled: !Theme.perf; NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
+        Behavior on y { enabled: !Theme.perf; NumberAnimation { duration: Theme.ms(260); easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
+        Behavior on opacity { enabled: !Theme.perf; NumberAnimation { duration: Theme.ms(200); easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
         base: Theme.t.base; text: Theme.t.text; gold: Theme.gold; accent: Theme.accent
         radius: Theme.ledgerR; face: Theme.display; xia: Theme.xia
         onDismissed: sw.open = false

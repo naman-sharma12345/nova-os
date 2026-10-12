@@ -144,7 +144,7 @@ PanelWindow {
 
     // the desk steps back: one flat wash
     Rectangle { anchors.fill: parent; color: Theme.alpha(Theme.t.base, air.open ? 0.55 : 0)
-                Behavior on color { enabled: !Theme.perf; ColorAnimation { duration: 220 } } }
+                Behavior on color { enabled: !Theme.perf; ColorAnimation { duration: Theme.ms(220) } } }
     MouseArea { anchors.fill: parent; enabled: air.open; onClicked: air.open = false }
 
     Item {
@@ -154,9 +154,9 @@ PanelWindow {
         anchors.horizontalCenter: parent.horizontalCenter
         y: Math.max(40, parent.height * 0.22) + (air.open ? 0 : 16)
         opacity: air.open ? 1 : 0
-        Behavior on y { enabled: !Theme.perf; NumberAnimation { duration: 260; easing.type: Easing.OutCubic } }
-        Behavior on opacity { enabled: !Theme.perf; NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
-        Behavior on height { enabled: !Theme.perf; NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+        Behavior on y { enabled: !Theme.perf; NumberAnimation { duration: Theme.ms(260); easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
+        Behavior on opacity { enabled: !Theme.perf; NumberAnimation { duration: Theme.ms(200); easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
+        Behavior on height { enabled: !Theme.perf; NumberAnimation { duration: Theme.ms(180); easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
         Rectangle { anchors.fill: parent; radius: Theme.ledgerR; color: Theme.alpha(Theme.t.base, 0.95)
                     border.width: 1; border.color: Theme.alpha(Theme.gold, 0.4) }
         MouseArea { anchors.fill: parent }

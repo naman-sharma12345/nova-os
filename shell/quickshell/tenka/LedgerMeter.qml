@@ -9,7 +9,7 @@ Item {
     property string unit: ""
     property color c: Theme.gold   // value fills are one colour across the shell and Lite
     width: parent ? parent.width : 0; height: 40
-    Behavior on v { NumberAnimation { duration: 600; easing.type: Easing.OutCubic } }
+    Behavior on v { NumberAnimation { duration: Theme.ms(600); easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
     Text { y: 2; text: hm.k; color: Theme.alpha(Theme.t.text, 0.86); font.family: Theme.display; font.pixelSize: 15 }
     Text { y: 4; anchors.right: parent.right; text: Math.round(hm.v * 100) + hm.unit; color: Theme.gold
            font.family: Theme.display; font.pixelSize: 13; font.letterSpacing: 1 }

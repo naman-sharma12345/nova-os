@@ -31,7 +31,7 @@ PanelWindow {
         id: veil
         anchors.fill: parent; radius: 0; tint: 0.50; line: 0; shadow: false
         opacity: pm.open ? 1 : 0
-        Behavior on opacity { NumberAnimation { duration: 260 } }
+        Behavior on opacity { NumberAnimation { duration: Theme.ms(260) } }
         MouseArea { anchors.fill: parent; onClicked: pm.open = false }
 
         Item {
@@ -47,7 +47,7 @@ PanelWindow {
         Column {
             anchors.centerIn: parent; spacing: 26
             scale: pm.open ? 1 : 0.96
-            Behavior on scale { NumberAnimation { duration: 320; easing.type: Easing.OutCubic } }
+            Behavior on scale { NumberAnimation { duration: Theme.ms(320); easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
             Text { anchors.horizontalCenter: parent.horizontalCenter
                    text: Theme.xia ? "Where does the path lead?" : "Where does the blade go?"
                    color: Theme.t.text; font.family: Theme.display; font.pixelSize: 46; font.letterSpacing: 1 }
@@ -66,7 +66,7 @@ PanelWindow {
                 Image {
                     source: Theme.t.stroke; width: 520; height: 62; smooth: true
                     y: pm.sel * 66
-                    Behavior on y { NumberAnimation { duration: 240; easing.type: Easing.OutCubic } }
+                    Behavior on y { NumberAnimation { duration: Theme.ms(240); easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
                 }
                 Repeater {
                     model: pm.rites
@@ -76,7 +76,7 @@ PanelWindow {
                         y: index * 66; width: list.width; height: 62
                         Text { x: 36; anchors.verticalCenter: parent.verticalCenter; text: parent.modelData[1]
                                color: parent.on ? "#fff8ec" : Theme.alpha(Theme.t.text, 0.56)   // the off rites in each pack's own text tone (the warm grey was Tenka-only); font.family: Theme.display; font.pixelSize: 34
-                               Behavior on color { ColorAnimation { duration: 180 } } }
+                               Behavior on color { ColorAnimation { duration: Theme.ms(180) } } }
                         Text { anchors.right: parent.right; anchors.rightMargin: 8; anchors.verticalCenter: parent.verticalCenter
                                text: parent.modelData[2].toUpperCase(); color: Theme.alpha(Theme.t.text, parent.on ? 0.6 : 0.28)
                                font.family: Theme.display; font.pixelSize: 11; font.letterSpacing: 4 }

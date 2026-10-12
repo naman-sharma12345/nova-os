@@ -59,7 +59,7 @@ PanelWindow {
         border.width: 1
         border.color: slip.editing ? Theme.alpha(Theme.accent, 0.8) : Theme.alpha(Theme.gold, 0.28)
         opacity: slip.editing ? (slip.held ? 1 : 0) : !slip.resting ? 0 : Theme.focus ? 0.38 : 1
-        Behavior on opacity { NumberAnimation { duration: Theme.perf ? 0 : 240; easing.type: Easing.OutCubic } }
+        Behavior on opacity { NumberAnimation { duration: Theme.perf ? 0 : 240; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
 
         Column {
             id: body

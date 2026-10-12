@@ -27,8 +27,8 @@ PanelWindow {
         x: 16; y: 22 + (Theme.deskOpen ? 0 : 40)
         spacing: 22
         opacity: Theme.deskOpen && cards.glassFace ? 1 : 0
-        Behavior on y { NumberAnimation { duration: 420; easing.type: Easing.OutCubic } }
-        Behavior on opacity { NumberAnimation { duration: 260 } }
+        Behavior on y { NumberAnimation { duration: Theme.ms(420); easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
+        Behavior on opacity { NumberAnimation { duration: Theme.ms(260) } }
         onYChanged: { cal.place(); med.place(); sys.place() }
         CalendarCard { id: cal; ox: cards.ox; oy: cards.oy }
         MediaCard { id: med; ox: cards.ox; oy: cards.oy }
@@ -40,8 +40,8 @@ PanelWindow {
         ox: cards.ox; oy: cards.oy
         x: 16; y: 22 + (Theme.deskOpen ? 0 : 30)
         opacity: Theme.deskOpen && !cards.glassFace ? 1 : 0
-        Behavior on y { NumberAnimation { duration: 380; easing.type: Easing.OutCubic } }
-        Behavior on opacity { NumberAnimation { duration: 240 } }
+        Behavior on y { NumberAnimation { duration: Theme.ms(380); easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
+        Behavior on opacity { NumberAnimation { duration: Theme.ms(240) } }
         onYChanged: place()
     }
 }

@@ -46,7 +46,7 @@ PanelWindow {
     Rectangle {
         anchors.fill: parent
         color: Theme.t.base; opacity: Theme.focus ? 0.55 : 0
-        Behavior on opacity { enabled: !Theme.perf; NumberAnimation { duration: 600; easing.type: Easing.InOutSine } }
+        Behavior on opacity { enabled: !Theme.perf; NumberAnimation { duration: Theme.ms(600); easing.type: Easing.InOutSine } }
     }
     // the stroke: a flat band of ink with dry-brush edges, painted once per pack
     Canvas {

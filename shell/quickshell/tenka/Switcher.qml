@@ -103,8 +103,8 @@ PanelWindow {
         border.width: 1; border.color: Theme.alpha(Theme.gold, 0.35)
         opacity: sw.open && sw.shown ? 1 : 0
         scale: sw.open || Theme.perf ? 1 : 0.985
-        Behavior on opacity { NumberAnimation { duration: Theme.perf ? 0 : 160; easing.type: Easing.OutCubic } }
-        Behavior on scale { NumberAnimation { duration: Theme.perf ? 0 : 160; easing.type: Easing.OutCubic } }
+        Behavior on opacity { NumberAnimation { duration: Theme.perf ? 0 : 160; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
+        Behavior on scale { NumberAnimation { duration: Theme.perf ? 0 : 160; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
         MouseArea { anchors.fill: parent }
 
         Row {

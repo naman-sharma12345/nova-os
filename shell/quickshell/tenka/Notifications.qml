@@ -62,14 +62,14 @@ PanelWindow {
     Column {
         id: stack
         x: 10; y: 0; width: 400; spacing: 12
-        move: Transition { NumberAnimation { properties: "y"; duration: 260; easing.type: Easing.OutCubic } }
+        move: Transition { NumberAnimation { properties: "y"; duration: Theme.ms(260); easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
         // the focus summary: the same ruled note, its sender word FOCUS, one line for the count and one for who
         Item {
             id: sumCard
             visible: nw.summary !== null
             width: 400; height: visible ? sumCol.height + 44 : 0
             opacity: visible ? 1 : 0
-            Behavior on opacity { enabled: !Theme.perf; NumberAnimation { duration: 260 } }
+            Behavior on opacity { enabled: !Theme.perf; NumberAnimation { duration: Theme.ms(260) } }
             Timer { running: sumCard.visible; interval: 12000; onTriggered: nw.summary = null }
             readonly property color rc: Theme.alpha(Theme.gold, 0.42)
             readonly property int rr: Theme.ledgerR
@@ -116,8 +116,8 @@ PanelWindow {
                 transform: Translate { x: card.slide }
                 opacity: 0
                 Component.onCompleted: { slide = 0; opacity = 1 }
-                Behavior on slide { NumberAnimation { duration: 360; easing.type: Easing.OutCubic } }
-                Behavior on opacity { NumberAnimation { duration: 220 } }
+                Behavior on slide { NumberAnimation { duration: Theme.ms(360); easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
+                Behavior on opacity { NumberAnimation { duration: Theme.ms(220) } }
                 Timer { running: card.n && card.n.urgency !== NotificationUrgency.Critical; interval: 7000; onTriggered: list.remove(card.index) }
                 readonly property bool crit: !!card.n && card.n.urgency === NotificationUrgency.Critical
 

@@ -52,7 +52,7 @@ PanelWindow {
 
     // the desk steps back: one flat wash
     Rectangle { anchors.fill: parent; color: Theme.alpha(Theme.t.base, ink.open ? 0.55 : 0)
-                Behavior on color { enabled: !Theme.perf; ColorAnimation { duration: 220 } } }
+                Behavior on color { enabled: !Theme.perf; ColorAnimation { duration: Theme.ms(220) } } }
     MouseArea { anchors.fill: parent; enabled: ink.open; onClicked: ink.open = false }
 
     InkCard {
@@ -60,8 +60,8 @@ PanelWindow {
         anchors.horizontalCenter: parent.horizontalCenter
         y: Math.max(40, parent.height * 0.18) + (ink.open ? 0 : 16)
         opacity: ink.open ? 1 : 0
-        Behavior on y { enabled: !Theme.perf; NumberAnimation { duration: 260; easing.type: Easing.OutCubic } }
-        Behavior on opacity { enabled: !Theme.perf; NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
+        Behavior on y { enabled: !Theme.perf; NumberAnimation { duration: Theme.ms(260); easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
+        Behavior on opacity { enabled: !Theme.perf; NumberAnimation { duration: Theme.ms(200); easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
         base: Theme.t.base; text: Theme.t.text; gold: Theme.gold; accent: Theme.accent
         radius: Theme.ledgerR; face: Theme.display; uiFace: Theme.ui; xia: Theme.xia; motion: !Theme.perf
         onPlaced: g => { placeP.g = g; ink.open = false; placeP.running = true }

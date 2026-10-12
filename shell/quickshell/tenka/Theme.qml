@@ -16,6 +16,12 @@ Singleton {
     readonly property bool xia: adapter.name === "xianxia"
     // the ledger faces share the windows' corners: Tenka nearly square (a blade edge), Tianxia a little softer
     readonly property int ledgerR: xia ? 12 : 6
+    // Motion (Rice IV): the shell moves on the compositor's own curves, so a card arrives the way a window does.
+    // Tenka, the brush: in fast, stopping with weight (theme.lua "brush"). Tianxia, silk: slower, no bounce ("silk").
+    // Neither overshoots. Every shell animation reads these two; durations pass through ms(), Tianxia a fifth slower.
+    readonly property var ease: xia ? [0.22, 0.61, 0.36, 1, 1, 1] : [0.16, 1, 0.3, 1, 1, 1]
+    readonly property real pace: xia ? 1.2 : 1.0
+    function ms(n) { return Math.round(n * pace) }
     // Off Hyprland (sway, a nested test, Lite) nothing blurs behind layers, so glass frosts itself
     // from a pre-blurred copy of the wallpaper. On Hyprland the compositor's blur does it.
     readonly property bool selfBlur: Quickshell.env("TENKA_SELF_BLUR") === "1" || (Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE") || "") === ""

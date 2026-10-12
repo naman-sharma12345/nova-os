@@ -46,7 +46,7 @@ PanelWindow {
         anchors.bottom: parent.bottom; anchors.horizontalCenter: parent.horizontalCenter
         width: 260; height: 12
         Rectangle { anchors.centerIn: parent; width: 40; height: 3; radius: 2; color: Theme.alpha(Theme.t.text, 0.35)
-                    opacity: dock.shown ? 0 : 1; Behavior on opacity { NumberAnimation { duration: 200 } } }
+                    opacity: dock.shown ? 0 : 1; Behavior on opacity { NumberAnimation { duration: Theme.ms(200) } } }
         HoverHandler { onHoveredChanged: if (hovered) Theme.deskOpen = true }
     }
 
@@ -57,8 +57,8 @@ PanelWindow {
         anchors.horizontalCenter: parent.horizontalCenter
         y: dock.shown ? dock.height - height - 16 : dock.height + 10
         opacity: dock.shown ? 1 : 0
-        Behavior on y { NumberAnimation { duration: 420; easing.type: Easing.OutCubic } }
-        Behavior on opacity { NumberAnimation { duration: 240 } }
+        Behavior on y { NumberAnimation { duration: Theme.ms(420); easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
+        Behavior on opacity { NumberAnimation { duration: Theme.ms(240) } }
         onYChanged: { shelf.place(); launcherBtn.place() }
         HoverHandler { onHoveredChanged: if (!hovered) closeTimer.restart(); else closeTimer.stop() }
 
@@ -67,7 +67,7 @@ PanelWindow {
             ox: 0; oy: dock.oy
             width: 64; height: 64; radius: 32; tint: 0.35; line: 0.85; y: 6
             Image { anchors.centerIn: parent; source: Theme.t.crest; width: 40; height: 40; mipmap: true
-                    scale: lm.containsMouse ? 1.12 : 1; Behavior on scale { NumberAnimation { duration: 200; easing.type: Easing.OutBack } } }
+                    scale: lm.containsMouse ? 1.12 : 1; Behavior on scale { NumberAnimation { duration: Theme.ms(200); easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } } }
             MouseArea { id: lm; anchors.fill: parent; hoverEnabled: true; onClicked: Theme.ipc("launcher", "toggle") }
         }
         Glass {
@@ -92,7 +92,7 @@ PanelWindow {
                             source: it.modelData.sep ? "" : Theme.icon(it.modelData.i)
                             scale: ma.containsMouse ? 1.28 : 1
                             transformOrigin: Item.Bottom
-                            Behavior on scale { NumberAnimation { duration: 220; easing.type: Easing.OutBack } }
+                            Behavior on scale { NumberAnimation { duration: Theme.ms(220); easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
                         }
                         Rectangle { visible: it.open; width: 5; height: 5; radius: 2.5; color: Theme.accent
                                     anchors.horizontalCenter: parent.horizontalCenter; anchors.top: parent.bottom; anchors.topMargin: 1 }
@@ -121,8 +121,8 @@ PanelWindow {
         anchors.horizontalCenter: parent.horizontalCenter
         y: dock.shown ? dock.height - height - 18 : dock.height + 10
         opacity: dock.shown ? 1 : 0
-        Behavior on y { NumberAnimation { duration: 380; easing.type: Easing.OutCubic } }
-        Behavior on opacity { NumberAnimation { duration: 220 } }
+        Behavior on y { NumberAnimation { duration: Theme.ms(380); easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
+        Behavior on opacity { NumberAnimation { duration: Theme.ms(220) } }
         onYChanged: lbar.place()
         HoverHandler { onHoveredChanged: if (!hovered) closeTimer.restart(); else closeTimer.stop() }
 
@@ -155,7 +155,7 @@ PanelWindow {
                             sourceSize.width: 64; sourceSize.height: 64
                             source: li.modelData.sep ? "" : Theme.icon(li.modelData.i)
                             opacity: lma.containsMouse || li.open ? 1 : 0.72
-                            Behavior on opacity { NumberAnimation { duration: 140 } }
+                            Behavior on opacity { NumberAnimation { duration: Theme.ms(140) } }
                         }
                         Rectangle { visible: li.open; width: 12; height: 2; color: Theme.accent
                                     anchors.horizontalCenter: parent.horizontalCenter; anchors.bottom: parent.bottom; anchors.bottomMargin: -4 }

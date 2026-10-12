@@ -43,7 +43,7 @@ Glass {
             id: cv; width: 78; height: 78
             property real v: e.v
             onVChanged: requestPaint()
-            Behavior on v { NumberAnimation { duration: 700; easing.type: Easing.OutCubic } }
+            Behavior on v { NumberAnimation { duration: Theme.ms(700); easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
             function rnd(i) { const x = Math.sin(i * 12.9898 + e.seed * 78.233) * 43758.5453; return x - Math.floor(x) }
             function stroke(ctx, frac, col, alpha, wmax) {
                 const cx = 39, cy = 39, R = 31, a0 = -Math.PI / 2 + 0.25, n = Math.max(2, Math.floor(160 * frac));

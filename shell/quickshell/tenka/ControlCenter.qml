@@ -105,8 +105,8 @@ PanelWindow {
         y: 44
         x: parent.width - width - 14 + (cc.open ? 0 : 40)
         opacity: cc.open ? 1 : 0
-        Behavior on x { NumberAnimation { duration: 320; easing.type: Easing.OutCubic } }
-        Behavior on opacity { NumberAnimation { duration: 220 } }
+        Behavior on x { NumberAnimation { duration: Theme.ms(320); easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
+        Behavior on opacity { NumberAnimation { duration: Theme.ms(220) } }
         onXChanged: place()
         MouseArea { anchors.fill: parent }
 
@@ -163,7 +163,7 @@ PanelWindow {
                         width: 196; height: 70; radius: 22
                         color: modelData.on ? (modelData.gold ? Theme.alpha(Theme.gold, 0.22) : Theme.alpha(Theme.accent, 0.92)) : Theme.alpha(Theme.t.text, 0.07)
                         border.width: 1; border.color: modelData.on ? Theme.alpha(Theme.gold, 0.55) : Theme.alpha(Theme.t.text, 0.12)
-                        Behavior on color { ColorAnimation { duration: 180 } }
+                        Behavior on color { ColorAnimation { duration: Theme.ms(180) } }
                         Rectangle {
                             x: 12; anchors.verticalCenter: parent.verticalCenter; width: 44; height: 44; radius: 22
                             color: parent.modelData.on && !parent.modelData.gold ? Theme.alpha(Theme.t.ink, Theme.xia ? 0.14 : 0.18) : Theme.alpha(Theme.t.text, 0.08)
@@ -202,7 +202,7 @@ PanelWindow {
                     Rectangle {
                         height: parent.height; radius: 17; width: Math.max(height, parent.width * sl.v)
                         color: Theme.alpha(Theme.gold, 0.85)   // flat: value fills are one colour, no gradient
-                        Behavior on width { NumberAnimation { duration: 160 } }
+                        Behavior on width { NumberAnimation { duration: Theme.ms(160) } }
                         Rectangle { anchors.right: parent.right; anchors.rightMargin: 5; anchors.verticalCenter: parent.verticalCenter
                                     width: 24; height: 24; radius: 12; color: Theme.t.ink; border.width: 2; border.color: Theme.gold }
                     }
@@ -327,7 +327,7 @@ PanelWindow {
             y: 32; width: parent.width; height: 12
             Rectangle { anchors.verticalCenter: parent.verticalCenter; width: parent.width; height: 1; color: Theme.alpha(Theme.t.text, 0.2) }
             Rectangle { anchors.verticalCenter: parent.verticalCenter; width: parent.width * hs.v; height: 2; color: Theme.gold   // value fills are one colour (gold), as in Lite
-                        Behavior on width { NumberAnimation { duration: 140 } } }
+                        Behavior on width { NumberAnimation { duration: Theme.ms(140) } } }
             Rectangle { x: parent.width * hs.v - width / 2; anchors.verticalCenter: parent.verticalCenter
                         width: 9; height: 9; rotation: 45; color: Theme.gold }
             MouseArea { anchors.fill: parent; anchors.margins: -10
@@ -344,8 +344,8 @@ PanelWindow {
         y: 44
         x: parent.width - width - 14 + (cc.open ? 0 : 40)
         opacity: cc.open ? 1 : 0
-        Behavior on x { NumberAnimation { duration: 320; easing.type: Easing.OutCubic } }
-        Behavior on opacity { NumberAnimation { duration: 220 } }
+        Behavior on x { NumberAnimation { duration: Theme.ms(320); easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
+        Behavior on opacity { NumberAnimation { duration: Theme.ms(220) } }
         MouseArea { anchors.fill: parent }
         Rectangle { anchors.fill: parent; radius: Theme.ledgerR; color: Theme.alpha(Theme.t.base, Theme.selfBlur ? 0.9 : 0.78)
                     border.width: 1; border.color: Theme.alpha(Theme.gold, 0.5) }

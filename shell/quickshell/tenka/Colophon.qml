@@ -40,7 +40,7 @@ PanelWindow {
     function reveal() { open = true; readP.running = true; card.forceActiveFocus() }
 
     Rectangle { anchors.fill: parent; color: Theme.alpha(Theme.t.base, co.open ? 0.55 : 0)
-                Behavior on color { enabled: !Theme.perf; ColorAnimation { duration: 220 } } }
+                Behavior on color { enabled: !Theme.perf; ColorAnimation { duration: Theme.ms(220) } } }
     MouseArea { anchors.fill: parent; enabled: co.open; onClicked: co.open = false }
 
     ColophonCard {
@@ -50,8 +50,8 @@ PanelWindow {
         y: Math.max(40, (parent.height - height) * 0.42) + (co.open ? 0 : 16)
         opacity: co.open ? 1 : 0
         focus: co.open
-        Behavior on y { enabled: !Theme.perf; NumberAnimation { duration: 260; easing.type: Easing.OutCubic } }
-        Behavior on opacity { enabled: !Theme.perf; NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
+        Behavior on y { enabled: !Theme.perf; NumberAnimation { duration: Theme.ms(260); easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
+        Behavior on opacity { enabled: !Theme.perf; NumberAnimation { duration: Theme.ms(200); easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
         base: Theme.t.base; text: Theme.t.text; gold: Theme.gold; accent: Theme.accent
         radius: Theme.ledgerR; face: Theme.display; uiFace: Theme.ui; brand: Theme.brand; xia: Theme.xia
         onDismissed: co.open = false

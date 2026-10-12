@@ -73,7 +73,7 @@ PanelWindow {
         system: ps
         entryEffect: ImageParticle.Fade
         opacity: Theme.working || Theme.hush || Theme.focus ? 0 : 1
-        Behavior on opacity { NumberAnimation { duration: 260 } }
+        Behavior on opacity { NumberAnimation { duration: Theme.ms(260) } }
     }
     Sprite { groups: ["petal"]; source: "assets/petal.png"; alpha: Theme.xia ? 0.6 : 0.75; alphaVariation: 0.3
              rotationVariation: 180; rotationVelocityVariation: 60 }
@@ -137,7 +137,7 @@ PanelWindow {
         visible: Theme.deskStyle === "blade"
         x: 136 * desk.s; y: 150 * desk.s
         opacity: Theme.hush || Theme.working ? 0 : Theme.focus ? 0.38 : 1
-        Behavior on opacity { NumberAnimation { duration: 260 } }
+        Behavior on opacity { NumberAnimation { duration: Theme.ms(260) } }
         width: 900 * desk.s; height: 600 * desk.s
 
         Row {
@@ -208,7 +208,7 @@ PanelWindow {
         visible: Theme.deskStyle === "film"
         anchors.fill: parent
         opacity: Theme.hush || Theme.working ? 0 : Theme.focus ? 0.38 : 1
-        Behavior on opacity { NumberAnimation { duration: 260 } }
+        Behavior on opacity { NumberAnimation { duration: Theme.ms(260) } }
         Rectangle {   // the lower letterbox: ink that fades up into the art
             anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom
             height: 300 * desk.s
@@ -265,7 +265,7 @@ PanelWindow {
         x: 120 * desk.s; y: 0
         width: 156 * desk.s; height: 900 * desk.s
         opacity: Theme.hush || Theme.working ? 0 : Theme.focus ? 0.38 : 1
-        Behavior on opacity { NumberAnimation { duration: 260 } }
+        Behavior on opacity { NumberAnimation { duration: Theme.ms(260) } }
         Rectangle {   // the cord
             anchors.horizontalCenter: parent.horizontalCenter; y: 0; width: 1; height: 64 * desk.s
             color: Theme.alpha(Theme.gold, 0.7)

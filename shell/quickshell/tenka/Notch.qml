@@ -33,8 +33,8 @@ PanelWindow {
         y: 0
         width: notch.open ? 660 : (notch.meter ? 400 : 236)
         height: notch.open ? 150 : 30
-        Behavior on width { NumberAnimation { duration: 520; easing.type: Easing.BezierSpline; easing.bezierCurve: notch.spring } }
-        Behavior on height { NumberAnimation { duration: 460; easing.type: Easing.BezierSpline; easing.bezierCurve: notch.curve } }
+        Behavior on width { NumberAnimation { duration: Theme.ms(520); easing.type: Easing.BezierSpline; easing.bezierCurve: notch.spring } }
+        Behavior on height { NumberAnimation { duration: Theme.ms(460); easing.type: Easing.BezierSpline; easing.bezierCurve: notch.curve } }
 
         // the body: square at the screen edge, round below; and two concave ears that melt it into the edge
         Rectangle {
@@ -68,7 +68,7 @@ PanelWindow {
             anchors.fill: parent; anchors.leftMargin: 26; anchors.rightMargin: 26
             opacity: notch.meter && !notch.open ? 1 : 0
             visible: opacity > 0.01
-            Behavior on opacity { NumberAnimation { duration: 160 } }
+            Behavior on opacity { NumberAnimation { duration: Theme.ms(160) } }
             Text { id: mk; anchors.verticalCenter: parent.verticalCenter; anchors.verticalCenterOffset: -1
                    text: Theme.osdKind === "brightness" ? "LIGHT" : (Theme.osdValue <= 0.001 ? "MUTED" : "VOLUME")
                    color: Theme.gold; font.family: Theme.display; font.pixelSize: 10; font.letterSpacing: 4; width: 74 }
@@ -77,10 +77,10 @@ PanelWindow {
                 width: parent.width - 82 - 44; height: 10
                 Rectangle { anchors.verticalCenter: parent.verticalCenter; width: parent.width; height: 1; color: Theme.alpha(Theme.t.text, 0.22) }
                 Rectangle { anchors.verticalCenter: parent.verticalCenter; width: parent.width * Math.min(1, Theme.osdValue); height: 2; color: Theme.gold
-                            Behavior on width { NumberAnimation { duration: 120 } } }
+                            Behavior on width { NumberAnimation { duration: Theme.ms(120) } } }
                 Rectangle { x: parent.width * Math.min(1, Theme.osdValue) - 4; anchors.verticalCenter: parent.verticalCenter
                             width: 8; height: 8; rotation: 45; color: Theme.gold
-                            Behavior on x { NumberAnimation { duration: 120 } } }
+                            Behavior on x { NumberAnimation { duration: Theme.ms(120) } } }
             }
             Text { anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter; anchors.verticalCenterOffset: -1
                    text: Math.round(Theme.osdValue * 100); color: Theme.t.text; font.family: Theme.display; font.pixelSize: 14 }
@@ -91,7 +91,7 @@ PanelWindow {
             anchors.horizontalCenter: parent.horizontalCenter
             y: 6; spacing: 12
             opacity: notch.open || notch.meter ? 0 : 1
-            Behavior on opacity { NumberAnimation { duration: 180 } }
+            Behavior on opacity { NumberAnimation { duration: Theme.ms(180) } }
             Text { text: notch.roman[Math.max(0, Math.min(9, notch.wsId - 1))]; color: Theme.gold
                    font.family: Theme.display; font.pixelSize: 13; font.letterSpacing: 2; anchors.verticalCenter: parent.verticalCenter }
             Rectangle { width: 6; height: 6; radius: 3; color: Theme.accent; anchors.verticalCenter: parent.verticalCenter }
@@ -104,7 +104,7 @@ PanelWindow {
             anchors.fill: parent; anchors.margins: 20; anchors.topMargin: 14
             opacity: notch.open ? 1 : 0
             visible: opacity > 0.01
-            Behavior on opacity { NumberAnimation { duration: 260 } }
+            Behavior on opacity { NumberAnimation { duration: Theme.ms(260) } }
             Text { id: big; text: Theme.hm(Theme.now); color: Theme.t.text; font.family: Theme.display; font.pixelSize: 64; x: 6; y: -2 }
             Text { anchors.left: big.right; anchors.leftMargin: 8; anchors.baseline: big.baseline; text: Theme.ap(Theme.now)
                    color: Theme.alpha(Theme.t.text, 0.7); font.family: Theme.display; font.pixelSize: 16; font.letterSpacing: 4 }

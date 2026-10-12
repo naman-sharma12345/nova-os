@@ -72,8 +72,8 @@ PanelWindow {
         anchors.horizontalCenter: parent.horizontalCenter
         y: parent.height * 0.18 + (clip.open ? 0 : 20)
         opacity: clip.open ? 1 : 0
-        Behavior on y { enabled: !Theme.perf; NumberAnimation { duration: 280; easing.type: Easing.OutCubic } }
-        Behavior on opacity { enabled: !Theme.perf; NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
+        Behavior on y { enabled: !Theme.perf; NumberAnimation { duration: Theme.ms(280); easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
+        Behavior on opacity { enabled: !Theme.perf; NumberAnimation { duration: Theme.ms(200); easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
         MouseArea { anchors.fill: parent }
         Rectangle { anchors.fill: parent; radius: Theme.ledgerR; color: Theme.alpha(Theme.t.base, Theme.selfBlur ? 0.9 : 0.74)
                     border.width: 1; border.color: Theme.alpha(Theme.gold, 0.45) }

@@ -28,8 +28,8 @@ PanelWindow {
                 anchors.verticalCenter: parent.verticalCenter
                 width: active ? 18 : 5; height: 5; radius: 2.5
                 color: active ? Theme.accent : Theme.alpha(Theme.t.text, used ? 0.75 : 0.35)
-                Behavior on width { NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
-                Behavior on color { ColorAnimation { duration: 200 } }
+                Behavior on width { NumberAnimation { duration: Theme.ms(300); easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
+                Behavior on color { ColorAnimation { duration: Theme.ms(200) } }
                 MouseArea { anchors.fill: parent; anchors.margins: -6; onClicked: Hyprland.dispatch("hl.dsp.focus({ workspace = " + parent.wsId + " })") }
             }
         }

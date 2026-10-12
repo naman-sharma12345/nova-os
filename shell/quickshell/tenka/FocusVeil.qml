@@ -20,7 +20,7 @@ PanelWindow {
         id: frame
         anchors.fill: parent
         opacity: Theme.focus ? 1 : 0
-        Behavior on opacity { enabled: !Theme.perf; NumberAnimation { duration: 600; easing.type: Easing.InOutSine } }
+        Behavior on opacity { enabled: !Theme.perf; NumberAnimation { duration: Theme.ms(600); easing.type: Easing.InOutSine } }
         Rectangle { x: 0; y: 0; width: parent.width; height: fv.w; color: fv.line }
         Rectangle { x: 0; y: 0; width: fv.w; height: parent.height; color: fv.line }
         Rectangle { x: parent.width - fv.w; y: 0; width: fv.w; height: parent.height; color: fv.line }

@@ -286,7 +286,7 @@ Item {
             running: !Theme.perf
             ScriptAction { script: gateIn.stamp() }
             PauseAnimation { duration: 620 * gateIn.k }
-            NumberAnimation { target: gateIn; property: "opacity"; to: 0; duration: 1400 * gateIn.k; easing.type: Easing.OutCubic }
+            NumberAnimation { target: gateIn; property: "opacity"; to: 0; duration: 1400 * gateIn.k; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease }
         }
     }
 }

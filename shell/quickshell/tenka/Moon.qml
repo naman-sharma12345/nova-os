@@ -40,7 +40,7 @@ PanelWindow {
     function reveal() { open = true; readP.running = false; readP.running = true; card.forceActiveFocus() }
 
     Rectangle { anchors.fill: parent; color: Theme.alpha(Theme.t.base, mo.open ? 0.5 : 0)
-                Behavior on color { enabled: !Theme.perf; ColorAnimation { duration: 260 } } }
+                Behavior on color { enabled: !Theme.perf; ColorAnimation { duration: Theme.ms(260) } } }
     MouseArea { anchors.fill: parent; enabled: mo.open; onClicked: mo.open = false }
 
     MoonCard {
@@ -49,8 +49,8 @@ PanelWindow {
         y: Math.max(40, (parent.height - height) * 0.42) + (mo.open ? 0 : 16)
         opacity: mo.open ? 1 : 0
         focus: mo.open
-        Behavior on y { enabled: !Theme.perf; NumberAnimation { duration: 260; easing.type: Easing.OutCubic } }
-        Behavior on opacity { enabled: !Theme.perf; NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
+        Behavior on y { enabled: !Theme.perf; NumberAnimation { duration: Theme.ms(260); easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
+        Behavior on opacity { enabled: !Theme.perf; NumberAnimation { duration: Theme.ms(200); easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
         base: Theme.t.base; text: Theme.t.text; gold: Theme.gold; accent: Theme.accent
         radius: Theme.ledgerR; face: Theme.display; xia: Theme.xia
         onDismissed: mo.open = false

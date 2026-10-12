@@ -51,7 +51,7 @@ PanelWindow {
     Timer { interval: 5000; repeat: true; running: ic.open; onTriggered: readP.running = true }   // a bell rung while open
 
     Rectangle { anchors.fill: parent; color: Theme.alpha(Theme.t.base, ic.open ? 0.45 : 0)
-                Behavior on color { enabled: !Theme.perf; ColorAnimation { duration: 220 } } }
+                Behavior on color { enabled: !Theme.perf; ColorAnimation { duration: Theme.ms(220) } } }
     MouseArea { anchors.fill: parent; enabled: ic.open; onClicked: ic.open = false }
 
     IncenseCard {
@@ -60,8 +60,8 @@ PanelWindow {
         y: Math.max(40, (parent.height - height) * 0.42) + (ic.open ? 0 : 16)
         opacity: ic.open ? 1 : 0
         focus: ic.open
-        Behavior on y { enabled: !Theme.perf; NumberAnimation { duration: 260; easing.type: Easing.OutCubic } }
-        Behavior on opacity { enabled: !Theme.perf; NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
+        Behavior on y { enabled: !Theme.perf; NumberAnimation { duration: Theme.ms(260); easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
+        Behavior on opacity { enabled: !Theme.perf; NumberAnimation { duration: Theme.ms(200); easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
         base: Theme.t.base; text: Theme.t.text; gold: Theme.gold; accent: Theme.accent
         radius: Theme.ledgerR; face: Theme.display; uiFace: Theme.ui; xia: Theme.xia
         onDismissed: ic.open = false

@@ -48,7 +48,7 @@ PanelWindow {
     function shut() { card.keep(); open = false }
 
     Rectangle { anchors.fill: parent; color: Theme.alpha(Theme.t.base, jr.open ? 0.45 : 0)
-                Behavior on color { enabled: !Theme.perf; ColorAnimation { duration: 220 } } }
+                Behavior on color { enabled: !Theme.perf; ColorAnimation { duration: Theme.ms(220) } } }
     MouseArea { anchors.fill: parent; enabled: jr.open; onClicked: jr.shut() }
 
     JournalCard {
@@ -57,8 +57,8 @@ PanelWindow {
         y: Math.max(40, (parent.height - height) * 0.40) + (jr.open ? 0 : 16)
         opacity: jr.open ? 1 : 0
         focus: jr.open
-        Behavior on y { enabled: !Theme.perf; NumberAnimation { duration: 260; easing.type: Easing.OutCubic } }
-        Behavior on opacity { enabled: !Theme.perf; NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
+        Behavior on y { enabled: !Theme.perf; NumberAnimation { duration: Theme.ms(260); easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
+        Behavior on opacity { enabled: !Theme.perf; NumberAnimation { duration: Theme.ms(200); easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
         base: Theme.t.base; text: Theme.t.text; gold: Theme.gold; accent: Theme.accent
         radius: Theme.ledgerR; face: Theme.display; uiFace: Theme.ui; xia: Theme.xia
         onDismissed: jr.open = false

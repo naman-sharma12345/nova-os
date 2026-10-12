@@ -426,6 +426,15 @@ def gen(name, T):
     window.dialog .dialog-action-area > button:hover {{ background-color: {rgba(p['accent2'], 0.18)}; }}
     window.dialog .dialog-action-area > button.suggested-action {{ background-color: {rgba(p['accent2'], 0.24)}; border-color: {rgba(p['accent2'], 0.50)}; color: {p['text']}; }}
     window.dialog.message box > label {{ color: {p['text']}; }}
+    /* GTK 4 file chooser: the places sidebar was a solid grey slab and the column headers a second one. Both glass now,
+       headers in Marcellus over a gold hairline, a softer selection, and "Open" in the title bar reads as the gold answer. */
+    placessidebar {{ background-color: {gl_side}; color: {p['text']}; }}
+    placessidebar *:not(row):not(button), filechooser .sidebar, filechooser .sidebar *:not(row):not(button), filechooser paned > :first-child {{ background-color: transparent; background-image: none; }}
+    placessidebar row:selected, .navigation-sidebar > row:selected {{ background-color: {rgba(p['accent2'], 0.18)}; color: {p['text']}; }}
+    columnview > header > button {{ background-color: transparent; background-image: none; border: none; border-radius: 0; border-bottom: 1px solid {rgba(p['accent2'], 0.20)}; box-shadow: none; color: {p['subtext']}; font-family: Marcellus; }}
+    columnview, columnview > listview, gridview {{ background-color: transparent; }}
+    headerbar button.suggested-action, .dialog-action-area > button.suggested-action {{ background-color: {rgba(p['accent2'], 0.22)}; border-color: {rgba(p['accent2'], 0.45)}; color: {p['text']}; }}
+    pathbar > button, .path-bar > button {{ font-family: Marcellus; }}
     progressbar trough {{ min-height: 4px; background-color: {rgba(p['text'], 0.10)}; border: none; border-radius: 99px; box-shadow: none; }}
     progressbar progress {{ min-height: 4px; background-color: {p['accent2']}; background-image: none; border: none; border-radius: 99px; box-shadow: none; }}
     """))

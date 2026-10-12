@@ -61,5 +61,14 @@ window.dialog .dialog-action-area > button { background-color: rgba(201, 163, 90
 window.dialog .dialog-action-area > button:hover { background-color: rgba(201, 163, 90, 0.18); }
 window.dialog .dialog-action-area > button.suggested-action { background-color: rgba(201, 163, 90, 0.24); border-color: rgba(201, 163, 90, 0.5); color: #efe6d6; }
 window.dialog.message box > label { color: #efe6d6; }
+/* GTK 4 file chooser: the places sidebar was a solid grey slab and the column headers a second one. Both glass now,
+   headers in Marcellus over a gold hairline, a softer selection, and "Open" in the title bar reads as the gold answer. */
+placessidebar { background-color: rgba(10, 9, 8, 0.3); color: #efe6d6; }
+placessidebar *:not(row):not(button), filechooser .sidebar, filechooser .sidebar *:not(row):not(button), filechooser paned > :first-child { background-color: transparent; background-image: none; }
+placessidebar row:selected, .navigation-sidebar > row:selected { background-color: rgba(201, 163, 90, 0.18); color: #efe6d6; }
+columnview > header > button { background-color: transparent; background-image: none; border: none; border-radius: 0; border-bottom: 1px solid rgba(201, 163, 90, 0.2); box-shadow: none; color: #b8ab96; font-family: Marcellus; }
+columnview, columnview > listview, gridview { background-color: transparent; }
+headerbar button.suggested-action, .dialog-action-area > button.suggested-action { background-color: rgba(201, 163, 90, 0.22); border-color: rgba(201, 163, 90, 0.45); color: #efe6d6; }
+pathbar > button, .path-bar > button { font-family: Marcellus; }
 progressbar trough { min-height: 4px; background-color: rgba(239, 230, 214, 0.1); border: none; border-radius: 99px; box-shadow: none; }
 progressbar progress { min-height: 4px; background-color: #c9a35a; background-image: none; border: none; border-radius: 99px; box-shadow: none; }

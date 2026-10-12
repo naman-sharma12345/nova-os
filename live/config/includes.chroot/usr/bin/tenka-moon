@@ -116,6 +116,26 @@ def altitude(j, lat, lon):
     alt = math.degrees(math.asin(math.sin(f) * math.sin(dec) + math.cos(f) * math.cos(dec) * math.cos(H)))
     return alt - (0.7275 * par - 0.5667)               # above the horizon once positive (parallax, refraction, radius)
 
+def sun_radec(j):
+    """the sun's right ascension and declination, low precision (a hundredth of a degree is plenty here)"""
+    n = j - 2451545.0; L = math.radians((280.460 + 0.9856474 * n) % 360); g = math.radians((357.528 + 0.9856003 * n) % 360)
+    lam = L + math.radians(1.915) * math.sin(g) + math.radians(0.020) * math.sin(2 * g); e = math.radians(23.439 - 0.0000004 * n)
+    return math.atan2(math.cos(e) * math.sin(lam), math.cos(lam)), math.asin(math.sin(e) * math.sin(lam))
+
+def sky_place(j, lat, lon):
+    """where the moon stands in this sky: (altitude, azimuth from north through east, tilt), all in degrees.
+    tilt = the angle of the middle of the lit limb, measured from straight up toward the left (east when facing
+    south): 0 lit on top, 90 lit on the left, 180 lit underneath (the boat moon of the tropics), 270 lit on the right"""
+    ra, dec, par = moon_radec(j); sra, sdec = sun_radec(j)
+    gmst = math.radians((280.46061837 + 360.98564736629 * (j - 2451545.0)) % 360)
+    H = gmst + math.radians(lon) - ra; f = math.radians(lat)
+    alt = math.asin(math.sin(f) * math.sin(dec) + math.cos(f) * math.cos(dec) * math.cos(H))
+    az = math.atan2(-math.cos(dec) * math.sin(H), math.sin(dec) * math.cos(f) - math.cos(dec) * math.sin(f) * math.cos(H))
+    chi = math.atan2(math.cos(sdec) * math.sin(sra - ra),                      # bright limb, north through east (Meeus 48.5)
+                     math.sin(sdec) * math.cos(dec) - math.cos(sdec) * math.sin(dec) * math.cos(sra - ra))
+    q = math.atan2(math.sin(H), math.tan(f) * math.cos(dec) - math.sin(dec) * math.cos(H))   # parallactic angle
+    return (math.degrees(alt) - (0.7275 * par - 0.5667), math.degrees(az) % 360, math.degrees(chi - q) % 360)
+
 def rise_set(t, lat, lon):
     """moonrise and moonset in the local calendar day around t, as unix seconds (None when it does not happen)"""
     A = almanac()
@@ -177,7 +197,8 @@ def state(t=None):
     if p:
         r, s, up = rise_set(t, p["lat"], p["lon"])
         hm = lambda u: dt.datetime.fromtimestamp(u).strftime("%H:%M") if u else None
-        out.update(rise=hm(r), set=hm(s), up=up)
+        al, az, tilt = sky_place(A.jd(t), p["lat"], p["lon"])
+        out.update(rise=hm(r), set=hm(s), up=up, alt=round(al, 1), az=round(az, 1), tilt=round(tilt, 1))
     return out
 
 def text(s):

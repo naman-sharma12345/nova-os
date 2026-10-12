@@ -2,6 +2,7 @@
 // Click the clock (or Super+D, or the bottom edge) and the cards and the dock slide in.
 import Quickshell
 import Quickshell.Wayland
+import Quickshell.Io
 import QtQuick
 import QtQuick.Effects
 import QtQuick.Particles
@@ -99,6 +100,93 @@ PanelWindow {
         SequentialAnimation on anchors.bottomMargin { running: Theme.sky.kind === "mist" && !Theme.perf; loops: Animation.Infinite
             NumberAnimation { from: 0; to: -40; duration: 14000; easing.type: Easing.InOutSine }
             NumberAnimation { from: -40; to: 0; duration: 14000; easing.type: Easing.InOutSine } }
+    }
+
+    // ---- the real moon, on a clear night. tenka-moon says where it stands in this sky (altitude, azimuth and the
+    // tilt of its lit limb, worked out on the machine, nothing asked online); the desk sets it in the picture's
+    // open sky: rising at the left of that space, setting at the right (turned over in the southern half of
+    // the world), higher as it climbs. The phase and the tilt are tonight's own: the low boat moon of the tropics,
+    // the upright quarter of the north. Flat: paper and a breath of ink, a hairline rim, no glow. It shows only
+    // at night when the sky is clear or barely clouded (paler then), and when the sky is unknown (tenka-sky off or
+    // offline) it trusts the heavens; cloud, rain, snow, mist or a storm hide it. It rests with the petals.
+    property var moon: ({})
+    Process {
+        id: moonP
+        command: ["tenka-moon", "state"]
+        stdout: StdioCollector { onStreamFinished: { try { const m = JSON.parse(text); if (m && m.phase) desk.moon = m } catch (e) {} } }
+    }
+    Timer { interval: 600000; repeat: true; running: true; triggeredOnStart: true; onTriggered: moonP.running = true }
+    // pictures of the packs with an open sky for it, and where that sky is (fractions of the screen). Pictures that
+    // paint their own moon or sun (Moon and Seigaiha, Bamboo Moon, Red Sun, the Frost Sect's moon...) or have no sky
+    // are left alone: one moon to a sky.
+    readonly property var moonSkies: ({
+        "samurai/00-desktop": [0.76, 0.07, 0.95, 0.22], "samurai/02-torii-night": [0.56, 0.08, 0.95, 0.40],
+        "samurai/07-pagoda-snow": [0.68, 0.08, 0.92, 0.34], "xianxia/01-floating-peaks": [0.62, 0.06, 0.92, 0.28],
+        "xianxia/05-cloud-sea-seclusion": [0.64, 0.05, 0.94, 0.22], "xianxia/09-celestial-palace": [0.58, 0.04, 0.95, 0.18],
+        "xianxia/11-imperial-city": [0.62, 0.05, 0.95, 0.20] })
+    readonly property bool moonNight: Theme.phase === "night" || (Theme.phase === "dusk" && Theme.sky.day === false)
+    readonly property real moonVeil: Theme.sky.kind === "clear" || Theme.sky.kind === "" || Theme.sky.kind === undefined ? 1
+                                   : Theme.sky.code === 2 ? 0.5 : 0
+    Canvas {
+        id: deskMoon
+        readonly property real d: Math.round(66 * desk.s)
+        readonly property real alt: desk.moon.alt === undefined ? -90 : desk.moon.alt
+        readonly property real az: desk.moon.az || 180
+        // 0 where it rises, 1 where it sets, facing the equator (the moon's own half of the sky)
+        readonly property real u: {
+            let v = ((desk.moon.south ? az - 270 : az - 90) + 360) % 360 / 180
+            return v <= 1 ? v : (v > 1.5 ? 0 : 1)
+        }
+        // the open sky of the picture, where a moon can hang without crossing the art: [left, top, right, bottom]
+        readonly property var box: {
+            const w = Theme.t.wallpaper || "", m = w.match(/themes\/([^\/]+)\/wallpapers\/([^\/.]+)\./)
+            if (m) return desk.moonSkies[m[1] + "/" + m[2]] || null       // a pack picture: only where it has an open sky
+            return /moon|sun|luna|lune|soleil/i.test(w.split("/").pop()) ? null : [0.56, 0.08, 0.92, 0.40]   // your own picture
+        }
+        width: d + 8; height: d + 8
+        x: box ? desk.width * (box[0] + (box[2] - box[0]) * u) - width / 2 : -width
+        y: box ? desk.height * (box[3] - (box[3] - box[1]) * Math.min(Math.max(alt, 0), 75) / 75) - height / 2 : 0
+        Behavior on x { NumberAnimation { duration: 4000; easing.type: Easing.InOutSine } }
+        Behavior on y { NumberAnimation { duration: 4000; easing.type: Easing.InOutSine } }
+        readonly property bool shown: box !== null && desk.moonNight && alt > 2 && (desk.moon.illumination || 0) >= 0.02 && desk.moonVeil > 0
+        opacity: shown && !Theme.working && !Theme.hush && !Theme.focus ? 0.92 * desk.moonVeil : 0
+        visible: opacity > 0
+        Behavior on opacity { NumberAnimation { duration: 2400 } }
+        antialiasing: true
+        renderTarget: Canvas.Image
+        readonly property string key: [desk.moon.fraction, desk.moon.tilt, desk.type, d].join("|")
+        onKeyChanged: requestPaint()
+        onPaint: {
+            const ctx = getContext("2d"); ctx.reset()
+            const cx = width / 2, cy = height / 2, R = d / 2
+            const T = desk.type, c = Math.cos(2 * Math.PI * (desk.moon.fraction || 0))
+            // the lit limb's middle points at the sun: tilt is measured from straight up toward the left
+            const z = (desk.moon.tilt === undefined ? (desk.moon.waxing !== false) !== (desk.moon.south === true) ? 270 : 90
+                                                    : desk.moon.tilt) * Math.PI / 180
+            ctx.beginPath(); ctx.arc(cx, cy, R, 0, 2 * Math.PI)
+            ctx.fillStyle = Qt.rgba(T.r, T.g, T.b, 0.07); ctx.fill()               // the dark of the moon, earthshine
+            ctx.save()
+            ctx.translate(cx, cy); ctx.rotate(Math.atan2(-Math.cos(z), -Math.sin(z)))
+            ctx.beginPath()
+            const N = 48
+            for (let i = 0; i <= N; i++) { const t = -Math.PI / 2 + Math.PI * i / N; const px = R * Math.cos(t), py = R * Math.sin(t)
+                                           i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py) }
+            for (let i = 0; i <= N; i++) { const t = Math.PI / 2 - Math.PI * i / N; ctx.lineTo(R * c * Math.cos(t), R * Math.sin(t)) }
+            ctx.closePath()
+            ctx.fillStyle = Qt.rgba(T.r, T.g, T.b, 0.94); ctx.fill()
+            ctx.restore()
+            ctx.save()
+            ctx.beginPath(); ctx.arc(cx, cy, R, 0, 2 * Math.PI); ctx.clip()
+            // a few seas, very faint, over the lit part only (the dark part is near-transparent anyway)
+            const seas = [[-0.28, -0.36, 0.26, 0.19], [0.08, -0.30, 0.15, 0.13], [0.27, -0.05, 0.17, 0.14],
+                          [-0.52, 0.04, 0.20, 0.30], [-0.14, 0.32, 0.17, 0.11], [0.10, 0.08, 0.08, 0.07]]
+            const flip = desk.moon.south === true ? -1 : 1, B = desk.lightArt ? Theme.t.text : Theme.t.base
+            ctx.fillStyle = Qt.rgba(B.r, B.g, B.b, 0.06)
+            for (const m of seas) { ctx.beginPath(); ctx.ellipse(cx + flip * m[0] * R - m[2] * R, cy + flip * m[1] * R - m[3] * R, 2 * m[2] * R, 2 * m[3] * R); ctx.fill() }
+            ctx.restore()
+            ctx.beginPath(); ctx.arc(cx, cy, R, 0, 2 * Math.PI)
+            ctx.lineWidth = 1; ctx.strokeStyle = Qt.rgba(T.r, T.g, T.b, 0.24); ctx.stroke()
+        }
     }
 
     // ---- the art's tone behind the type. A tiny canvas reads the wallpaper (48x27) and averages the

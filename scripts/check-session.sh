@@ -426,5 +426,16 @@ grep -q '^ *SkyWeek {}' "$ROOT/shell/quickshell/tenka/shell.qml" && grep -q '"te
 [ -f "$IC/usr/share/tenka/skyweek/LiteSkyWeek.qml" ] && grep -q 'value="tenka-sky open"' "$IC/etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml" &&
 grep -q 'tenka:skyweek' "$IC/usr/bin/tenka-codex" && grep -q 'Theme.ipc("skyweek", "open")' "$ROOT/shell/quickshell/tenka/ControlCenter.qml" &&
 grep -q 'Theme.ipc("skyweek", "open")' "$ROOT/shell/quickshell/tenka/DeskLedger.qml" && grep -q 'Theme.ipc("moon", "open")' "$ROOT/shell/quickshell/tenka/ControlCenter.qml" && grep -q '^Exec=tenka-sky open$' "$IC/usr/share/applications/tenka-skyweek.desktop" || { echo "FAIL: seven skies"; fail=1; }
+# 26. The moon on the desk: tenka-moon says where it stands (altitude, azimuth, the tilt of its lit limb) and the desk
+#     draws it there on clear nights. Over Kolkata on 24 Oct 2026 22:00 the near-full moon rides high in the south with
+#     its lit side to the right; the evening crescent of 13 Oct lies low in the west-southwest lit from below-right.
+DM=$(HOME="$MO" TZ=Asia/Kolkata TENKA_PLACE=22.57,88.36,Kolkata TENKA_ALMANAC="$BIN/tenka-almanac" python3 -c '
+import json, subprocess, sys
+r = lambda w: json.loads(subprocess.run([sys.executable, sys.argv[1], w], capture_output=True, text=True).stdout)
+a, b = r("2026-10-24T22:00"), r("2026-10-13T18:40")
+print(int(a["alt"] > 70 and 165 < a["az"] < 195 and 235 < a["tilt"] < 280 and a["up"] and
+          0 < b["alt"] < 5 and 235 < b["az"] < 255 and 200 < b["tilt"] < 250))' "$BIN/tenka-moon")
+[ "$DM" = 1 ] && grep -q 'id: deskMoon' "$ROOT/shell/quickshell/tenka/Desk.qml" &&
+grep -q 'command: \["tenka-moon", "state"\]' "$ROOT/shell/quickshell/tenka/Desk.qml" || { echo "FAIL: desk moon ($DM)"; fail=1; }
 [ "$fail" = 0 ] && echo "check-session: ok"
 exit $fail

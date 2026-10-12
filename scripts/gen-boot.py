@@ -17,7 +17,7 @@ ta = importlib.util.module_from_spec(spec); spec.loader.exec_module(ta)
 ROOT = ta.ROOT
 IC = os.path.join(ROOT, "live/config/includes.chroot")
 MENU = dict(left=116, top=540, width=520, ih=62, sp=10, text_inset=36, font=34)
-ENTRIES = ("Tenka", "Tianxia", "Tenka Lite", "Safe graphics")
+ENTRIES = ("Tenka", "Tianxia", "Tenka Lite", "Tianxia Lite", "Safe graphics")
 BAR_Y = 984  # the countdown line sits just above the key hints (fits 1024x768 too)
 
 
@@ -160,6 +160,10 @@ menuentry "Tianxia" --class tianxia --hotkey=x {
 }
 menuentry "Tenka Lite" --class lite --hotkey=l {
     linux @KERNEL_LIVE@ @APPEND_LIVE@ tenka.session=lite @VT_SAMURAI@
+    initrd @INITRD_LIVE@
+}
+menuentry "Tianxia Lite" --class lite --hotkey=i {
+    linux @KERNEL_LIVE@ @APPEND_LIVE@ tenka.theme=xianxia tenka.session=lite plymouth.splash=tenka-xianxia @VT_XIANXIA@
     initrd @INITRD_LIVE@
 }
 menuentry "Safe graphics" --class safe --hotkey=s {

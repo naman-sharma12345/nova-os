@@ -482,7 +482,8 @@ if command -v jq >/dev/null 2>&1; then
 fi
 # 31. The Feast Days (Tianxia: The Festivals): the old festivals worked out here (Japan's old calendar at UTC+9 for Tenka,
 #     China's at UTC+8 for Tianxia; checked against the Hong Kong Observatory's tables via lunardate, 70 of 70 Chinese
-#     lunar festivals 2024-2030); the desk's month dots each feast day and the almanac line names it.
+#     lunar festivals 2024-2030); the desk's month dots each feast day and the almanac line names it; by day the lock's
+#     almanac line leads with it.
 FS="$T/feastsam"; mkdir -p "$FS/.config/tenka"; FX="$T/feastxia"; mkdir -p "$FX/.config/tenka"; echo '{"name": "xianxia"}' > "$FX/.config/tenka/shell-theme.json"
 YS=$(HOME="$FS" TENKA_MOON="$BIN/tenka-moon" TENKA_ALMANAC="$BIN/tenka-almanac" python3 "$BIN/tenka-feasts" year 2026)
 YS5=$(HOME="$FS" TENKA_MOON="$BIN/tenka-moon" TENKA_ALMANAC="$BIN/tenka-almanac" python3 "$BIN/tenka-feasts" year 2025)
@@ -495,6 +496,7 @@ echo "$YX" | grep -q '^Fri 25 Sep  The Mid-Autumn Festival' && echo "$YX" | grep
 echo "$SX" | grep -q '"today": {"date": "2027-02-05", "day": 5, "name": "New Year.s Eve"' && echo "$SX" | grep -q '"next": \[{"date": "2027-02-06", "day": 6, "name": "The Spring Festival"' &&
 ! grep -q 'urllib\|http\|curl' "$BIN/tenka-feasts" &&
 grep -q 'command: \["tenka-feasts", "state"\]' "$ROOT/shell/quickshell/tenka/DeskLedger.qml" && grep -q 'dl.feastOn(day)' "$ROOT/shell/quickshell/tenka/DeskLedger.qml" &&
-grep -q 'dl.feasts.today.name' "$ROOT/shell/quickshell/tenka/DeskLedger.qml" || { echo "FAIL: feast days"; fail=1; }
+grep -q 'dl.feasts.today.name' "$ROOT/shell/quickshell/tenka/DeskLedger.qml" &&
+grep -q 'command: \["tenka-feasts", "state"\]' "$ROOT/shell/quickshell/tenka/almanac/AlmanacLine.qml" && grep -q 'line.f.name + ' "$ROOT/shell/quickshell/tenka/almanac/AlmanacLine.qml" || { echo "FAIL: feast days"; fail=1; }
 [ "$fail" = 0 ] && echo "check-session: ok"
 exit $fail

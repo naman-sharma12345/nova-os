@@ -131,6 +131,7 @@ if command -v conky >/dev/null; then
 fi
 if [ "${1:-}" = --login ]; then
   tenka-sound login &
+  (setsid tenka-nightink run >/dev/null 2>&1 &)   # night ink: xrandr gamma, with the sun when asked
   [ -e "$HOME/.config/tenka/welcomed" ] || tenka-welcome &
 fi
 exit 0

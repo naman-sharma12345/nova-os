@@ -25,6 +25,7 @@ else
 fi
 hypridle >/dev/null 2>&1 &
 nm-applet --indicator >/dev/null 2>&1 &
+tenka-nightink run >/dev/null 2>&1 &   # night ink: the warm screen, with the sun when asked (tenka-nightink)
 tenka-bond-agent >/dev/null 2>&1 &   # Bluetooth PIN / passkey questions, asked inside The Bond (Bond.qml)
 # the shell is the polkit agent (The Seal, Seal.qml); hyprpolkitagent stands in when the shell has not registered
 ( sleep 15; [ -e "${XDG_RUNTIME_DIR:-/tmp}/tenka-seal" ] ||

@@ -51,6 +51,13 @@ PanelWindow {
     Process { id: watchP; running: cc.open; command: ["tenka-watch", "state"]
               stdout: StdioCollector { onStreamFinished: { try { cc.watch = JSON.parse(text) } catch (e) {} } } }
     Process { id: watchSet; onExited: { watchP.running = false; watchP.running = true } }
+    // Night ink (tenka-nightink): off, with the sun (warms over the twilight), or warm now
+    property var ink: ({ mode: "off", kelvin: 6500, on: false })
+    Process { id: inkP; running: cc.open; command: ["tenka-nightink", "state"]
+              stdout: StdioCollector { onStreamFinished: { try { cc.ink = JSON.parse(text); Theme.nightInk = cc.ink.on } catch (e) {} } } }
+    Process { id: inkSet; stdout: StdioCollector { onStreamFinished: { try { cc.ink = JSON.parse(text); Theme.nightInk = cc.ink.on } catch (e) {} } } }
+    function inkCmd(a) { inkSet.command = ["tenka-nightink", a]; inkSet.running = true }
+    readonly property string inkWord: cc.ink.mode === "on" ? "Warm" : cc.ink.mode === "sun" ? (cc.ink.kelvin < 6500 ? cc.ink.kelvin + " K" : "With the sun") : "Off"
     Process { id: upP; running: cc.open; command: ["sh", "-c", "uptime -p | sed 's/^up //'"]
               stdout: StdioCollector { onStreamFinished: cc.up = text.trim() } }
     Process { id: brP; running: cc.open; command: ["sh", "-c", "brightnessctl -m -c backlight 2>/dev/null | head -1 | cut -d, -f4 | tr -d %"]
@@ -114,7 +121,7 @@ PanelWindow {
                         { g: cc.netKind === "wifi" ? "\uf1eb" : "\udb80\ude00", n: cc.netKind === "wifi" ? "Wi-Fi" : "Network", s: cc.net, on: cc.net !== "Offline", act: "net" },
                         { g: "\uf293", n: "Bluetooth", s: cc.btWord, on: cc.btOn, act: "bt" },
                         { g: Theme.stillness ? "\uf1f6" : "\uf0f3", n: Theme.t.stillWord, s: Theme.stillness ? "On · silent" : "Off", on: Theme.stillness, act: "still" },
-                        { g: "\uf186", n: "Night ink", s: Theme.nightInk ? "Warm" : "Off", on: Theme.nightInk, act: "night" },
+                        { g: "\uf186", n: "Night ink", s: cc.inkWord, on: cc.ink.on, act: "night" },
                         { g: "\uf0e7", n: "Performance", s: Theme.perf ? "On · still" : "Off", on: Theme.perf, act: "perf" },
                         { g: "\udb81\ude80", n: "Path", s: Theme.t.display, on: true, gold: true }
                     ]
@@ -139,7 +146,7 @@ PanelWindow {
                         }
                         MouseArea { anchors.fill: parent; onClicked: { const a = parent.modelData.act;
                                     if (a === "still") Theme.stillness = !Theme.stillness;
-                                    if (a === "night") { Theme.nightInk = !Theme.nightInk; Theme.run(Theme.nightInk ? "pkill hyprsunset; setsid hyprsunset -t 4200 >/dev/null 2>&1 &" : "pkill hyprsunset") }
+                                    if (a === "night") cc.inkCmd("toggle")
                                     if (a === "perf") { Theme.perf = !Theme.perf; Theme.run("tenka-perf " + (Theme.perf ? "on" : "off")) }
                                     if (a === "net") { cc.open = false; Theme.askWifi() }
                                     if (a === "bt") { cc.open = false; Theme.askBluetooth() }
@@ -336,8 +343,9 @@ PanelWindow {
                 Row2 { k: Theme.xia ? "The Bell Tower" : "The Watch"; v: cc.watch.on ? cc.watch.next.replace("Hour of the ", "") + "  " + cc.watch.next_at : ""
                        on: cc.watch.on; toggle: true
                        onHit: { watchSet.command = ["tenka-watch", "toggle"]; watchSet.running = true } }
-                Row2 { k: "Night ink"; v: Theme.nightInk ? "warm" : ""; on: Theme.nightInk; toggle: true
-                       onHit: { Theme.nightInk = !Theme.nightInk; Theme.run(Theme.nightInk ? "pkill hyprsunset; setsid hyprsunset -t 4200 >/dev/null 2>&1 &" : "pkill hyprsunset") } }
+                // a tap goes off -> with the sun -> warm now -> off
+                Row2 { k: "Night ink"; v: !cc.ink.on ? "" : cc.ink.mode === "sun" && cc.ink.kelvin < 6500 ? cc.ink.kelvin + " K" : cc.inkWord.toLowerCase(); on: cc.ink.on; toggle: true
+                       onHit: cc.inkCmd("cycle") }
                 // Performance mode (tenka-perf): motion, blur and shadows rest; the art stays
                 Row2 { k: "Performance"; v: Theme.perf ? "still" : ""; on: Theme.perf; toggle: true; last: true
                        onHit: { Theme.perf = !Theme.perf; Theme.run("tenka-perf " + (Theme.perf ? "on" : "off")) } }

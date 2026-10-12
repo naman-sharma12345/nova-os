@@ -1,0 +1,22 @@
+[Desktop Entry]
+Type=Application
+Name=Night Ink
+GenericName=Warm screen light
+Comment=Warm the screen from sunset to sunrise, fading over the twilight, or warm it now
+Exec=tenka-nightink toggle --say
+Icon=weather-clear-night-symbolic
+Categories=Utility;Settings;
+Keywords=night;light;warm;blue;filter;sunset;redshift;nightshift;temperature;
+Actions=sun;warm;off;
+
+[Desktop Action sun]
+Name=With the sun
+Exec=tenka-nightink sun --say
+
+[Desktop Action warm]
+Name=Warm now
+Exec=tenka-nightink on --say
+
+[Desktop Action off]
+Name=Off
+Exec=tenka-nightink off --say

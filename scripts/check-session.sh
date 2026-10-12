@@ -340,5 +340,18 @@ mkdir -p "$T/sun"
 mkdir -p "$T/sun/.config/tenka" && echo '{ "name": "London", "lat": 51.5, "lon": -0.13 }' > "$T/sun/.config/tenka/place.json" &&
 HOME="$T/sun" TZ=Europe/London python3 "$BIN/tenka-almanac" sun 2026-10-12 | grep -q '^Sunrise 07:[12][0-9]  ·  Sunset 18:[01][0-9]  ·  .* over London$' &&
 grep -q 'tenka-almanac phase' "$BIN/tenka-hour" && grep -q 'card.d.sun' "$ROOT/shell/quickshell/tenka/almanac/AlmanacCard.qml" || { echo "FAIL: the sun"; fail=1; }
+# 19. Night ink with the sun: warm through the night, a slow fade over each twilight, the right command per session
+N="$T/ink"; mkdir -p "$N"
+ni() { HOME="$N" XDG_RUNTIME_DIR="$N" TZ=Asia/Kolkata TENKA_ALMANAC="$BIN/tenka-almanac" TENKA_NIGHTINK_DRY=1 python3 "$BIN/tenka-nightink" "$@"; }
+k() { TENKA_NOW="$1" ni state | python3 -c 'import json,sys; print(json.load(sys.stdin)["kelvin"])'; }
+[ "$(k 2026-10-12T12:00)" = 6500 ] && ni sun >/dev/null && [ "$(k 2026-10-12T12:00)" = 6500 ] && [ "$(k 2026-10-12T23:00)" = 4200 ] &&
+[ "$(k 2026-10-12T02:00)" = 4200 ] && a=$(k 2026-10-12T17:15) && [ "$a" -gt 4200 ] && [ "$a" -lt 6500 ] &&
+b=$(k 2026-10-12T17:40) && [ "$b" -lt "$a" ] && c=$(k 2026-10-12T05:45) && [ "$c" -gt "$(k 2026-10-12T05:20)" ] &&
+TENKA_NOW=2026-10-12T23:00 HYPRLAND_INSTANCE_SIGNATURE=x ni tick | grep -q '^RUN hyprctl hyprsunset temperature 4200$' &&
+TENKA_NOW=2026-10-12T23:00 DISPLAY=:9 ni tick | grep -q '^XRR gamma 1.0:0.8[0-9]*:0.6[0-9]*$' &&
+ni cycle | grep -q '"mode": "on"' && ni cycle | grep -q '"mode": "off"' && TENKA_NOW=2026-10-12T23:00 ni state | grep -q '"kelvin": 6500' &&
+grep -q '^tenka-nightink run' "$BIN/tenka-session" && grep -q 'setsid tenka-nightink run' "$BIN/tenka-lite-apply" &&
+grep -q '"tenka-nightink", "state"' "$ROOT/shell/quickshell/tenka/ControlCenter.qml" && ! grep -q 'hyprsunset -t 4200' "$ROOT/shell/quickshell/tenka/ControlCenter.qml" &&
+grep -q '^Exec=tenka-nightink toggle --say$' "$IC/usr/share/applications/tenka-nightink.desktop" || { echo "FAIL: night ink"; fail=1; }
 [ "$fail" = 0 ] && echo "check-session: ok"
 exit $fail

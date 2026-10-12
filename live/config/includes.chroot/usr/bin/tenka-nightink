@@ -1,0 +1,241 @@
+#!/usr/bin/python3
+"""tenka-nightink: Night ink, the screen's warm light, following the real sun.
+
+  tenka-nightink                 the state as JSON (the Control Center reads this)
+  tenka-nightink off|sun|on      off; warm from sunset to sunrise, fading in and out over the twilight; or warm now
+  tenka-nightink toggle          off <-> with the sun          tenka-nightink cycle   off -> sun -> on -> off
+                                 (--say after any of these adds a short note, for menus)
+  tenka-nightink warm K          how warm the night ink is, 3000..6000 K (default 4200)
+  tenka-nightink tick            set the screen to what the hour asks for (run keeps doing this)
+  tenka-nightink run             keep it right through the session: a tick each minute (tenka-session, Tenka Lite)
+With the sun, the screen starts warming 30 minutes before sunset and is fully warm 30 minutes after the civil dusk;
+it cools from 30 minutes before the civil dawn to 30 minutes after sunrise, slowly enough not to notice. The times
+come from tenka-almanac (your place, no location service). Hyprland: hyprsunset, steered by hyprctl. Tenka Lite
+(X11): each output's gamma ramp set to the warm white point through Xrandr. TENKA_NOW (YYYY-MM-DDTHH:MM) and TENKA_NIGHTINK_DRY=1 are for tests.
+"""
+import datetime as dt, json, math, os, subprocess, sys, time
+
+CONF = os.path.join(os.environ.get("XDG_CONFIG_HOME") or os.path.expanduser("~/.config"), "tenka")
+FILE = os.path.join(CONF, "nightink.json")
+RT = os.environ.get("XDG_RUNTIME_DIR") or "/tmp"
+DAYK, LEAD = 6500, 30 * 60
+DRY = os.environ.get("TENKA_NIGHTINK_DRY") == "1"
+_alm = None
+
+def almanac():
+    global _alm
+    if _alm is None:
+        try:
+            from importlib.machinery import SourceFileLoader
+            sys.dont_write_bytecode = True
+            _alm = SourceFileLoader("tenka_almanac", os.environ.get("TENKA_ALMANAC", "/usr/bin/tenka-almanac")).load_module()
+        except Exception:
+            _alm = False
+    return _alm
+
+def now():
+    t = os.environ.get("TENKA_NOW")
+    return dt.datetime.strptime(t, "%Y-%m-%dT%H:%M").timestamp() if t else time.time()
+
+def conf():
+    try:
+        c = json.load(open(FILE))
+    except (OSError, ValueError):
+        c = {}
+    mode = c.get("mode") if c.get("mode") in ("off", "sun", "on") else "off"
+    try: warm = max(3000, min(6000, int(c.get("warm", 4200))))
+    except (TypeError, ValueError): warm = 4200
+    return {"mode": mode, "warm": warm}
+
+def save(c):
+    os.makedirs(CONF, exist_ok=True)
+    with open(FILE + ".new", "w") as f: json.dump(c, f)
+    os.replace(FILE + ".new", FILE)
+
+def ease(x):
+    x = max(0.0, min(1.0, x)); return x * x * (3 - 2 * x)
+
+def edges(t):
+    """(cool_from, cool_to, warm_from, warm_to) for the local day around t, or a fixed answer (day/night) at the poles,
+    or clock hours when no place is known."""
+    a = almanac()
+    p = a.place() if a else None
+    if p:
+        s = a.sun_day(t, p["lat"], p["lon"])
+        if s["rise"] and s["set"]:
+            return ((s["dawn"] or s["rise"] - 1800) - LEAD, s["rise"] + LEAD, s["set"] - LEAD, (s["dusk"] or s["set"] + 1800) + LEAD), None
+        return None, ("day" if s["up"] else "night")
+    d = dt.datetime.fromtimestamp(t).replace(hour=0, minute=0, second=0, microsecond=0).timestamp()
+    return (d + 5.5 * 3600, d + 6.5 * 3600, d + 19.5 * 3600, d + 20.5 * 3600), None
+
+def target(c, t):
+    """The kelvin the hour asks for, and the next change as (word, HH:MM)."""
+    if c["mode"] == "off": return DAYK, None
+    if c["mode"] == "on": return c["warm"], None
+    e, polar = edges(t)
+    if polar: return (DAYK if polar == "day" else c["warm"]), None
+    cf, ct, wf, wt = e
+    if t < cf:   f, nxt = 1.0, ("cools", cf)
+    elif t < ct: f, nxt = 1 - ease((t - cf) / (ct - cf)), ("clears", ct)
+    elif t < wf: f, nxt = 0.0, ("warms", wf)
+    elif t < wt: f, nxt = ease((t - wf) / (wt - wf)), ("warm", wt)
+    else:
+        tomorrow = edges(wt + 86400 + 3600)[0]          # the next morning's cooling, from the next local day
+        f, nxt = 1.0, (("cools", tomorrow[0]) if tomorrow else None)
+    k = int(round((DAYK - f * (DAYK - c["warm"])) / 50.0) * 50)
+    return k, ((nxt[0], dt.datetime.fromtimestamp(nxt[1]).strftime("%H:%M")) if nxt else None)
+
+def rgb(k):
+    """The white point of a colour temperature (Tanner Helland's fit), each channel 0..1."""
+    t = k / 100.0
+    r = 1.0 if t <= 66 else max(0, min(1, 329.698727446 * (t - 60) ** -0.1332047592 / 255))
+    g = (99.4708025861 * math.log(t) - 161.1195681661) / 255 if t <= 66 else 288.1221695283 * (t - 60) ** -0.0755148492 / 255
+    b = 1.0 if t >= 66 else (0.0 if t <= 19 else (138.5177312231 * math.log(t - 10) - 305.0447927307) / 255)
+    return tuple(round(max(0.0, min(1.0, v)), 3) for v in (r, g, b))
+
+def _xrr():
+    """libX11 + libXrandr through ctypes: the CRTCs' gamma ramps, set per channel like a white point (whites warm too,
+    which xrandr --gamma cannot do). None when the libraries or the display are missing."""
+    import ctypes, ctypes.util
+    try:
+        X = ctypes.CDLL(ctypes.util.find_library("X11") or "libX11.so.6")
+        R = ctypes.CDLL(ctypes.util.find_library("Xrandr") or "libXrandr.so.2")
+    except OSError:
+        return None
+    class Gamma(ctypes.Structure):
+        _fields_ = [("size", ctypes.c_int)] + [(n, ctypes.POINTER(ctypes.c_ushort)) for n in ("red", "green", "blue")]
+    class Res(ctypes.Structure):
+        _fields_ = [("timestamp", ctypes.c_ulong), ("configTimestamp", ctypes.c_ulong), ("ncrtc", ctypes.c_int),
+                    ("crtcs", ctypes.POINTER(ctypes.c_ulong)), ("noutput", ctypes.c_int), ("outputs", ctypes.c_void_p),
+                    ("nmode", ctypes.c_int), ("modes", ctypes.c_void_p)]
+    X.XOpenDisplay.restype = ctypes.c_void_p; X.XOpenDisplay.argtypes = [ctypes.c_char_p]
+    X.XDefaultRootWindow.restype = ctypes.c_ulong; X.XDefaultRootWindow.argtypes = [ctypes.c_void_p]
+    X.XSync.argtypes = [ctypes.c_void_p, ctypes.c_int]; X.XCloseDisplay.argtypes = [ctypes.c_void_p]
+    R.XRRGetScreenResourcesCurrent.restype = ctypes.POINTER(Res); R.XRRGetScreenResourcesCurrent.argtypes = [ctypes.c_void_p, ctypes.c_ulong]
+    R.XRRGetCrtcGammaSize.argtypes = [ctypes.c_void_p, ctypes.c_ulong]
+    R.XRRAllocGamma.restype = ctypes.POINTER(Gamma); R.XRRAllocGamma.argtypes = [ctypes.c_int]
+    R.XRRGetCrtcGamma.restype = ctypes.POINTER(Gamma); R.XRRGetCrtcGamma.argtypes = [ctypes.c_void_p, ctypes.c_ulong]
+    R.XRRSetCrtcGamma.argtypes = [ctypes.c_void_p, ctypes.c_ulong, ctypes.POINTER(Gamma)]
+    R.XRRFreeGamma.argtypes = [ctypes.POINTER(Gamma)]
+    d = X.XOpenDisplay(None)
+    if not d: return None
+    return X, R, d
+
+def x11_gamma(white=None):
+    """Set every CRTC's ramp to the white point (r, g, b), or with None read the ramps' top values back."""
+    h = _xrr()
+    if not h: return None
+    X, R, d = h
+    out = []
+    res = R.XRRGetScreenResourcesCurrent(d, X.XDefaultRootWindow(d))
+    for i in range(res.contents.ncrtc if res else 0):
+        c = res.contents.crtcs[i]; n = R.XRRGetCrtcGammaSize(d, c)
+        if n < 2: continue
+        if white is None:
+            g = R.XRRGetCrtcGamma(d, c)
+            out.append("%d:%d:%d" % (g.contents.red[n - 1], g.contents.green[n - 1], g.contents.blue[n - 1])); R.XRRFreeGamma(g)
+            continue
+        g = R.XRRAllocGamma(n)
+        for j in range(n):
+            v = j * 65535 // (n - 1)
+            g.contents.red[j], g.contents.green[j], g.contents.blue[j] = (int(v * w) for w in white)
+        R.XRRSetCrtcGamma(d, c, g); R.XRRFreeGamma(g); out.append(str(c))
+    X.XSync(d, 0); X.XCloseDisplay(d)
+    return out
+
+def run(cmd, bg=False):
+    if DRY:
+        print("RUN " + " ".join(cmd)); return 0
+    try:
+        if bg:
+            subprocess.Popen(cmd, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True); return 0
+        return subprocess.run(cmd, stdin=subprocess.DEVNULL, capture_output=True, timeout=10).returncode
+    except (OSError, subprocess.SubprocessError):
+        return 1
+
+def apply(k, force=False):
+    last = os.path.join(RT, "tenka-nightink.k")
+    try: was = int(open(last).read())
+    except (OSError, ValueError): was = DAYK
+    if k == was and not force: return
+    if os.environ.get("HYPRLAND_INSTANCE_SIGNATURE"):
+        if k >= DAYK:
+            run(["pkill", "-x", "hyprsunset"])
+        elif DRY or subprocess.run(["pgrep", "-x", "hyprsunset"], capture_output=True).returncode == 0:
+            if run(["hyprctl", "hyprsunset", "temperature", str(k)]) != 0 and not DRY:
+                run(["pkill", "-x", "hyprsunset"]); run(["hyprsunset", "-t", str(k)], bg=True)
+        else:
+            run(["hyprsunset", "-t", str(k)], bg=True)
+    elif os.environ.get("DISPLAY"):
+        r, g, b = rgb(k)
+        if DRY:
+            print("XRR gamma %s:%s:%s" % (r, g, b))
+        elif not x11_gamma((r, g, b)):   # no Xrandr through ctypes: xrandr's own gamma (it warms the mid-tones only)
+            try:
+                q = subprocess.run(["xrandr", "--query"], capture_output=True, text=True, timeout=10).stdout
+                for o in [l.split()[0] for l in q.splitlines() if " connected" in l]:
+                    run(["xrandr", "--output", o, "--gamma", "%s:%s:%s" % (r, g, b)])
+            except (OSError, subprocess.SubprocessError):
+                pass
+    else:
+        return
+    if not DRY:
+        try:
+            with open(last, "w") as f: f.write(str(k))
+        except OSError: pass
+
+def say(c):
+    st = state(c)
+    body = {"off": "Off: the screen keeps its daylight.",
+            "on": "Warm now, at %d K." % c["warm"],
+            "sun": "With the sun: warm from sunset to sunrise" + ((", %s at %s." % (st["next"], st["next_at"])) if st.get("next") else ".")}[c["mode"]]
+    if DRY: print("SAY " + body); return
+    subprocess.run(["notify-send", "-a", "Tenka", "Night ink", body], capture_output=True)
+
+def state(c=None):
+    c = c or conf()
+    k, nxt = target(c, now())
+    s = {"mode": c["mode"], "warm": c["warm"], "kelvin": k, "on": c["mode"] != "off"}
+    if nxt: s["next"], s["next_at"] = nxt
+    return s
+
+def main(a):
+    cmd = a[0] if a else "state"
+    c = conf()
+    if cmd in ("off", "sun", "on", "toggle", "cycle"):
+        if cmd == "toggle": c["mode"] = "sun" if c["mode"] == "off" else "off"
+        elif cmd == "cycle": c["mode"] = {"off": "sun", "sun": "on", "on": "off"}[c["mode"]]
+        else: c["mode"] = cmd
+        save(c); apply(target(c, now())[0])
+        if "--say" in a: say(c)
+    elif cmd == "warm":
+        try: c["warm"] = max(3000, min(6000, int(a[1])))
+        except (IndexError, ValueError): print("tenka-nightink warm K (3000..6000)", file=sys.stderr); return 2
+        save(c); apply(target(c, now())[0])
+    elif cmd == "tick":
+        apply(target(c, now())[0], force="--force" in a)
+    elif cmd == "run":
+        pid = os.path.join(RT, "tenka-nightink.pid")
+        try:
+            old = int(open(pid).read())
+            if b"tenka-nightink" in open("/proc/%d/cmdline" % old, "rb").read() and old != os.getpid(): return 0
+        except (OSError, ValueError): pass
+        with open(pid, "w") as f: f.write(str(os.getpid()))
+        try: os.remove(os.path.join(RT, "tenka-nightink.k"))    # a new session starts from the plain screen
+        except OSError: pass
+        while True:
+            apply(target(conf(), now())[0])
+            time.sleep(60)
+    elif cmd == "x11-read":             # the CRTCs' ramp tops, for tests and renders
+        print(" ".join(x11_gamma() or [])); return 0
+    elif cmd in ("state", "json"):
+        pass
+    elif cmd in ("-h", "--help", "help"):
+        print(__doc__.strip()); return 0
+    else:
+        print("tenka-nightink: unknown " + cmd, file=sys.stderr); return 2
+    print(json.dumps(state(c)))
+    return 0
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

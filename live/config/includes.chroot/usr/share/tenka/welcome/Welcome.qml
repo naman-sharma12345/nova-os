@@ -1,4 +1,4 @@
-// Tenka welcome: choose your path. Exit codes: 10 samurai, 11 xianxia (+10 = performance mode on).
+// Tenka welcome: choose your path. Exit codes: 10 samurai, 11 xianxia (+10 = performance mode on), 30 install (live).
 // The ledger language of the desk and the control center: ink, 1px gold rules, numbered small caps,
 // Marcellus for words, Cinzel Decorative for the two names. No rounded cards, no bounce, no glow.
 import QtQuick
@@ -21,6 +21,7 @@ Window {
     property string reason: { var a = Qt.application.arguments; var i = a.indexOf("--reason"); return i >= 0 && i + 1 < a.length ? a[i + 1] : "" }
     property bool perf: lite
     property bool hypr: Qt.application.arguments.indexOf("--hypr") >= 0
+    property bool live: Qt.application.arguments.indexOf("--live") >= 0   // running from the USB, the installer is here
     property int peek: { var a = Qt.application.arguments; var i = a.indexOf("--peek"); return i >= 0 && i + 1 < a.length ? Number(a[i + 1]) : -1 }   // renders only
     readonly property color text: "#efe6d6"
     readonly property color sub: "#9b9488"
@@ -40,6 +41,19 @@ Window {
         color: lm.containsMouse ? win.text : win.al(win.text, 0.45)
         MouseArea { id: lm; anchors.fill: parent; anchors.margins: -10; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: Qt.exit(0) }
     }
+    // live session: the installer one click from the first screen (it keeps the path chosen here)
+    Row {
+        visible: win.live
+        anchors.right: later.left; anchors.rightMargin: 44; y: 40; spacing: 12
+        Rectangle { width: 7; height: 7; rotation: 45; color: win.gold; anchors.verticalCenter: parent.verticalCenter }
+        Text {
+            text: "INSTALL TO DISK"; font.family: win.ui; font.pixelSize: 12; font.letterSpacing: 5
+            color: im.containsMouse ? win.text : win.gold
+            Rectangle { anchors.left: parent.left; anchors.right: parent.right; anchors.top: parent.bottom; anchors.topMargin: 6; height: 1
+                        color: win.al(win.gold, im.containsMouse ? 0.9 : 0.45) }
+            MouseArea { id: im; anchors.fill: parent; anchors.margins: -10; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: Qt.exit(30) }
+        }
+    }
 
     // header: a numbered small-caps line, the title, one hairline
     Column {
@@ -51,7 +65,8 @@ Window {
             Text { text: "WELCOME"; color: win.gold; font.family: win.ui; font.pixelSize: 13; font.letterSpacing: 6 }
         }
         Text { text: "Choose your path"; color: win.text; font.family: win.ui; font.pixelSize: 40 }
-        Text { text: "Two complete looks, the same system. Switch any time with Super + T."; color: win.sub; font.family: win.ui; font.pixelSize: 15 }
+        Text { text: win.live ? "Two complete looks, the same system. Switch any time with Super + T; the path you pick here is the one the installer keeps."
+                              : "Two complete looks, the same system. Switch any time with Super + T."; color: win.sub; font.family: win.ui; font.pixelSize: 15 }
     }
 
     Row {

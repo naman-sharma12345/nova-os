@@ -16,6 +16,8 @@ if [ "$(cat /run/tenka/mode 2>/dev/null)" = lite ] || [ "${XDG_CURRENT_DESKTOP:-
   set -- --lite --reason "$r"
   [ "${XDG_CURRENT_DESKTOP:-}" = Hyprland ] && set -- "$@" --hypr
 fi
+# running from the USB with the installer present: the welcome offers Install Tenka
+[ -d /run/live ] && command -v calamares-install-debian >/dev/null 2>&1 && set -- "$@" --live
 QML=$(command -v qml6 || echo /usr/lib/qt6/bin/qml)
 # RESOURCE_NAME names the window (WM_CLASS) so docks show the theme icon, not a generic one
 # its complaints go to a log, not to nowhere, so a welcome that never showed can be explained
@@ -25,7 +27,7 @@ rc=$?
 # only a welcome that actually ran and was closed counts as seen; a crash (or a missing Qt module)
 # leaves the flag unset so it comes back at the next login instead of never appearing again
 case $rc in
-  0|10|11|20|21) touch "$HOME/.config/tenka/welcomed" ;;
+  0|10|11|20|21|30) touch "$HOME/.config/tenka/welcomed" ;;
   *) echo "tenka-welcome: qml exited $rc" >>"$HOME/.cache/tenka/welcome.log"; exit "$rc" ;;
 esac
 # unticking the switch over a desktop that started in performance mode turns it off
@@ -33,4 +35,5 @@ esac
 case $rc in
   10) tenka-theme samurai ;; 11) tenka-theme xianxia ;;
   20) tenka-perf on; tenka-theme samurai ;; 21) tenka-perf on; tenka-theme xianxia ;;
+  30) setsid calamares-install-debian >/dev/null 2>&1 < /dev/null & ;;
 esac

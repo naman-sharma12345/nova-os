@@ -88,6 +88,11 @@ qt6-style-kvantum
 firefox-esr
 xdg-user-dirs
 xdg-utils
+# a calculator, and archives that open (double-click a .zip/.tar.gz, or Thunar's right-click Extract here);
+# both are GTK 4 apps, so they wear the GTK 4 glass
+gnome-calculator
+file-roller
+thunar-archive-plugin
 # SVG loader for GTK: without it every SVG icon (the gold Tenka set, Papirus) falls back to stock PNGs
 librsvg2-common
 # themed terminal + reader tools (configs from scripts/gen-themes.py)

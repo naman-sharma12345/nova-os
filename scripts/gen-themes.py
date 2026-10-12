@@ -391,6 +391,8 @@ def gen(name, T):
     window, window.background {{ background-color: {gl_win}; background-image: linear-gradient(to bottom, {gl_frost}, transparent 40%); box-shadow: inset 0 1px {gl_lit}; color: {p['text']}; }}
     headerbar {{ background-color: {gl_head}; background-image: none; box-shadow: none; border-bottom: 1px solid {rgba(p['accent2'], 0.18)}; color: {p['text']}; min-height: 42px; }}
     headerbar .title, windowtitle .title {{ font-family: Marcellus; font-size: 14px; letter-spacing: 0.5px; }}
+    /* a plain GTK 4 toolbar strip (File Roller's location row) drew the light default; it sits on the glass */
+    .toolbar {{ background-color: transparent; background-image: none; }}
     .view, textview text, listview, columnview, gridview, list, scrolledwindow, viewport, stack, notebook, notebook > stack {{ background-color: transparent; color: {p['text']}; }}
     textview text {{ background-color: {gl_view}; }}
     list > row:selected, listview > row:selected, columnview > listview > row:selected, .navigation-sidebar > row:selected {{ background-color: {gl_sel}; color: {p['text']}; }}

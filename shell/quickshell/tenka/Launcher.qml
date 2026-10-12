@@ -57,7 +57,8 @@ PanelWindow {
     readonly property var flat: q === "" ? pinned.concat(often, others) : (calc ? [calc] : []).concat(found)
     readonly property var names: ({ "kitty": "Terminal", "btop": "Monitor", "org.xfce.ristretto": "Images", "nwg-look": "Appearance",
         "org.xfce.mousepad": "Notes", "firefox-esr": "Firefox", "thunar": "Files", "org.pulseaudio.pavucontrol": "Sound",
-        "calamares-install-debian": "Install Tenka", "tenka-theme": "Choose your path", "mpv": "Player" })
+        "calamares-install-debian": "Install Tenka", "tenka-theme": "Choose your path", "mpv": "Player",
+        "org.gnome.Calculator": "Calculator", "org.gnome.FileRoller": "Archives" })
     function nice(a) { return a.calc ? a.name : (names[a.id] || a.name) }
     function sectionAt(i) {
         if (q !== "") return !calc ? "" : (i === 0 ? "RECKONING" : (i === 1 ? "FOUND" : ""));

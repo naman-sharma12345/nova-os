@@ -542,14 +542,14 @@ def sourceview(name, T):
         return "#" + "".join(f"{round(int(c1[i:i+2], 16) * (1 - a) + int(c2[i:i+2], 16) * a):02x}" for i in (0, 2, 4))
     dim = mix(p["text"], p["base"], 0.5)
     styles = [
-        ("text", f'foreground="{p["text"]}" background="{p["base"]}"'),
+        # Rice V: no page colour of its own, so the window's washi glass shows through (the gtk sheet tints it)
+        ("text", f'foreground="{p["text"]}"'),
         ("selection", f'foreground="{p["text"]}" background="{mix(p["base"], p["accent"], 0.32)}"'),
         ("selection-unfocused", f'background="{mix(p["base"], p["accent"], 0.18)}"'),
         ("cursor", f'foreground="{p["accent2"]}"'),
-        ("current-line", f'background="{mix(p["base"], p["text"], 0.045)}"'),
-        ("current-line-number", f'foreground="{p["accent2"]}" background="{p["mantle"]}"'),
-        ("line-numbers", f'foreground="{mix(p["text"], p["base"], 0.62)}" background="{p["mantle"]}"'),
-        ("right-margin", f'foreground="{p["accent2"]}" background="{p["mantle"]}"'),
+        ("current-line-number", f'foreground="{p["accent2"]}"'),
+        ("line-numbers", f'foreground="{mix(p["text"], p["base"], 0.62)}"'),
+        ("right-margin", f'foreground="{p["accent2"]}"'),
         ("bracket-match", f'foreground="{p["text"]}" background="{mix(p["base"], p["accent2"], 0.28)}"'),
         ("bracket-mismatch", f'foreground="{p["text"]}" background="{mix(p["base"], p["accent"], 0.45)}"'),
         ("search-match", f'foreground="{p["text"]}" background="{mix(p["base"], p["accent2"], 0.35)}"'),

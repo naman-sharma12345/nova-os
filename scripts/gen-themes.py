@@ -78,6 +78,7 @@ def gen(name, T):
     window.background:not(.xfce4-panel):not(.thunar):not(.tenka-lite) {{ background-color: {p['base']}; }}
     .sidebar:not(.tenka-lite) {{ background-color: {rgba(p['mantle'], 0.5)}; }}
     headerbar:not(.tenka-lite), .titlebar:not(.tenka-lite) {{ background-color: {p['surface']}; }}
+    textview text:not(.tenka-lite), window.mousepad textview.view:not(.tenka-lite) {{ background-color: {p['base']}; }}
     """))
     # ---------- theme.env (read by scripts) ----------
     W(f"themes/{name}/theme.env", "\n".join([
@@ -369,7 +370,42 @@ def gen(name, T):
     @define-color theme_base_color {p['mantle']};
     @define-color theme_fg_color {p['text']};
     """)
-    W(f"{H}/.config/gtk-4.0/gtk.css", gtkcss)
+    # GTK 4 (the volume mixer and other GTK 4 tools fall back to GTK's own theme): the same washi glass, drawn explicitly
+    W(f"{H}/.config/gtk-4.0/gtk.css", gtkcss + textwrap.dedent(f"""\
+    /* ---- Rice V washi glass for GTK 4: see-through windows over Hyprland's blur, glass headerbars, rounded glass
+       popovers, the theme's corners on buttons and fields, thin quiet sliders. No glow. ---- */
+    window, window.background {{ background-color: {gl_win}; color: {p['text']}; }}
+    headerbar {{ background-color: {gl_head}; background-image: none; box-shadow: none; border-bottom: 1px solid {rgba(p['accent2'], 0.18)}; color: {p['text']}; min-height: 42px; }}
+    headerbar .title, windowtitle .title {{ font-family: Marcellus; font-size: 14px; letter-spacing: 0.5px; }}
+    .view, textview text, listview, columnview, gridview, list, scrolledwindow, viewport, stack, notebook, notebook > stack {{ background-color: transparent; color: {p['text']}; }}
+    textview text {{ background-color: {gl_view}; }}
+    list > row:selected, listview > row:selected, columnview > listview > row:selected, .navigation-sidebar > row:selected {{ background-color: {rgba(p['accent2'], 0.16)}; color: {p['text']}; }}
+    list > row:hover, listview > row:hover {{ background-color: {rgba(p['text'], 0.05)}; }}
+    popover > contents, popover.menu > contents {{ background-color: {gl_pop}; border: 1px solid {rgba(p['accent2'], 0.22)}; border-radius: {R}px; box-shadow: 0 10px 30px {rgba('#000000', 0.45)}; }}
+    popover > arrow {{ background-color: {gl_pop}; border: 1px solid {rgba(p['accent2'], 0.22)}; }}
+    tooltip, tooltip.background {{ background-color: {gl_pop}; border: 1px solid {rgba(p['accent2'], 0.25)}; border-radius: {Rs}px; color: {p['text']}; }}
+    button {{ border-radius: {Rs}px; background-color: {rgba(p['text'], 0.07)}; background-image: none; border: 1px solid {rgba(p['text'], 0.08)}; box-shadow: none; color: {p['text']}; }}
+    button:hover {{ background-color: {rgba(p['text'], 0.12)}; }}
+    button:checked, button.suggested-action {{ background-color: {rgba(p['accent2'], 0.22)}; border-color: {rgba(p['accent2'], 0.45)}; color: {p['text']}; }}
+    button.flat, headerbar button {{ background-color: transparent; border-color: transparent; }}
+    button.flat:hover, headerbar button:hover {{ background-color: {rgba(p['text'], 0.08)}; }}
+    entry, spinbutton, dropdown > button, combobox > box > button {{ background-color: {rgba(p['mantle'], 0.45)}; border: 1px solid {rgba(p['text'], 0.10)}; border-radius: {Rs}px; box-shadow: none; color: {p['text']}; }}
+    entry:focus-within, spinbutton:focus-within {{ border-color: {rgba(p['accent2'], 0.55)}; outline: none; }}
+    scale trough {{ background-color: {rgba(p['text'], 0.12)}; min-height: 4px; min-width: 4px; border-radius: 99px; border: none; }}
+    scale highlight {{ background-image: linear-gradient(to right, {p['accent2']}, {p['accent']}); background-color: {p['accent2']}; border-radius: 99px; border: none; }}
+    scale slider {{ background-color: {p['text']}; border: none; border-radius: 99px; min-width: 14px; min-height: 14px; box-shadow: 0 1px 3px {rgba('#000000', 0.45)}; }}
+    levelbar trough {{ background-color: {rgba(p['text'], 0.08)}; border-radius: 99px; border: none; }}
+    levelbar block.filled, levelbar block.high, levelbar block.low {{ background-color: {p['accent2']}; border-radius: 99px; }}
+    checkbutton check:checked, radiobutton radio:checked, check:checked, radio:checked {{ background-color: {p['accent']}; border-color: {p['accent']}; color: {p['base']}; }}
+    switch {{ background-color: {rgba(p['text'], 0.14)}; border: none; border-radius: 99px; }}
+    switch:checked {{ background-color: {p['accent']}; }}
+    switch slider {{ background-color: {p['text']}; border-radius: 99px; box-shadow: none; }}
+    notebook > header {{ background-color: transparent; border: none; box-shadow: none; }}
+    notebook > header tab {{ padding: 7px 16px; color: {rgba(p['text'], 0.62)}; font-family: Marcellus; }}
+    notebook > header tab:checked {{ color: {p['text']}; box-shadow: inset 0 -1px {p['accent2']}; }}
+    separator {{ background-color: {rgba(p['accent2'], 0.16)}; }}
+    scrollbar slider {{ background-color: {rgba(p['accent2'], 0.35)}; border-radius: 99px; min-width: 3px; min-height: 3px; border: none; }}
+    """))
     # Tenka Lite (xfwm4: no blur) writes ~/.cache/tenka/session.css at login with denser glass; Hyprland removes it.
     # GTK skips a missing import with a warning.
     W(f"{H}/.config/gtk-3.0/gtk.css", '@import url("../../.cache/tenka/session.css");\n' + gtkcss + textwrap.dedent(f"""\
@@ -395,6 +431,22 @@ def gen(name, T):
     button {{ border-radius: {Rs}px; }}
     entry {{ border-radius: {Rs}px; background-color: {rgba(p['mantle'], 0.45)}; border: 1px solid {rgba(p['text'], 0.10)}; box-shadow: none; caret-color: {p['accent2']}; }}
     entry:focus {{ border-color: {rgba(p['accent2'], 0.55)}; }}
+    window.background:not(.xfce4-panel):not(.thunar) iconview, window.background:not(.xfce4-panel):not(.thunar) iconview.view,
+    window.background:not(.xfce4-panel):not(.thunar) scrolledwindow, window.background:not(.xfce4-panel):not(.thunar) viewport,
+    window.background:not(.xfce4-panel):not(.thunar) .background {{ background-color: transparent; }}
+    menubar {{ background-color: transparent; background-image: none; padding: 2px 8px; border-bottom: 1px solid {rgba(p['accent2'], 0.14)}; box-shadow: none; }}
+    menubar > menuitem {{ padding: 6px 12px; border-radius: {Rs}px; font-family: Marcellus; color: {rgba(p['text'], 0.82)}; }}
+    menubar > menuitem:hover {{ background-color: {rgba(p['accent2'], 0.14)}; color: {p['text']}; box-shadow: none; }}
+    toolbar {{ background-color: transparent; background-image: none; border: none; }}
+    notebook, notebook > stack:not(:only-child) {{ background-color: transparent; }}
+    notebook > header {{ background-color: transparent; border: none; box-shadow: none; }}
+    notebook > header tab {{ padding: 7px 16px; font-family: Marcellus; color: {rgba(p['text'], 0.62)}; border: none; background: transparent; }}
+    notebook > header tab:checked {{ color: {p['text']}; box-shadow: inset 0 -1px {p['accent2']}; }}
+    /* the text editor: the page is the window's glass (its colour scheme draws no page of its own); the gutter
+       sits on the same glass, the numbers in a quieter ink */
+    window.mousepad notebook scrolledwindow {{ border-left: 12px solid transparent; }}
+    window.mousepad textview.view, window.mousepad textview text {{ background-color: {gl_view}; }}
+    window.mousepad textview border {{ background-color: transparent; }}
     /* ---- the file manager: the same washi sheet; a header band with the path as quiet breadcrumbs (the folder
        you are in reads in full ink with a short accent rule under it); the side pane as a list of places on the
        same glass, its section names in spaced small capitals; a roomy grid whose names sit on a soft shadow;
@@ -422,7 +474,7 @@ def gen(name, T):
     .thunar toolbar button:hover, .thunar button:hover {{ background-color: {rgba(p['text'], 0.08)}; color: {p['text']}; }}
     .thunar .path-bar button, .thunar .path-bar-button {{ padding: 4px 11px; margin: 0 1px; color: {rgba(p['text'], 0.66)}; font-size: 13px; letter-spacing: 0.4px; border-radius: {Rs}px; }}
     .thunar .path-bar button:checked, .thunar .path-bar-button:checked {{ color: {p['text']}; background-color: transparent;
-        background-image: linear-gradient({p['accent2']}, {p['accent2']}); background-size: 18px 1px; background-position: center bottom 3px; background-repeat: no-repeat; }}
+        background-image: linear-gradient({p['accent2']}, {p['accent2']}); background-size: 18px 1px; background-position: center bottom; background-repeat: no-repeat; }}
     .thunar entry {{ border-radius: {Rs}px; background-color: {rgba(p['mantle'], 0.40)}; border: 1px solid {rgba(p['accent2'], 0.30)}; color: {p['text']}; padding: 5px 10px; box-shadow: none; caret-color: {p['accent2']}; }}
     .thunar statusbar, .thunar .statusbar {{ background-color: transparent; color: {rgba(p['subtext'], 0.9)}; font-size: 11px; letter-spacing: 0.6px; border: none; border-top: 1px solid {rgba(p['accent2'], 0.12)}; padding: 2px 10px; }}
     .thunar paned > separator {{ background-color: {rgba(p['accent2'], 0.28)}; background-image: none; min-width: 1px; }}

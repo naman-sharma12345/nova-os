@@ -39,6 +39,22 @@ tooltip label { font-family: Marcellus; font-size: 12px; letter-spacing: 0.3px; 
 button { border-radius: 6px; }
 entry { border-radius: 6px; background-color: rgba(10, 9, 8, 0.45); border: 1px solid rgba(239, 230, 214, 0.1); box-shadow: none; caret-color: #c9a35a; }
 entry:focus { border-color: rgba(201, 163, 90, 0.55); }
+window.background:not(.xfce4-panel):not(.thunar) iconview, window.background:not(.xfce4-panel):not(.thunar) iconview.view,
+window.background:not(.xfce4-panel):not(.thunar) scrolledwindow, window.background:not(.xfce4-panel):not(.thunar) viewport,
+window.background:not(.xfce4-panel):not(.thunar) .background { background-color: transparent; }
+menubar { background-color: transparent; background-image: none; padding: 2px 8px; border-bottom: 1px solid rgba(201, 163, 90, 0.14); box-shadow: none; }
+menubar > menuitem { padding: 6px 12px; border-radius: 6px; font-family: Marcellus; color: rgba(239, 230, 214, 0.82); }
+menubar > menuitem:hover { background-color: rgba(201, 163, 90, 0.14); color: #efe6d6; box-shadow: none; }
+toolbar { background-color: transparent; background-image: none; border: none; }
+notebook, notebook > stack:not(:only-child) { background-color: transparent; }
+notebook > header { background-color: transparent; border: none; box-shadow: none; }
+notebook > header tab { padding: 7px 16px; font-family: Marcellus; color: rgba(239, 230, 214, 0.62); border: none; background: transparent; }
+notebook > header tab:checked { color: #efe6d6; box-shadow: inset 0 -1px #c9a35a; }
+/* the text editor: the page is the window's glass (its colour scheme draws no page of its own); the gutter
+   sits on the same glass, the numbers in a quieter ink */
+window.mousepad notebook scrolledwindow { border-left: 12px solid transparent; }
+window.mousepad textview.view, window.mousepad textview text { background-color: rgba(10, 9, 8, 0.3); }
+window.mousepad textview border { background-color: transparent; }
 /* ---- the file manager: the same washi sheet; a header band with the path as quiet breadcrumbs (the folder
    you are in reads in full ink with a short accent rule under it); the side pane as a list of places on the
    same glass, its section names in spaced small capitals; a roomy grid whose names sit on a soft shadow;
@@ -66,7 +82,7 @@ window.thunar.background, window.thunar.background:not(.xfce4-panel) {
 .thunar toolbar button:hover, .thunar button:hover { background-color: rgba(239, 230, 214, 0.08); color: #efe6d6; }
 .thunar .path-bar button, .thunar .path-bar-button { padding: 4px 11px; margin: 0 1px; color: rgba(239, 230, 214, 0.66); font-size: 13px; letter-spacing: 0.4px; border-radius: 6px; }
 .thunar .path-bar button:checked, .thunar .path-bar-button:checked { color: #efe6d6; background-color: transparent;
-    background-image: linear-gradient(#c9a35a, #c9a35a); background-size: 18px 1px; background-position: center bottom 3px; background-repeat: no-repeat; }
+    background-image: linear-gradient(#c9a35a, #c9a35a); background-size: 18px 1px; background-position: center bottom; background-repeat: no-repeat; }
 .thunar entry { border-radius: 6px; background-color: rgba(10, 9, 8, 0.4); border: 1px solid rgba(201, 163, 90, 0.3); color: #efe6d6; padding: 5px 10px; box-shadow: none; caret-color: #c9a35a; }
 .thunar statusbar, .thunar .statusbar { background-color: transparent; color: rgba(184, 171, 150, 0.9); font-size: 11px; letter-spacing: 0.6px; border: none; border-top: 1px solid rgba(201, 163, 90, 0.12); padding: 2px 10px; }
 .thunar paned > separator { background-color: rgba(201, 163, 90, 0.28); background-image: none; min-width: 1px; }

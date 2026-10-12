@@ -3,14 +3,13 @@
 <style-scheme id="tenka" name="Tianxia" version="1.0">
   <author>Tenka</author>
   <description>Ink page, quiet syntax, no bold.</description>
-  <style name="text" foreground="#eef3ec" background="#0b1513"/>
+  <style name="text" foreground="#eef3ec"/>
   <style name="selection" foreground="#eef3ec" background="#264f40"/>
   <style name="selection-unfocused" background="#1a352c"/>
   <style name="cursor" foreground="#e2bd6b"/>
-  <style name="current-line" background="#151f1d"/>
-  <style name="current-line-number" foreground="#e2bd6b" background="#07100e"/>
-  <style name="line-numbers" foreground="#616965" background="#07100e"/>
-  <style name="right-margin" foreground="#e2bd6b" background="#07100e"/>
+  <style name="current-line-number" foreground="#e2bd6b"/>
+  <style name="line-numbers" foreground="#616965"/>
+  <style name="right-margin" foreground="#e2bd6b"/>
   <style name="bracket-match" foreground="#eef3ec" background="#47442c"/>
   <style name="bracket-mismatch" foreground="#eef3ec" background="#316652"/>
   <style name="search-match" foreground="#eef3ec" background="#565032"/>

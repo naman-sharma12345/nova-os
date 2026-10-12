@@ -3,14 +3,13 @@
 <style-scheme id="tenka" name="Tenka" version="1.0">
   <author>Tenka</author>
   <description>Ink page, quiet syntax, no bold.</description>
-  <style name="text" foreground="#efe6d6" background="#0f0d0c"/>
+  <style name="text" foreground="#efe6d6"/>
   <style name="selection" foreground="#efe6d6" background="#4f1e17"/>
   <style name="selection-unfocused" background="#331612"/>
   <style name="cursor" foreground="#c9a35a"/>
-  <style name="current-line" background="#191715"/>
-  <style name="current-line-number" foreground="#c9a35a" background="#0a0908"/>
-  <style name="line-numbers" foreground="#645f59" background="#0a0908"/>
-  <style name="right-margin" foreground="#c9a35a" background="#0a0908"/>
+  <style name="current-line-number" foreground="#c9a35a"/>
+  <style name="line-numbers" foreground="#645f59"/>
+  <style name="right-margin" foreground="#c9a35a"/>
   <style name="bracket-match" foreground="#efe6d6" background="#433722"/>
   <style name="bracket-mismatch" foreground="#efe6d6" background="#69241c"/>
   <style name="search-match" foreground="#efe6d6" background="#504227"/>

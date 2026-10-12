@@ -5,3 +5,4 @@ window.thunar.background:not(.xfce4-panel):not(.tenka-lite) { background-color: 
 window.background:not(.xfce4-panel):not(.thunar):not(.tenka-lite) { background-color: #0f0d0c; }
 .sidebar:not(.tenka-lite) { background-color: rgba(10, 9, 8, 0.5); }
 headerbar:not(.tenka-lite), .titlebar:not(.tenka-lite) { background-color: #1b1816; }
+textview text:not(.tenka-lite), window.mousepad textview.view:not(.tenka-lite) { background-color: #0f0d0c; }

@@ -16,3 +16,36 @@
 @define-color theme_bg_color #0b1513;
 @define-color theme_base_color #07100e;
 @define-color theme_fg_color #eef3ec;
+/* ---- Rice V washi glass for GTK 4: see-through windows over Hyprland's blur, glass headerbars, rounded glass
+   popovers, the theme's corners on buttons and fields, thin quiet sliders. No glow. ---- */
+window, window.background { background-color: rgba(14, 26, 23, 0.68); color: #eef3ec; }
+headerbar { background-color: rgba(18, 33, 30, 0.22); background-image: none; box-shadow: none; border-bottom: 1px solid rgba(226, 189, 107, 0.18); color: #eef3ec; min-height: 42px; }
+headerbar .title, windowtitle .title { font-family: Marcellus; font-size: 14px; letter-spacing: 0.5px; }
+.view, textview text, listview, columnview, gridview, list, scrolledwindow, viewport, stack, notebook, notebook > stack { background-color: transparent; color: #eef3ec; }
+textview text { background-color: rgba(7, 16, 14, 0.3); }
+list > row:selected, listview > row:selected, columnview > listview > row:selected, .navigation-sidebar > row:selected { background-color: rgba(226, 189, 107, 0.16); color: #eef3ec; }
+list > row:hover, listview > row:hover { background-color: rgba(238, 243, 236, 0.05); }
+popover > contents, popover.menu > contents { background-color: rgba(18, 33, 30, 0.92); border: 1px solid rgba(226, 189, 107, 0.22); border-radius: 16px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45); }
+popover > arrow { background-color: rgba(18, 33, 30, 0.92); border: 1px solid rgba(226, 189, 107, 0.22); }
+tooltip, tooltip.background { background-color: rgba(18, 33, 30, 0.92); border: 1px solid rgba(226, 189, 107, 0.25); border-radius: 12px; color: #eef3ec; }
+button { border-radius: 12px; background-color: rgba(238, 243, 236, 0.07); background-image: none; border: 1px solid rgba(238, 243, 236, 0.08); box-shadow: none; color: #eef3ec; }
+button:hover { background-color: rgba(238, 243, 236, 0.12); }
+button:checked, button.suggested-action { background-color: rgba(226, 189, 107, 0.22); border-color: rgba(226, 189, 107, 0.45); color: #eef3ec; }
+button.flat, headerbar button { background-color: transparent; border-color: transparent; }
+button.flat:hover, headerbar button:hover { background-color: rgba(238, 243, 236, 0.08); }
+entry, spinbutton, dropdown > button, combobox > box > button { background-color: rgba(7, 16, 14, 0.45); border: 1px solid rgba(238, 243, 236, 0.1); border-radius: 12px; box-shadow: none; color: #eef3ec; }
+entry:focus-within, spinbutton:focus-within { border-color: rgba(226, 189, 107, 0.55); outline: none; }
+scale trough { background-color: rgba(238, 243, 236, 0.12); min-height: 4px; min-width: 4px; border-radius: 99px; border: none; }
+scale highlight { background-image: linear-gradient(to right, #e2bd6b, #5fc9a0); background-color: #e2bd6b; border-radius: 99px; border: none; }
+scale slider { background-color: #eef3ec; border: none; border-radius: 99px; min-width: 14px; min-height: 14px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.45); }
+levelbar trough { background-color: rgba(238, 243, 236, 0.08); border-radius: 99px; border: none; }
+levelbar block.filled, levelbar block.high, levelbar block.low { background-color: #e2bd6b; border-radius: 99px; }
+checkbutton check:checked, radiobutton radio:checked, check:checked, radio:checked { background-color: #5fc9a0; border-color: #5fc9a0; color: #0b1513; }
+switch { background-color: rgba(238, 243, 236, 0.14); border: none; border-radius: 99px; }
+switch:checked { background-color: #5fc9a0; }
+switch slider { background-color: #eef3ec; border-radius: 99px; box-shadow: none; }
+notebook > header { background-color: transparent; border: none; box-shadow: none; }
+notebook > header tab { padding: 7px 16px; color: rgba(238, 243, 236, 0.62); font-family: Marcellus; }
+notebook > header tab:checked { color: #eef3ec; box-shadow: inset 0 -1px #e2bd6b; }
+separator { background-color: rgba(226, 189, 107, 0.16); }
+scrollbar slider { background-color: rgba(226, 189, 107, 0.35); border-radius: 99px; min-width: 3px; min-height: 3px; border: none; }

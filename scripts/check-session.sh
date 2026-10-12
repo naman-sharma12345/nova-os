@@ -186,6 +186,9 @@ printf '#!/bin/sh\ncat > "%s/clip"\n' "$T" > "$T/lstub/wl-copy"; chmod +x "$T/ls
 echo picture > "$T/pic.png"
 f=$(HOME="$T/lhome" XDG_CONFIG_HOME= XDG_RUNTIME_DIR="$T" TENKA_LOUPE_SIM_SHOT="$T/pic.png" sh "$BIN/tenka-loupe" shot)
 [ "$f" = "$T/tenka-loupe.png" ] && [ "$(stat -c %a "$f")" = 600 ] || { echo "FAIL: tenka-loupe shot is not a private file ($f)"; fail=1; }
+grep -q '^import "oldcolours.js" as Old$' "$ROOT/shell/quickshell/tenka/loupe/LoupeView.qml" &&
+grep -q '^function nearest(theme, rgb)' "$ROOT/shell/quickshell/tenka/loupe/oldcolours.js" &&
+[ "$(grep -c '"#[0-9a-f]\{6\}"\]' "$ROOT/shell/quickshell/tenka/loupe/oldcolours.js")" -ge 20 ] || { echo "FAIL: loupe old colour names"; fail=1; }
 for c in '#C9A35A' '#112233' 'hello' '#c9a35a'; do
   HOME="$T/lhome" XDG_CONFIG_HOME= WAYLAND_DISPLAY=x PATH="$T/lstub:$PATH" sh "$BIN/tenka-loupe" copy "$c"
 done

@@ -4,6 +4,7 @@
 // LATELY and the theme; it asks for a copy through `copyRequested` and to close through `closeRequested`.
 // Reading, enlarging, measuring and the keys are all here, so both sessions behave alike. Flat, no glow.
 import QtQuick
+import "oldcolours.js" as Old
 
 Item {
     id: lp
@@ -31,6 +32,8 @@ Item {
         }
         return [h, Math.round(s * 100), Math.round(l * 100)]
     }
+    // the nearest old name of the colour (Tenka: the Japanese dye book; Tianxia: the Chinese), see oldcolours.js
+    readonly property var old: Old.nearest(xia ? "xianxia" : "samurai", rgb)
     readonly property var words: [hex.toUpperCase(), "rgb(" + rgb.join(", ") + ")", "hsl(" + hsl[0] + ", " + hsl[1] + "%, " + hsl[2] + "%)"]
     readonly property int mw: Math.round(Math.abs(to.x - from.x) * k)
     readonly property int mh: Math.round(Math.abs(to.y - from.y) * k)
@@ -126,7 +129,7 @@ Item {
         id: card
         readonly property real cx: lp.px / lp.k
         readonly property real cy: lp.py / lp.k
-        width: 236; height: 352
+        width: 236; height: 414
         x: cx + 28 + width > lp.width ? cx - 28 - width : cx + 28
         y: Math.max(16, Math.min(lp.height - height - 150, cy + 28 + height > lp.height - 150 ? cy - 28 - height : cy + 28))   // clear of the foot
         visible: lp.open && shotImg.status === Image.Ready
@@ -167,6 +170,16 @@ Item {
                 }
             }
         }
+        // the old name: the nearest colour in the dye book, its own small swatch beside it, and how near it is
+        Rectangle { x: 18; y: 344; width: parent.width - 36; height: 1; color: lp.alpha(lp.gold, 0.3) }
+        Text { x: 18; y: 354; text: lp.xia ? "IN THE OLD REGISTER" : "IN THE OLD DYE BOOK"; color: lp.alpha(lp.gold, 0.6)
+               font.family: lp.face; font.pixelSize: 9; font.letterSpacing: 3 }
+        Text { anchors.right: parent.right; anchors.rightMargin: 18; y: 354; text: lp.old.word; color: lp.alpha(lp.gold, lp.old.word === "LIKE" ? 0.5 : 0.9)
+               font.family: lp.face; font.pixelSize: 9; font.letterSpacing: 3 }
+        Rectangle { x: 18; y: 374; width: 22; height: 22; radius: 2; color: lp.old.hex
+                    border.width: 1; border.color: lp.alpha(lp.text, 0.25) }
+        Text { x: 50; y: 374; width: parent.width - 68; elide: Text.ElideRight; text: lp.old.name; color: lp.text
+               font.family: lp.face; font.pixelSize: 17; font.letterSpacing: 1 }
     }
 
     // the foot: what was copied, LATELY, and the keys

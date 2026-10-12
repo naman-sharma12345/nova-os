@@ -23,6 +23,7 @@
       <property name="&lt;Super&gt;i" type="string" value="tenka-incense open"/>
       <property name="&lt;Super&gt;g" type="string" value="tenka-ambience open"/>
       <property name="&lt;Super&gt;k" type="string" value="tenka-journal open"/>
+      <property name="&lt;Super&gt;o" type="string" value="tenka-breath open"/>
       <property name="&lt;Shift&gt;&lt;Super&gt;n" type="string" value="tenka-nightink cycle --say"/>
       <property name="&lt;Super&gt;n" type="string" value="sh -c 'mkdir -p ~/.config/tenka; touch ~/.config/tenka/slip.txt; exec mousepad ~/.config/tenka/slip.txt'"/>
       <property name="XF86AudioRaiseVolume" type="string" value="tenka-osd volume up"/>

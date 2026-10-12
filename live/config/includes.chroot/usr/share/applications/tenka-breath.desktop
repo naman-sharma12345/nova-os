@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=The Breath
+GenericName=Breathing Guide
+Comment=Breathe with a brush circle: even, box or calm, a few minutes at a time (Super + O)
+Exec=tenka-breath open
+Icon=media-record-symbolic
+Categories=Utility;
+Keywords=breath;breathe;breathing;calm;relax;meditate;meditation;pause;enso;qi;mindful;

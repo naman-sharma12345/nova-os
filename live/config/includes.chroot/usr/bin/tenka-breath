@@ -1,0 +1,112 @@
+#!/usr/bin/python3
+"""tenka-breath: The Breath (Tianxia: Gathering Qi), a breathing guide drawn as an enso, Super + O.
+The brush draws the circle as you breathe in, it rests while you hold, and the ink dries as you breathe out.
+Three paces (EVEN 5-5, BOX 4-4-4-4, CALM 4-7-8) and a length in minutes; a sitting ends on the theme's soft
+bell. The pace and length you chose last, and how many sittings you kept today, live in one small file
+(~/.local/state/tenka/breath.json): no account and no cloud.
+  tenka-breath state               the paces, your choice and today's sittings, as JSON
+  tenka-breath set PACE MINUTES    remember a choice (PACE even|box|calm, MINUTES 1|3|5|10)
+  tenka-breath done MINUTES        count a finished sitting and ring the bell
+  tenka-breath open                the card: qs ipc on Hyprland, a small Qt window on Tenka Lite
+"""
+import datetime, json, os, signal, subprocess, sys
+
+HOME = os.path.expanduser("~")
+CONF = os.path.join(os.environ.get("XDG_CONFIG_HOME") or os.path.join(HOME, ".config"), "tenka")
+STATE = os.path.join(os.environ.get("XDG_STATE_HOME") or os.path.join(HOME, ".local", "state"), "tenka", "breath.json")
+RT = os.environ.get("XDG_RUNTIME_DIR") or "/tmp"
+# each pace is its phases in seconds: in, hold (full), out, hold (empty); 0 skips a phase
+PACES = {"even": [5, 0, 5, 0], "box": [4, 4, 4, 4], "calm": [4, 7, 8, 0]}
+LENGTHS = [1, 3, 5, 10]
+
+def today():
+    t = os.environ.get("TENKA_TODAY")          # renders and tests only
+    return t or datetime.date.today().isoformat()
+
+def theme():
+    try:
+        return json.load(open(os.path.join(CONF, "shell-theme.json"))).get("name") or "samurai"
+    except (OSError, ValueError):
+        return "samurai"
+
+def load():
+    try:
+        s = json.load(open(STATE))
+    except (OSError, ValueError):
+        s = {}
+    if s.get("pace") not in PACES: s["pace"] = "even"
+    if s.get("minutes") not in LENGTHS: s["minutes"] = 3
+    if s.get("day") != today(): s["day"], s["sittings"] = today(), 0
+    s.setdefault("sittings", 0); s.setdefault("total", 0)
+    return s
+
+def save(s):
+    os.makedirs(os.path.dirname(STATE), exist_ok=True)
+    with open(STATE + ".new", "w") as f:
+        json.dump(s, f)
+    os.replace(STATE + ".new", STATE)
+
+def state():
+    s = load(); xia = theme() == "xianxia"
+    s.update(paces=PACES, lengths=LENGTHS, theme="xianxia" if xia else "samurai",
+             title="Gathering Qi" if xia else "The Breath")
+    return s
+
+def done(minutes):
+    s = load(); s["sittings"] += 1; s["total"] += 1; s["last"] = int(minutes); save(s)
+    if not os.environ.get("TENKA_BREATH_QUIET"):
+        subprocess.Popen(["tenka-sound", "complete"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    return s
+
+def write_state_file():
+    p = os.path.join(RT, "tenka-breath-state.json")
+    with open(p + ".new", "w") as f:
+        json.dump(state(), f)
+    os.replace(p + ".new", p)
+    return p
+
+def open_card():
+    if os.environ.get("WAYLAND_DISPLAY") and subprocess.run(["pgrep", "-x", "qs"], capture_output=True).returncode == 0:
+        subprocess.run(["qs", "-c", "tenka", "ipc", "call", "breath", "toggle"], capture_output=True)
+        return 0
+    if not os.environ.get("DISPLAY"):
+        print("tenka-breath: the card needs a desktop session", file=sys.stderr); return 1
+    lock = os.path.join(RT, "tenka-breath-card.pid")
+    try:                                                # pressed again while open: close it
+        pid = int(open(lock).read().strip())
+        if b"LiteBreath.qml" not in open("/proc/%d/cmdline" % pid, "rb").read():
+            raise ValueError
+        os.kill(pid, signal.SIGTERM); os.remove(lock); return 0
+    except (OSError, ValueError):
+        pass
+    sp = write_state_file()
+    env = dict(os.environ, QML_XHR_ALLOW_FILE_READ="1", QT_QPA_PLATFORM="xcb", QT_MESSAGE_PATTERN="%{message}")
+    p = subprocess.Popen(["/usr/lib/qt6/bin/qml", "/usr/share/tenka/breath/LiteBreath.qml", "--", sp, os.path.join(CONF, "shell-theme.json")],
+                         stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, env=env, text=True)
+    with open(lock, "w") as f:
+        f.write(str(p.pid))
+    for line in p.stderr:                               # the card asks: SET <pace> <minutes> | DONE <minutes>
+        w = line.split()
+        if len(w) == 3 and w[0] == "SET" and w[1] in PACES and w[2].isdigit() and int(w[2]) in LENGTHS:
+            s = load(); s["pace"], s["minutes"] = w[1], int(w[2]); save(s)
+        elif len(w) == 2 and w[0] == "DONE" and w[1].isdigit():
+            done(w[1])
+    p.wait()
+    try: os.remove(lock)
+    except OSError: pass
+    return 0
+
+def main():
+    a = sys.argv[1:]
+    c = a[0] if a else "state"
+    if c == "state": print(json.dumps(state()))
+    elif c == "set" and len(a) == 3 and a[1] in PACES and a[2].isdigit() and int(a[2]) in LENGTHS:
+        s = load(); s["pace"], s["minutes"] = a[1], int(a[2]); save(s)
+    elif c == "done" and len(a) == 2 and a[1].isdigit(): done(a[1])
+    elif c == "open": return open_card()
+    else:
+        print(__doc__.strip(), file=sys.stderr); return 2
+    return 0
+
+if __name__ == "__main__":
+    sys.exit(main())

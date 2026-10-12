@@ -358,5 +358,14 @@ grep -q '"tenka-nightink", "state"' "$ROOT/shell/quickshell/tenka/ControlCenter.
 grep -q '^Exec=tenka-nightink toggle --say$' "$IC/usr/share/applications/tenka-nightink.desktop" &&
 grep -q '"SUPER + SHIFT + N"\|" + SHIFT + N",   hl.dsp.exec_cmd("tenka-nightink cycle --say")' "$IC/etc/skel/.config/hypr/hyprland.lua" &&
 grep -q 'value="tenka-nightink cycle --say"' "$IC/etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml" || { echo "FAIL: night ink"; fail=1; }
+# 20. The Breath: a pace and a length kept, a sitting counted (and today's count resets on a new day), wired in both sessions
+B2="$T/breath"; mkdir -p "$B2"
+tb() { HOME="$B2" XDG_RUNTIME_DIR="$B2" TENKA_BREATH_QUIET=1 python3 "$BIN/tenka-breath" "$@"; }
+tb state | grep -q '"pace": "even", "minutes": 3' && tb set calm 5 && tb done 5 && tb state | grep -q '"pace": "calm", "minutes": 5, .*"sittings": 1' &&
+! tb set calm 7 2>/dev/null && ! tb set fast 3 2>/dev/null && TENKA_TODAY=2099-01-01 tb state | grep -q '"sittings": 0, "total": 1' &&
+grep -q '^import Quickshell.Hyprland$' "$ROOT/shell/quickshell/tenka/Breath.qml" && grep -q '^ *Breath {}' "$ROOT/shell/quickshell/tenka/shell.qml" &&
+grep -q '"tenka:breath"' "$IC/etc/skel/.config/hypr/hyprland.lua" && [ -f "$IC/usr/share/tenka/breath/LiteBreath.qml" ] &&
+grep -q 'value="tenka-breath open"' "$IC/etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml" &&
+grep -q 'tenka:breath' "$IC/usr/bin/tenka-codex" && grep -q '^Exec=tenka-breath open$' "$IC/usr/share/applications/tenka-breath.desktop" || { echo "FAIL: the breath"; fail=1; }
 [ "$fail" = 0 ] && echo "check-session: ok"
 exit $fail

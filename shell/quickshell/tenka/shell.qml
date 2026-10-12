@@ -41,6 +41,7 @@ ShellRoot {
     Almanac {}
     Garden {}
     Journal {}
+    Breath {}
     ControlCenter {}
     Notifications {}
     Osd {}

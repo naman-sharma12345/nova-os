@@ -155,6 +155,9 @@ done
 # give the three preferred-app entries short names: Terminal, Files, Browser
 sed -i '/xfce4-mail-reader\.desktop/d' /etc/xdg/menus/xfce-applications.menu 2>/dev/null || true
 [ -f /usr/share/applications/xfce4-mail-reader.desktop ] && { grep -q '^NoDisplay=' /usr/share/applications/xfce4-mail-reader.desktop || sed -i '0,/^\[Desktop Entry\]/s//[Desktop Entry]\nNoDisplay=true/' /usr/share/applications/xfce4-mail-reader.desktop; }
+# Preferred apps (Settings > Default Applications, exo-open): Debian's helpers.rc names Thunderbird, which does not ship,
+# and generic Debian wrappers; name what is really here. Hyprland reads /etc/xdg/tenka-hyprland first (kitty).
+sed -i -e '/^MailReader=/d' -e 's/^WebBrowser=.*/WebBrowser=firefox/' -e 's/^TerminalEmulator=.*/TerminalEmulator=xfce4-terminal/' /etc/xdg/xfce4/helpers.rc 2>/dev/null || true
 for pair in xfce4-terminal-emulator:Terminal xfce4-file-manager:Files xfce4-web-browser:Browser; do
   f=/usr/share/applications/${pair%%:*}.desktop
   [ -f "$f" ] && sed -i -e "s/^Name=.*/Name=${pair#*:}/" -e 's/^Name\[[^]]*\]=.*//' "$f"

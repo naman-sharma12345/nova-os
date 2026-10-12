@@ -2,6 +2,8 @@
 export XDG_CURRENT_DESKTOP=Hyprland XDG_SESSION_DESKTOP=Hyprland XDG_SESSION_TYPE=wayland
 # software GL is allowed (slow) so a VM without 3D still gets a desktop
 export WLR_RENDERER_ALLOW_SOFTWARE=1
+# preferred apps for this session (exo-open, Thunar's "Open Terminal Here"): kitty, not Lite's xfce4-terminal
+case ":${XDG_CONFIG_DIRS:-}:" in *:/etc/xdg/tenka-hyprland:*) ;; *) export XDG_CONFIG_DIRS="/etc/xdg/tenka-hyprland:${XDG_CONFIG_DIRS:-/etc/xdg}" ;; esac
 # pure CPU emulation: 128-bit llvmpipe vectors (the emulated AVX2 path crashes; written at boot by tenka-session-default)
 # and no AVX at all: 128-bit code still used AVX2 instructions and Hyprland kept crashing in it (nightly #17);
 # capping llvmpipe at SSE4.1 matches the emulated CPU that ran clean (Westmere)

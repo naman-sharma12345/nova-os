@@ -1,0 +1,7 @@
+# Tenka (Hyprland session): preferred apps for exo-open, read ahead of /etc/xdg/xfce4/helpers.rc because
+# tenka-hyprland-session puts /etc/xdg/tenka-hyprland first in XDG_CONFIG_DIRS. Thunar's "Open Terminal Here"
+# and every --launch TerminalEmulator open the flagship's glass kitty here, not the Lite session's xfce4-terminal.
+# A person's own choice (~/.config/xfce4/helpers.rc, from Default Applications) still wins.
+TerminalEmulator=kitty
+WebBrowser=firefox
+FileManager=thunar

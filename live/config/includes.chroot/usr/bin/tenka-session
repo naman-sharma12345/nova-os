@@ -10,7 +10,7 @@ if [ -e "$HOME/.config/tenka/perf" ]; then
 else
   rm -f "$HOME/.cache/tenka/session.css"
 fi
-dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE 2>/dev/null
+dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE XDG_CONFIG_DIRS 2>/dev/null
 if command -v qs >/dev/null 2>&1 && [ -d /etc/xdg/quickshell/tenka ]; then
   # the Tenka shell draws everything: wallpaper, desk, bar, dock, launcher, control center,
   # notifications, OSD, power menu. Performance mode makes glass frost itself instead of asking

@@ -486,6 +486,9 @@ def gen(name, T):
        reaches, so the base theme painted them a near-solid 98% slab. Same glass now; the answers keep their gold, the message takes the page's ink. */
     messagedialog.background {{ background-color: {gl_win}; background-image: linear-gradient(to bottom, {gl_frost}, transparent 40%); box-shadow: inset 0 1px {gl_lit}; color: {p['text']}; }}
     messagedialog.background box > label {{ color: {p['text']}; }}
+    /* T23: the explanation under the question was set in Marcellus, whose 0 reads as O ("Travel 2O26"); the question keeps Marcellus, the explanation reads in Inter */
+    messagedialog.background box > label {{ font-family: Inter; letter-spacing: 0; }}
+    messagedialog.background box > label:first-child {{ font-family: Marcellus; letter-spacing: 0.3px; }}
     /* About dialogs: the title strip goes clear so the sheet is one pane, the program name is set in Cinzel Decorative,
        links and selected text take the gold instead of the stock blue. GTK 3's About carries no style class of its own;
        its logo is the one `image.icon-dropshadow`, and the name label sits right after it. */

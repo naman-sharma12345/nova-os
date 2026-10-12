@@ -27,6 +27,9 @@ window.background:not(.xfce4-panel):not(.thunar), dialog.background { background
    reaches, so the base theme painted them a near-solid 98% slab. Same glass now; the answers keep their gold, the message takes the page's ink. */
 messagedialog.background { background-color: rgba(15, 13, 12, 0.42); background-image: linear-gradient(to bottom, rgba(239, 230, 214, 0.07), transparent 40%); box-shadow: inset 0 1px rgba(239, 230, 214, 0.14); color: #efe6d6; }
 messagedialog.background box > label { color: #efe6d6; }
+/* T23: the explanation under the question was set in Marcellus, whose 0 reads as O ("Travel 2O26"); the question keeps Marcellus, the explanation reads in Inter */
+messagedialog.background box > label { font-family: Inter; letter-spacing: 0; }
+messagedialog.background box > label:first-child { font-family: Marcellus; letter-spacing: 0.3px; }
 /* About dialogs: the title strip goes clear so the sheet is one pane, the program name is set in Cinzel Decorative,
    links and selected text take the gold instead of the stock blue. GTK 3's About carries no style class of its own;
    its logo is the one `image.icon-dropshadow`, and the name label sits right after it. */

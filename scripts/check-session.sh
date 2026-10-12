@@ -308,5 +308,20 @@ grep -q '^import Quickshell.Hyprland$' "$ROOT/shell/quickshell/tenka/Journal.qml
 grep -q 'value="tenka-journal open"' "$IC/etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml" &&
 [ -f "$IC/usr/share/tenka/journal/LiteJournal.qml" ] && grep -q '^ *Journal {}' "$ROOT/shell/quickshell/tenka/shell.qml" &&
 grep -q '^Exec=tenka-journal open$' "$IC/usr/share/applications/tenka-journal.desktop" || { echo "FAIL: journal wiring"; fail=1; }
+# 17. The Watch: names, the next bell, quiet hours, focus and the rests
+W="$T/wt"; mkdir -p "$W/.config/tenka" "$W/rt"
+wt() { HOME="$W" XDG_RUNTIME_DIR="$W/rt" TENKA_WATCH_DRY=1 python3 "$BIN/tenka-watch" "$@"; }
+[ "$(wt hours | head -1)" = "23:00  Hour of the Rat" ] && [ "$(wt hours | sed -n 7p)" = "11:00  Hour of the Horse" ] &&
+TENKA_NOW=2026-10-12T10:20 wt state | grep -q '"next": "Hour of the Horse", "next_at": "11:00"' &&
+TENKA_NOW=2026-10-12T21:30 wt state | grep -q '"next_at": "07:00"' &&
+TENKA_NOW=2026-10-12T11:00 wt ring | grep -q 'resting' && wt quiet 22 7 && echo '{"on": true, "quiet": [22, 7]}' > "$W/.config/tenka/watch.json" &&
+TENKA_NOW=2026-10-12T11:00 wt ring | grep -q 'Hour of the Horse' && TENKA_NOW=2026-10-12T23:00 wt ring | grep -q 'quiet hours' &&
+echo '{ "on": true, "until": 0, "since": 1 }' > "$W/.config/tenka/focus.json" && TENKA_NOW=2026-10-12T11:00 wt ring | grep -q 'focus' &&
+rm "$W/.config/tenka/focus.json" && touch "$W/rt/tenka-still" && TENKA_NOW=2026-10-12T11:00 wt ring | grep -q 'stillness' &&
+TENKA_NOW=2026-10-12T11:00 wt ring --force | grep -q 'Hour of the Horse' || { echo "FAIL: tenka-watch"; fail=1; }
+for t in samurai xianxia; do f="$IC/usr/share/sounds/tenka-watch/$t.ogg"; [ -s "$f" ] && head -c 64 "$f" | grep -q vorbis || { echo "FAIL: watch bell $t"; fail=1; }; done
+grep -q 'OnCalendar=\*-\*-\* 01,03,05,07,09,11,13,15,17,19,21,23:00:00' "$IC/usr/lib/systemd/user/tenka-watch.timer" &&
+grep -q 'enable tenka-watch.timer' "$ROOT/live/config/hooks/live/0100-base-setup.hook.chroot" &&
+grep -q '"tenka-watch", "state"' "$ROOT/shell/quickshell/tenka/ControlCenter.qml" || { echo "FAIL: watch wiring"; fail=1; }
 [ "$fail" = 0 ] && echo "check-session: ok"
 exit $fail

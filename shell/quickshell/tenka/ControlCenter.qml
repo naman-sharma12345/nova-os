@@ -46,6 +46,11 @@ PanelWindow {
         : btJoined.length > 1 ? btJoined.length + " joined" : "On"
     Process { running: cc.open; command: ["sh", "-c", "nmcli -t -f TYPE,STATE,CONNECTION dev 2>/dev/null | grep -m1 ':connected:' || (ip route 2>/dev/null | grep -q '^default' && echo ethernet:connected:Wired)"]
               stdout: StdioCollector { onStreamFinished: { const p = text.trim().split(":"); if (p.length > 2) { cc.netKind = p[0]; cc.net = p[2] } else cc.net = "Offline" } } }
+    // The Watch (tenka-watch): a bell at each double-hour, when kept
+    property var watch: ({ on: false, next: "", next_at: "", title: "" })
+    Process { id: watchP; running: cc.open; command: ["tenka-watch", "state"]
+              stdout: StdioCollector { onStreamFinished: { try { cc.watch = JSON.parse(text) } catch (e) {} } } }
+    Process { id: watchSet; onExited: { watchP.running = false; watchP.running = true } }
     Process { id: upP; running: cc.open; command: ["sh", "-c", "uptime -p | sed 's/^up //'"]
               stdout: StdioCollector { onStreamFinished: cc.up = text.trim() } }
     Process { id: brP; running: cc.open; command: ["sh", "-c", "brightnessctl -m -c backlight 2>/dev/null | head -1 | cut -d, -f4 | tr -d %"]
@@ -325,7 +330,12 @@ PanelWindow {
                 // Focus (tenka-focus): 25 minutes, the desk dims, notes wait and come back as one card
                 Row2 { k: "Focus"; v: Theme.focus ? (Theme.focusLeft >= 0 ? Theme.focusLeft + " min" : "on") : ""; on: Theme.focus; toggle: true
                        onHit: Theme.focusCmd(["toggle"]) }
-                Row2 { k: Theme.t.stillWord; v: Theme.stillness ? "silent" : ""; on: Theme.stillness; toggle: true; onHit: Theme.stillness = !Theme.stillness }
+                Row2 { k: Theme.t.stillWord; v: Theme.stillness ? "silent" : ""; on: Theme.stillness; toggle: true
+                       // the flag file lets the bells outside the shell (tenka-watch) keep the stillness too
+                       onHit: { Theme.stillness = !Theme.stillness; Theme.run(Theme.stillness ? "touch \"$XDG_RUNTIME_DIR/tenka-still\"" : "rm -f \"$XDG_RUNTIME_DIR/tenka-still\"") } }
+                Row2 { k: Theme.xia ? "The Bell Tower" : "The Watch"; v: cc.watch.on ? cc.watch.next.replace("Hour of the ", "") + "  " + cc.watch.next_at : ""
+                       on: cc.watch.on; toggle: true
+                       onHit: { watchSet.command = ["tenka-watch", "toggle"]; watchSet.running = true } }
                 Row2 { k: "Night ink"; v: Theme.nightInk ? "warm" : ""; on: Theme.nightInk; toggle: true
                        onHit: { Theme.nightInk = !Theme.nightInk; Theme.run(Theme.nightInk ? "pkill hyprsunset; setsid hyprsunset -t 4200 >/dev/null 2>&1 &" : "pkill hyprsunset") } }
                 // Performance mode (tenka-perf): motion, blur and shadows rest; the art stays

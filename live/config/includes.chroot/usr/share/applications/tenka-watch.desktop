@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=The Watch
+GenericName=Hourly bell
+Comment=Keep or rest the watch: a soft bell at each of the old double-hours, quiet at night
+Exec=tenka-watch toggle --say
+Icon=alarm-symbolic
+Categories=Utility;
+Keywords=bell;chime;hour;watch;time;temple;tower;double-hour;shichen;toki;

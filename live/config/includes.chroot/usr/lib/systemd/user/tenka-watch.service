@@ -1,0 +1,6 @@
+[Unit]
+Description=Tenka: the watch rings the double-hour (when it is kept)
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/tenka-watch ring

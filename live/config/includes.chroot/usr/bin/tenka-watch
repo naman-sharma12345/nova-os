@@ -1,0 +1,112 @@
+#!/usr/bin/python3
+"""tenka-watch: The Watch (Tianxia: The Bell Tower), a soft bell at each of the old double-hours.
+The day was once kept in twelve double-hours (toki / shichen), each named for an animal and each begun with a
+bell. Tenka keeps them: at 01:00, 03:00 ... 23:00 a user timer (tenka-watch.timer) asks this program to ring,
+and it rings only when the watch is kept, outside the quiet hours, out of Focus, not stilled and not muted.
+  tenka-watch state          {"on", "quiet", "hour", "next", "next_at", "title"} as JSON
+  tenka-watch on|off|toggle  keep the watch or let it rest (on rings once, so you hear it); --say adds a note
+  tenka-watch ring [--force] the timer's call; --force rings whatever the conditions
+  tenka-watch quiet FROM TO  the quiet hours (default 22 to 7: the night watch is silent)
+  tenka-watch hours          the twelve double-hours
+State: ~/.config/tenka/watch.json. The bells are /usr/share/sounds/tenka-watch/<theme>.ogg (scripts/gen-watch.py).
+"""
+import datetime, json, os, subprocess, sys, time
+
+ANIMALS = ["Rat", "Ox", "Tiger", "Rabbit", "Dragon", "Snake", "Horse", "Goat", "Monkey", "Rooster", "Dog", "Pig"]
+HOME = os.path.expanduser("~")
+S = os.path.join(os.environ.get("XDG_CONFIG_HOME") or os.path.join(HOME, ".config"), "tenka")
+J = os.path.join(S, "watch.json")
+RT = os.environ.get("XDG_RUNTIME_DIR") or "/tmp"
+BELLS = os.environ.get("TENKA_WATCH_DIR", "/usr/share/sounds/tenka-watch")
+
+def now():
+    t = os.environ.get("TENKA_NOW")                  # tests only: "YYYY-MM-DDTHH:MM"
+    return datetime.datetime.fromisoformat(t) if t else datetime.datetime.now()
+
+def read():
+    try: d = json.load(open(J))
+    except (OSError, ValueError): d = {}
+    d.setdefault("on", False); d.setdefault("quiet", [22, 7])
+    return d
+
+def write(d):
+    os.makedirs(S, exist_ok=True)
+    with open(J + ".new", "w") as f: json.dump(d, f)
+    os.replace(J + ".new", J)
+
+def theme():
+    try: return json.load(open(os.path.join(S, "shell-theme.json"))).get("name") or "samurai"
+    except (OSError, ValueError): return "samurai"
+
+def hour_name(h):
+    return "Hour of the " + ANIMALS[((h + 1) // 2) % 12]
+
+def quiet_now(d, h):
+    a, b = d["quiet"]
+    return (a <= h or h < b) if a > b else (a <= h < b)
+
+def focused():
+    try:
+        f = json.load(open(os.path.join(S, "focus.json")))
+        return bool(f.get("on")) and (not f.get("until") or f["until"] > time.time() * 1000)
+    except (OSError, ValueError):
+        return False
+
+def why_not(d, t):
+    if not d["on"]: return "resting"
+    if os.path.exists(os.path.join(S, "mute")): return "muted"
+    if quiet_now(d, t.hour): return "quiet hours"
+    if focused(): return "focus"
+    if os.path.exists(os.path.join(RT, "tenka-still")): return "stillness"
+    return ""
+
+def state():
+    d = read(); t = now(); xia = theme() == "xianxia"
+    n = (t.replace(minute=0, second=0, microsecond=0) + datetime.timedelta(hours=1 if t.hour % 2 == 0 else 2))
+    while quiet_now(d, n.hour):
+        n += datetime.timedelta(hours=2)
+    return {"on": d["on"], "quiet": d["quiet"], "hour": hour_name(t.hour), "next": hour_name(n.hour),
+            "next_at": n.strftime("%H:%M"), "title": "The Bell Tower" if xia else "The Watch",
+            "silent_because": why_not(d, t)}
+
+def ring(force=False):
+    d = read(); t = now()
+    w = why_not(d, t)
+    if w and not force:
+        print("tenka-watch: not ringing (%s)" % w); return 0
+    f = os.path.join(BELLS, theme() + ".ogg")
+    if not os.path.isfile(f): f = os.path.join(BELLS, "samurai.ogg")
+    print("tenka-watch: %s" % hour_name(t.hour))
+    if os.environ.get("TENKA_WATCH_DRY"): return 0
+    return subprocess.run(["pw-play", "--volume", "0.6", f], stdin=subprocess.DEVNULL,
+                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode
+
+def say(on):
+    xia = theme() == "xianxia"
+    title = "The Bell Tower" if xia else "The Watch"
+    body = ("A bell at each double-hour, quiet from %d:00 to %d:00." % tuple(read()["quiet"])) if on else "The bell rests."
+    subprocess.run(["notify-send", "-a", "Tenka", title, body], capture_output=True)
+
+def main():
+    a = sys.argv[1:]
+    c = a[0] if a else "state"
+    if c == "state": print(json.dumps(state()))
+    elif c in ("on", "off", "toggle"):
+        d = read(); d["on"] = (not d["on"]) if c == "toggle" else c == "on"; write(d)
+        if "--say" in a: say(d["on"])
+        if d["on"]:
+            if os.fork() == 0:                       # let the caller go; the bell plays on its own
+                os.setsid()
+                nul = os.open(os.devnull, os.O_RDWR)
+                for fd in (0, 1, 2): os.dup2(nul, fd)
+                ring(force=True); os._exit(0)
+    elif c == "ring": sys.exit(ring("--force" in a))
+    elif c == "quiet" and len(a) == 3 and a[1].isdigit() and a[2].isdigit() and int(a[1]) < 24 and int(a[2]) < 24:
+        d = read(); d["quiet"] = [int(a[1]), int(a[2])]; write(d)
+    elif c == "hours":
+        for h in range(-1, 23, 2): print("%02d:00  %s" % (h % 24, hour_name(h % 24)))
+    else:
+        print(__doc__.strip()); sys.exit(2)
+
+if __name__ == "__main__":
+    main()

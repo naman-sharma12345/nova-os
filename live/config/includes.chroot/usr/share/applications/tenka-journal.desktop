@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=The Pillow Book
+GenericName=Journal
+Comment=A few lines a day, kept on this machine, with the day's season (Super + K)
+Exec=tenka-journal open
+Icon=accessories-text-editor-symbolic
+Categories=Utility;Office;
+Keywords=journal;diary;day;notes;log;pillow;book;record;jade;write;

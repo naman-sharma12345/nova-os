@@ -292,5 +292,21 @@ grep -q '^import Quickshell.Hyprland$' "$ROOT/shell/quickshell/tenka/Garden.qml"
 grep -q 'value="tenka-ambience open"' "$IC/etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml" &&
 [ -f "$IC/usr/share/tenka/garden/LiteGarden.qml" ] && grep -q '^ *Garden {}' "$ROOT/shell/quickshell/tenka/shell.qml" &&
 grep -q '^Exec=tenka-ambience open$' "$IC/usr/share/applications/tenka-ambience.desktop" || { echo "FAIL: garden wiring"; fail=1; }
+# 16. The Pillow Book: pages are plain files, an empty page is removed, the season comes from the almanac; wiring
+J="$T/jr"; mkdir -p "$J/.config/tenka"
+HOME="$J" TENKA_TODAY=2026-10-12 TENKA_ALMANAC="$BIN/tenka-almanac" python3 "$BIN/tenka-journal" write "First frost." &&
+HOME="$J" TENKA_TODAY=2026-10-12 TENKA_ALMANAC="$BIN/tenka-almanac" python3 "$BIN/tenka-journal" write "Tea." &&
+HOME="$J" TENKA_TODAY=2025-10-12 python3 "$BIN/tenka-journal" put "Maple." &&
+HOME="$J" TENKA_TODAY=2026-10-09 python3 "$BIN/tenka-journal" put "Rain." &&
+HOME="$J" TENKA_TODAY=2026-10-10 python3 "$BIN/tenka-journal" put "x" && HOME="$J" TENKA_TODAY=2026-10-10 python3 "$BIN/tenka-journal" put "" &&
+HOME="$J" TENKA_TODAY=2026-10-12 TENKA_ALMANAC="$BIN/tenka-almanac" python3 "$BIN/tenka-journal" state | python3 -c '
+import json, sys; s = json.load(sys.stdin)
+ok = s["text"] == "First frost.\nTea." and s["season"].startswith("Cold Dew") and s["count"] == 3 and s["ago"]["text"] == "Maple." \
+     and [e["date"] for e in s["entries"]] == ["2026-10-09", "2025-10-12"] and s["title"] == "The Pillow Book"
+sys.exit(0 if ok else 1)' && [ "$(stat -c %a "$J/.local/share/tenka/journal/2026-10-09.txt")" = 600 ] || { echo "FAIL: tenka-journal pages"; fail=1; }
+grep -q '^import Quickshell.Hyprland$' "$ROOT/shell/quickshell/tenka/Journal.qml" && grep -q '"tenka:journal"' "$IC/etc/skel/.config/hypr/hyprland.lua" &&
+grep -q 'value="tenka-journal open"' "$IC/etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml" &&
+[ -f "$IC/usr/share/tenka/journal/LiteJournal.qml" ] && grep -q '^ *Journal {}' "$ROOT/shell/quickshell/tenka/shell.qml" &&
+grep -q '^Exec=tenka-journal open$' "$IC/usr/share/applications/tenka-journal.desktop" || { echo "FAIL: journal wiring"; fail=1; }
 [ "$fail" = 0 ] && echo "check-session: ok"
 exit $fail

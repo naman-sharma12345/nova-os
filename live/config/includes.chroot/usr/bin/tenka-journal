@@ -1,0 +1,184 @@
+#!/usr/bin/python3
+"""tenka-journal: The Pillow Book (Tianxia: The Jade Record), a few lines a day, kept on this machine.
+One plain text file a day in ~/.local/share/tenka/journal (YYYY-MM-DD.txt): yours to read, copy or back up,
+with no account, no cloud and no database. Each day carries its season from the almanac (tenka-almanac).
+  tenka-journal today            print today's page
+  tenka-journal write TEXT...    add a line to today's page
+  tenka-journal put TEXT|-       replace today's page (- reads stdin; an empty page is removed)
+  tenka-journal read YYYY-MM-DD  print that day's page
+  tenka-journal state [N]        today, the season and the N most recent earlier days (default 60) as JSON
+  tenka-journal list [N]         the most recent pages, as text
+  tenka-journal export [FILE]    the whole book as one text file, oldest first (stdout without FILE)
+  tenka-journal open             the card (Super + K): qs ipc on Hyprland, a small Qt window on Tenka Lite
+"""
+import datetime, json, os, re, signal, subprocess, sys, time
+
+LIMIT = 800                                    # a page, not a document: the card counts down from here
+HOME = os.path.expanduser("~")
+DATA = os.environ.get("TENKA_JOURNAL_DIR") or os.path.join(
+    os.environ.get("XDG_DATA_HOME") or os.path.join(HOME, ".local", "share"), "tenka", "journal")
+CONF = os.path.join(os.environ.get("XDG_CONFIG_HOME") or os.path.join(HOME, ".config"), "tenka")
+RT = os.environ.get("XDG_RUNTIME_DIR") or "/tmp"
+DAY = re.compile(r"^(\d{4})-(\d\d)-(\d\d)\.txt$")
+_alm = None
+
+def today():
+    t = os.environ.get("TENKA_TODAY")          # renders and tests only
+    return datetime.date.fromisoformat(t) if t else datetime.date.today()
+
+def theme():
+    try:
+        return json.load(open(os.path.join(CONF, "shell-theme.json"))).get("name") or "samurai"
+    except (OSError, ValueError):
+        return "samurai"
+
+def path(d):
+    return os.path.join(DATA, d.isoformat() + ".txt")
+
+def get(d):
+    try:
+        return open(path(d), encoding="utf-8").read().rstrip()
+    except OSError:
+        return ""
+
+def clean(text):
+    lines = [l.rstrip() for l in text.replace("\r\n", "\n").replace("\r", "\n").split("\n")]
+    return "\n".join(lines).strip("\n")[:LIMIT]
+
+def put(d, text):
+    text = clean(text)
+    p = path(d)
+    if not text:
+        try: os.remove(p)
+        except OSError: pass
+        return ""
+    os.makedirs(DATA, mode=0o700, exist_ok=True)
+    fd = os.open(p + ".new", os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "w", encoding="utf-8") as f:
+        f.write(text + "\n")
+    os.replace(p + ".new", p)
+    return text
+
+def days():
+    try:
+        names = os.listdir(DATA)
+    except OSError:
+        return []
+    out = []
+    for n in names:
+        m = DAY.match(n)
+        if m:
+            try: out.append(datetime.date(int(m[1]), int(m[2]), int(m[3])))
+            except ValueError: pass
+    return sorted(out, reverse=True)
+
+def almanac(d, th):
+    """the day's season from tenka-almanac (same words as the desk), or None"""
+    global _alm
+    if _alm is None:
+        try:
+            from importlib.machinery import SourceFileLoader
+            sys.dont_write_bytecode = True
+            _alm = SourceFileLoader("tenka_almanac", os.environ.get("TENKA_ALMANAC", "/usr/bin/tenka-almanac")).load_module()
+        except Exception:
+            _alm = False
+    if not _alm:
+        return None
+    try:
+        return _alm.almanac(time.mktime((d.year, d.month, d.day, 12, 0, 0, 0, 0, -1)), th)
+    except Exception:
+        return None
+
+def label(d, long=True):
+    return d.strftime("%A, ") + str(d.day) + d.strftime(" %B") if long else d.strftime("%a ") + str(d.day) + d.strftime(" %b")
+
+def state(n=60):
+    th = theme(); xia = th == "xianxia"; t = today()
+    a = almanac(t, th)
+    earlier = [d for d in days() if d < t]
+    def entry(d):
+        e = almanac(d, th)
+        return {"date": d.isoformat(), "label": label(d, False) if d.year == t.year else str(d.day) + d.strftime(" %b %Y"), "long": label(d) + (" " + str(d.year) if d.year != t.year else ""),
+                "term": e["term"] if e else "", "text": get(d)}
+    ago = None
+    try:
+        y = t.replace(year=t.year - 1)
+        if os.path.exists(path(y)): ago = entry(y)
+    except ValueError:
+        pass
+    return {"theme": th, "title": "The Jade Record" if xia else "The Pillow Book",
+            "today": t.isoformat(), "label": label(t), "text": get(t),
+            "season": (a["term"] + "  \u00b7  " + a["detail"]) if a else "",
+            "count": len(days()), "limit": LIMIT, "ago": ago,
+            "entries": [entry(d) for d in earlier[:n]]}
+
+def write_state_file():
+    p = os.path.join(RT, "tenka-journal-state.json")
+    with open(p + ".new", "w", encoding="utf-8") as f:
+        json.dump(state(), f)
+    os.replace(p + ".new", p)
+    return p
+
+def open_card():
+    if os.environ.get("WAYLAND_DISPLAY") and subprocess.run(["pgrep", "-x", "qs"], capture_output=True).returncode == 0:
+        subprocess.run(["qs", "-c", "tenka", "ipc", "call", "journal", "toggle"], capture_output=True)
+        return 0
+    if not os.environ.get("DISPLAY"):
+        print(get(today())); return 0
+    lock = os.path.join(RT, "tenka-journal-card.pid")
+    try:                                                # pressed again while open: close it (it keeps the page)
+        pid = int(open(lock).read().strip())
+        if b"LiteJournal.qml" not in open("/proc/%d/cmdline" % pid, "rb").read():
+            raise ValueError
+        os.kill(pid, signal.SIGTERM); os.remove(lock); return 0
+    except (OSError, ValueError):
+        pass
+    sp = write_state_file()
+    env = dict(os.environ, QML_XHR_ALLOW_FILE_READ="1", QT_QPA_PLATFORM="xcb", QT_MESSAGE_PATTERN="%{message}")
+    p = subprocess.Popen(["/usr/lib/qt6/bin/qml", "/usr/share/tenka/journal/LiteJournal.qml", "--", sp, os.path.join(CONF, "shell-theme.json")],
+                         stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, env=env, text=True)
+    with open(lock, "w") as f:
+        f.write(str(p.pid))
+    for line in p.stderr:                               # the card asks: PUT <the page as a JSON string>
+        if line.startswith("PUT "):
+            try: put(today(), json.loads(line[4:]))
+            except ValueError: pass
+    p.wait()
+    try: os.remove(lock)
+    except OSError: pass
+    return 0
+
+def book(rev=False):
+    th = theme(); out = []
+    for d in (days() if rev else sorted(days())):
+        a = almanac(d, th)
+        out.append(label(d) + " " + str(d.year) + ("  \u00b7  " + a["term"] if a else "") + "\n" + get(d) + "\n")
+    return "\n".join(out)
+
+def main():
+    a = sys.argv[1:]
+    c = a[0] if a else "today"
+    if c == "today": print(get(today()))
+    elif c == "write" and len(a) > 1:
+        old = get(today()); put(today(), (old + "\n" if old else "") + " ".join(a[1:]))
+    elif c == "put" and len(a) > 1:
+        rest = [x for x in a[1:] if x != "--"]
+        put(today(), sys.stdin.read() if rest == ["-"] else " ".join(rest))
+    elif c == "read" and len(a) > 1:
+        try: print(get(datetime.date.fromisoformat(a[1])))
+        except ValueError: print("tenka-journal: a date is YYYY-MM-DD", file=sys.stderr); sys.exit(2)
+    elif c == "state": print(json.dumps(state(int(a[1]) if len(a) > 1 and a[1].isdigit() else 60)))
+    elif c == "list":
+        n = int(a[1]) if len(a) > 1 and a[1].isdigit() else 7
+        print("\n".join(book(rev=True).split("\n\n")[:n]).rstrip() if days() else "(no pages yet)")
+    elif c == "export":
+        if len(a) > 1:
+            with open(a[1], "w", encoding="utf-8") as f: f.write(book())
+        else:
+            sys.stdout.write(book())
+    elif c == "open": sys.exit(open_card())
+    else:
+        print(__doc__.strip()); sys.exit(2)
+
+if __name__ == "__main__":
+    main()

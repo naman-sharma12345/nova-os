@@ -40,6 +40,7 @@ ShellRoot {
     Incense {}
     Almanac {}
     Garden {}
+    Journal {}
     ControlCenter {}
     Notifications {}
     Osd {}

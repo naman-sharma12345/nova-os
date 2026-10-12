@@ -28,6 +28,7 @@ KNOWN = [
     (r"global\(\"tenka:codex\"\)", "Tenka", "This page: every key"),
     (r"global\(\"tenka:incense\"\)|tenka-incense", "Tenka", "The incense: a timer that burns down"),
     (r"global\(\"tenka:garden\"\)|tenka-ambience", "Tenka", "The garden: rain, a stream, pines, embers"),
+    (r"global\(\"tenka:journal\"\)|tenka-journal", "Tenka", "The pillow book: a few lines a day"),
     (r"exec_cmd\(terminal\)|xfce4-terminal|\bkitty\b", "Open", "Terminal"),
     (r"exec_cmd\(menu\)|tenka-launcher|whiskermenu", "Open", "Launcher"),
     (r"exec_cmd\(files\)|\bthunar\b", "Open", "Files"),

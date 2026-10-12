@@ -435,9 +435,9 @@ r = lambda w: json.loads(subprocess.run([sys.executable, sys.argv[1], w], captur
 a, b = r("2026-10-24T22:00"), r("2026-10-13T18:40")
 print(int(a["alt"] > 70 and 165 < a["az"] < 195 and 235 < a["tilt"] < 280 and a["up"] and
           0 < b["alt"] < 5 and 235 < b["az"] < 255 and 200 < b["tilt"] < 250))' "$BIN/tenka-moon")
-[ "$DM" = 1 ] && grep -q 'id: deskMoon' "$ROOT/shell/quickshell/tenka/Desk.qml" && [ -s "$ROOT/shell/quickshell/tenka/assets/maria.png" ] &&
-grep -q 'card.maria' "$ROOT/shell/quickshell/tenka/moon/MoonCard.qml" && grep -q 'desk.moon.turn' "$ROOT/shell/quickshell/tenka/Desk.qml" &&
-grep -q 'command: \["tenka-moon", "state"\]' "$ROOT/shell/quickshell/tenka/Desk.qml" || { echo "FAIL: desk moon ($DM)"; fail=1; }
+[ "$DM" = 1 ] && grep -q 'SkyMoon { id: deskMoon' "$ROOT/shell/quickshell/tenka/Desk.qml" && grep -q '^ *SkyMoon {' "$ROOT/shell/quickshell/tenka/LockFace.qml" && [ -s "$ROOT/shell/quickshell/tenka/assets/maria.png" ] &&
+grep -q 'card.maria' "$ROOT/shell/quickshell/tenka/moon/MoonCard.qml" && grep -q 'sky.moon.turn' "$ROOT/shell/quickshell/tenka/SkyMoon.qml" &&
+grep -q 'command: \["tenka-moon", "state"\]' "$ROOT/shell/quickshell/tenka/SkyMoon.qml" || { echo "FAIL: desk moon ($DM)"; fail=1; }
 # 27. After dark the lock's almanac line leads with tonight's moon by its old name (tenka-moon's "night"), in all three
 #     lock directions that carry the line.
 [ "$(grep -c 'night: Theme.phase === "night"' "$ROOT/shell/quickshell/tenka/LockFace.qml")" = 3 ] &&

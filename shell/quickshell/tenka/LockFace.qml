@@ -24,6 +24,8 @@ Item {
             GradientStop { position: 0.62; color: Theme.alpha(Theme.t.base, 0.0) } }
     }
     Image { anchors.fill: parent; source: "assets/vignette.png" }
+    // tonight's moon stays where the desk showed it (SkyMoon.qml: clear nights, the picture's open sky)
+    SkyMoon { anchors.fill: parent; s: face.s; active: face.visible }
 
     Item {
         visible: face.style === "card"

@@ -416,5 +416,14 @@ grep -q '^ *Moon {}' "$ROOT/shell/quickshell/tenka/shell.qml" && [ -f "$ROOT/she
 grep -q '"tenka:moon"' "$IC/etc/skel/.config/hypr/hyprland.lua" && [ -f "$IC/usr/share/tenka/moon/LiteMoon.qml" ] &&
 grep -q 'value="tenka-moon open"' "$IC/etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml" &&
 grep -q 'tenka:moon' "$IC/usr/bin/tenka-codex" && grep -q '^Exec=tenka-moon open$' "$IC/usr/share/applications/tenka-moon.desktop" || { echo "FAIL: moon viewing"; fail=1; }
+# 25. Seven Skies (Tianxia: The Heavens Ahead): the week's sky from the same request, in the desk's words, off with the sky
+SW="$T/skyweek"; mkdir -p "$SW"
+sw() { HOME="$SW" TZ=Asia/Kolkata TENKA_ALMANAC="$BIN/tenka-almanac" TENKA_SKY_FIXTURE=61,24 TENKA_SKY_DAYS="61:30:24:80,0:33:25:0,95:31:24:60,45:28:22:10" python3 "$BIN/tenka-sky" "$@"; }
+sw week | grep -q '"title": "Seven Skies"' && [ "$(sw week | grep -o '"word": "[^"]*"' | tr '\n' '|')" = '"word": "Autumn rain"|"word": "Autumn rain"|"word": "A clear sky"|"word": "Thunder in the hills"|"word": "Mist on the hills"|' ] &&
+sw week | grep -q '"hi": 33, "lo": 25, "rain": 0' && grep -q '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max' "$BIN/tenka-sky" &&
+sw off && sw week | grep -q '"off": true' && sw on && grep -q 'card.s.off' "$ROOT/shell/quickshell/tenka/skyweek/SkyWeekCard.qml" &&
+grep -q '^ *SkyWeek {}' "$ROOT/shell/quickshell/tenka/shell.qml" && grep -q '"tenka:skyweek"' "$IC/etc/skel/.config/hypr/hyprland.lua" &&
+[ -f "$IC/usr/share/tenka/skyweek/LiteSkyWeek.qml" ] && grep -q 'value="tenka-sky open"' "$IC/etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml" &&
+grep -q 'tenka:skyweek' "$IC/usr/bin/tenka-codex" && grep -q '^Exec=tenka-sky open$' "$IC/usr/share/applications/tenka-skyweek.desktop" || { echo "FAIL: seven skies"; fail=1; }
 [ "$fail" = 0 ] && echo "check-session: ok"
 exit $fail

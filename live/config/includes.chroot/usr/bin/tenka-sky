@@ -6,6 +6,8 @@ about 10 km before it leaves the machine; the sky comes from Open-Meteo (no acco
 snows outside, the desk's falling petals and leaves give way to rain or snow; mist lays a haze over the art.
   tenka-sky                the sky now, as JSON (fetches when the kept one is older than 30 minutes)
   tenka-sky line           one line: "Kolkata  27°  ·  Autumn rain"
+  tenka-sky week           the next seven days as JSON (asked in the same request, nothing more is sent)
+  tenka-sky open           the week's card: Seven Skies (Tianxia: The Heavens Ahead), Super + H
   tenka-sky --force        fetch now
   tenka-sky off | on       never ask the network / ask again (~/.config/tenka/sky.json)
 """
@@ -59,37 +61,87 @@ def enabled():
     except (OSError, ValueError): return True
 
 def fetch(p):
+    """(code, temp, is_day, days): the sky now and the next seven days, in one request"""
     fx = os.environ.get("TENKA_SKY_FIXTURE")        # tests and renders: "code,temp[,is_day]"
     if fx:
-        f = fx.split(","); return int(f[0]), float(f[1]), (f[2] != "0") if len(f) > 2 else True
+        f = fx.split(",")
+        days = [dict(zip(("code", "hi", "lo", "rain"), map(float, d.split(":"))))
+                for d in os.environ.get("TENKA_SKY_DAYS", "").split(",") if d.count(":") == 3]   # "code:hi:lo:rain,..."
+        return int(f[0]), float(f[1]), (f[2] != "0") if len(f) > 2 else True, days
     url = ("https://api.open-meteo.com/v1/forecast?latitude=%.1f&longitude=%.1f&current=temperature_2m,weather_code,is_day"
+           "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=7"
            % (p["lat"], p["lon"]))
     with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "tenka-sky"}), timeout=8) as r:
-        c = json.load(r)["current"]
-    return int(c["weather_code"]), float(c["temperature_2m"]), bool(c.get("is_day", 1))
+        j = json.load(r)
+    c, d = j["current"], j.get("daily") or {}
+    days = []
+    for i, code in enumerate(d.get("weather_code") or []):
+        try:
+            days.append({"date": d["time"][i], "code": float(code), "hi": float(d["temperature_2m_max"][i]),
+                         "lo": float(d["temperature_2m_min"][i]), "rain": float((d.get("precipitation_probability_max") or [0] * 7)[i] or 0)})
+        except (KeyError, IndexError, TypeError, ValueError):
+            break
+    return int(c["weather_code"]), float(c["temperature_2m"]), bool(c.get("is_day", 1)), days
 
 def kept():
     try: return json.load(open(CACHE))
     except (OSError, ValueError): return None
 
-def now(force=False):
+def now(force=False, week=False):
     if not enabled(): return {"kind": "", "word": "", "off": True}
     k = kept(); t = time.time()
-    if k and not force and t - k.get("at", 0) < FRESH and not os.environ.get("TENKA_SKY_FIXTURE"): return k
+    if (k and not force and t - k.get("at", 0) < FRESH and not os.environ.get("TENKA_SKY_FIXTURE")
+            and (not week or k.get("days"))): return k
     p = almanac().place()
     if not p: return {"kind": "", "word": "", "why": "no place (set ~/.config/tenka/place.json)"}
     try:
-        code, temp, day = fetch(p)
+        code, temp, day, days = fetch(p)
     except Exception as e:
         if k and t - k.get("at", 0) < KEEP: return dict(k, stale=True)
         return {"kind": "", "word": "", "why": "offline"}
     sea = season(p["lat"])
     s = {"kind": kind(code), "word": word(code, day, sea), "code": code, "temp": "%d\u00b0" % round(temp),
-         "day": day, "place": p.get("name") or "", "season": sea, "at": int(t)}
+         "day": day, "place": p.get("name") or "", "season": sea, "at": int(t),
+         "days": [dict(d, date=d.get("date") or (datetime.date.today() + datetime.timedelta(days=i)).isoformat(),
+                       code=int(d["code"]), kind=kind(int(d["code"])), word=word(int(d["code"]), True, sea),
+                       hi=round(d["hi"]), lo=round(d["lo"]), rain=int(round(d["rain"]))) for i, d in enumerate(days)]}
     os.makedirs(os.path.dirname(CACHE), exist_ok=True)
     with open(CACHE + ".new", "w") as f: json.dump(s, f)
     os.replace(CACHE + ".new", CACHE)
     return s
+
+def theme():
+    try: return json.load(open(os.path.join(CONF, "shell-theme.json"))).get("name") or "samurai"
+    except (OSError, ValueError): return "samurai"
+
+def open_card():
+    """the week's card: qs ipc on the flagship, a small Qt window on Tenka Lite"""
+    import subprocess
+    if os.environ.get("WAYLAND_DISPLAY") and subprocess.run(["pgrep", "-x", "qs"], capture_output=True).returncode == 0:
+        subprocess.run(["qs", "-c", "tenka", "ipc", "call", "skyweek", "toggle"], capture_output=True); return 0
+    rt = os.environ.get("XDG_RUNTIME_DIR") or "/tmp"
+    s = dict(now(week=True), title="The Heavens Ahead" if theme() == "xianxia" else "Seven Skies")
+    if not os.environ.get("DISPLAY"):
+        for d in s.get("days", []): print("%s  %-22s %3d° %3d°  %d%%" % (d["date"], d["word"], d["lo"], d["hi"], d["rain"]))
+        return 0
+    lock = os.path.join(rt, "tenka-skyweek-card.pid")
+    try:                                                # asked again while open: close it
+        pid = int(open(lock).read().strip())
+        if b"LiteSkyWeek.qml" not in open("/proc/%d/cmdline" % pid, "rb").read(): raise ValueError
+        os.kill(pid, 15); os.remove(lock); return 0
+    except (OSError, ValueError):
+        pass
+    facts = os.path.join(rt, "tenka-skyweek.json")
+    with open(facts, "w", encoding="utf-8") as f: json.dump(s, f, ensure_ascii=False)
+    env = dict(os.environ, QML_XHR_ALLOW_FILE_READ="1", QT_QPA_PLATFORM="xcb")
+    p = subprocess.Popen(["/usr/lib/qt6/bin/qml", "/usr/share/tenka/skyweek/LiteSkyWeek.qml", "--", facts, os.path.join(CONF, "shell-theme.json")],
+                         stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=env)
+    with open(lock, "w") as f: f.write(str(p.pid))
+    p.wait()
+    for f in (lock, facts):
+        try: os.remove(f)
+        except OSError: pass
+    return 0
 
 def main():
     a = sys.argv[1:]
@@ -100,7 +152,10 @@ def main():
             try: os.remove(CACHE)
             except OSError: pass
         return 0
-    s = now(force="--force" in a)
+    if a and a[0] == "open": return open_card()
+    s = now(force="--force" in a, week=bool(a and a[0] == "week"))
+    if a and a[0] == "week":
+        print(json.dumps(dict(s, title="The Heavens Ahead" if theme() == "xianxia" else "Seven Skies"), ensure_ascii=False)); return 0
     if a and a[0] == "line":
         if s.get("word"): print("%s  %s  \u00b7  %s" % (s.get("place", ""), s.get("temp", ""), s["word"]))
         return 0

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Seven Skies
+GenericName=Weather Forecast
+Comment=The coming week's weather in the desk's own words; asks Open-Meteo with a rounded place, off with tenka-sky off (Super + H)
+Exec=tenka-sky open
+Icon=weather-few-clouds-symbolic
+Categories=Utility;
+Keywords=weather;forecast;week;rain;temperature;sky;heavens;

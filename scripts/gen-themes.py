@@ -467,6 +467,9 @@ def gen(name, T):
     {GS(GB + ':hover')} {{ background-color: {rgba(p['text'], 0.12)}; border-color: {rgba(p['text'], 0.16)}; }}
     {GS(GB + ':active', GB + ':checked')} {{ background-color: {rgba(p['accent2'], 0.20)}; border-color: {rgba(p['accent2'], 0.40)}; }}
     {GS(GB + ':disabled')} {{ background-color: {rgba(p['text'], 0.03)}; border-color: {rgba(p['text'], 0.05)}; color: {rgba(p['text'], 0.38)}; }}
+    /* T15: the inline toolbar under a list (Settings Editor's Add/Edit/Reset, Appearance's theme list) was the base theme's solid
+       ink strip; it joins the sheet with one hairline above it. */
+    {GS('toolbar.inline-toolbar', '.inline-toolbar', 'toolbar.inline-toolbar:backdrop', '.inline-toolbar:backdrop')} {{ background-color: transparent; background-image: none; border-style: solid none none none; border-width: 1px; border-color: {rgba(p['accent2'], 0.16)}; box-shadow: none; }}
     {GS('frame > label', 'frame > box > label')} {{ font-family: Marcellus; letter-spacing: 0.6px; color: {rgba(p['accent2'], 0.92)}; }}
     menubar {{ background-color: transparent; background-image: none; padding: 2px 8px; border-bottom: 1px solid {rgba(p['accent2'], 0.14)}; box-shadow: none; }}
     menubar > menuitem {{ padding: 6px 12px; border-radius: {Rs}px; font-family: Marcellus; color: {rgba(p['text'], 0.82)}; }}

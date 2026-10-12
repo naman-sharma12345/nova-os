@@ -123,8 +123,11 @@ def build(name, T, glass=False):
     box(sv, "common", "focused", None, acc, R)
     box(sv, "group", "normal", (surf, .22 if glass else .45), line, R)
     box(sv, "tabframe", "normal", G(_mix(base, surf, .5), .30), line, R)
-    box(sv, "tooltip", "normal", G(mantle, .94), line, R)
-    box(sv, "menu", "normal", G(mantle, .94), line, R)
+    # T21 Qt B: on Hyprland menus and tooltips are glass sheets over the popup blur, edged with one gold hairline (GTK matches);
+    # the solid twin keeps them dense
+    hair = (p['accent2'], .34) if glass else line
+    box(sv, "tooltip", "normal", G(mantle, .86 if glass else .94), hair, R)
+    box(sv, "menu", "normal", G(mantle, .82 if glass else .94), hair, R)
     box(sv, "header", "normal", G(mantle, .45), None, 3, sides={"bottom": line})
     box(sv, "header", "focused", hover, None, 3, sides={"bottom": line})
     box(sv, "header", "pressed", ovl, None, 3, sides={"bottom": acc})

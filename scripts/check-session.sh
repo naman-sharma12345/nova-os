@@ -308,7 +308,8 @@ sys.exit(0 if ok else 1)' && [ "$(stat -c %a "$J/.local/share/tenka/journal/2026
 grep -q '^import Quickshell.Hyprland$' "$ROOT/shell/quickshell/tenka/Journal.qml" && grep -q '"tenka:journal"' "$IC/etc/skel/.config/hypr/hyprland.lua" &&
 grep -q 'value="tenka-journal open"' "$IC/etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml" &&
 [ -f "$IC/usr/share/tenka/journal/LiteJournal.qml" ] && grep -q '^ *Journal {}' "$ROOT/shell/quickshell/tenka/shell.qml" &&
-grep -q '^Exec=tenka-journal open$' "$IC/usr/share/applications/tenka-journal.desktop" || { echo "FAIL: journal wiring"; fail=1; }
+grep -q '^Exec=tenka-journal open$' "$IC/usr/share/applications/tenka-journal.desktop" &&
+grep -q '"tenka-journal", "today"' "$ROOT/shell/quickshell/tenka/DeskLedger.qml" || { echo "FAIL: journal wiring"; fail=1; }
 # 17. The Watch: names, the next bell, quiet hours, focus and the rests
 W="$T/wt"; mkdir -p "$W/.config/tenka" "$W/rt"
 wt() { HOME="$W" XDG_RUNTIME_DIR="$W/rt" TENKA_WATCH_DRY=1 python3 "$BIN/tenka-watch" "$@"; }

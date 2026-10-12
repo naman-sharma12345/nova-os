@@ -53,6 +53,11 @@ Item {
     // the term turns every ~15 days and the moon by the hour: once on open, then every 20 minutes while up
     Timer { interval: 1200000; running: dl.visible; repeat: true; triggeredOnStart: true; onTriggered: almP.running = true }
     Connections { target: Theme.t; function onNameChanged() { almP.running = true } }
+    // The Pillow Book (Tianxia: The Jade Record): whether today's page is written, and its first words
+    property string page: ""
+    Process { id: pageP; command: ["tenka-journal", "today"]; stdout: StdioCollector { onStreamFinished: dl.page = text.trim() } }
+    Timer { interval: 60000; running: dl.visible; repeat: true; triggeredOnStart: true; onTriggered: pageP.running = true }
+    Connections { target: Theme; function onHushChanged() { if (!Theme.hush) pageP.running = true } }   // the book just closed
 
     readonly property var p: Mpris.players.values.length ? Mpris.players.values[0] : null
     readonly property real frac: !p || !p.lengthSupported || p.length <= 0 ? 0 : Math.min(1, p.position / p.length)
@@ -138,6 +143,18 @@ Item {
                                lineHeight: 1.1; text: dl.almanac ? dl.almanac.detail : ""
                                color: Theme.alpha(Theme.gold, 0.9); font.family: Theme.display; font.pixelSize: 12 }
                     }
+                }
+                // today's page in the Pillow Book: its first words, or an open invitation; a click opens the book
+                Item {
+                    width: parent.width; height: 30
+                    Rectangle { width: parent.width; height: 1; color: Theme.alpha(Theme.t.text, 0.08) }
+                    MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: Theme.ipc("journal", "open") }
+                    Text { anchors.verticalCenter: parent.verticalCenter; width: parent.width - pgW.width - 12; elide: Text.ElideRight
+                           text: dl.page !== "" ? dl.page.split("\n")[0] : (Theme.xia ? "The Jade Record" : "The Pillow Book")
+                           color: Theme.alpha(Theme.t.text, dl.page !== "" ? 0.86 : 0.55); font.family: Theme.display; font.pixelSize: 14 }
+                    Text { id: pgW; anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter
+                           text: dl.page !== "" ? "TODAY" : "UNWRITTEN"
+                           color: Theme.alpha(Theme.gold, dl.page !== "" ? 0.9 : 0.6); font.family: Theme.display; font.pixelSize: 11; font.letterSpacing: 2 }
                 }
                 Repeater {
                     model: Theme.desk.events.slice(0, 2)

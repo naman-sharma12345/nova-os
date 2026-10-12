@@ -98,6 +98,11 @@ file-roller
 thunar-archive-plugin
 # SVG loader for GTK: without it every SVG icon (the gold Tenka set, Papirus) falls back to stock PNGs
 librsvg2-common
+# WebP, AVIF and iPhone HEIC photos: mimeapps.list sends them to Images (Ristretto), but GTK had no loader
+# for them, so a downloaded .webp or a phone's .HEIC failed with "Unsupported mime type". ~0.6 MB together.
+webp-pixbuf-loader
+libavif-gdk-pixbuf
+heif-gdk-pixbuf
 # themed terminal + reader tools (configs from scripts/gen-themes.py)
 neovim
 bat

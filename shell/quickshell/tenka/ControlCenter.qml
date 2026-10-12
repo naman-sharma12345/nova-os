@@ -60,6 +60,16 @@ PanelWindow {
     property var clocks: ({ cities: [] })
     Process { id: clocksP; running: cc.open; command: ["tenka-clocks", "state"]
               stdout: StdioCollector { onStreamFinished: { try { cc.clocks = JSON.parse(text) } catch (e) {} } } }
+    // Moon Viewing (tenka-moon) and Seven Skies (tenka-sky week): a word each on the TOOLS rows
+    property var moon: ({})
+    Process { id: moonP; running: cc.open; command: ["tenka-moon", "state"]
+              stdout: StdioCollector { onStreamFinished: { try { cc.moon = JSON.parse(text) } catch (e) {} } } }
+    property var week: ({})
+    Process { id: weekP; running: cc.open; command: ["tenka-sky", "week"]
+              stdout: StdioCollector { onStreamFinished: { try { cc.week = JSON.parse(text) } catch (e) {} } } }
+    readonly property string moonWord: cc.moon.phase ? cc.moon.phase.toLowerCase() + "  \u00b7  " + Math.round(cc.moon.illumination * 100) + "%" : "tonight's moon"
+    readonly property string weekWord: cc.week.off ? "resting" : (cc.week.days && cc.week.days.length > 1)
+                                       ? "tomorrow  \u00b7  " + cc.week.days[1].word.toLowerCase() + "  \u00b7  " + cc.week.days[1].hi + "\u00b0" : "the week ahead"
     readonly property string farHour: {
         const c = (cc.clocks.cities || [])[0]
         if (!c) return "the hour elsewhere"
@@ -275,11 +285,13 @@ PanelWindow {
         signal hit()
         signal stepped()
         width: parent ? parent.width : 0; height: 38
-        Text { anchors.verticalCenter: parent.verticalCenter; text: r2.k; color: Theme.t.text; font.family: Theme.display; font.pixelSize: 16 }
+        Text { id: kt; anchors.verticalCenter: parent.verticalCenter; text: r2.k; color: Theme.t.text; font.family: Theme.display; font.pixelSize: 16 }
         Row {
             id: vrow
             anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter; spacing: 12
             Text { id: vt; anchors.verticalCenter: parent.verticalCenter; text: r2.v; font.family: Theme.display; font.pixelSize: 13; font.letterSpacing: 1
+                   // a long value gives way to the name: it is cut short, never written over it
+                   width: Math.min(implicitWidth, r2.width - kt.implicitWidth - 28 - (r2.toggle ? 23 : 0)); elide: Text.ElideRight
                    color: r2.step && r2.v !== "" ? Theme.alpha(Theme.t.text, 0.75) : Theme.alpha(Theme.t.text, 0.55)
                    Rectangle {   // a dotted hairline under a value that can be stepped
                        visible: r2.step && r2.v !== ""; anchors.top: parent.bottom; anchors.topMargin: 3; width: parent.width; height: 1
@@ -416,6 +428,10 @@ PanelWindow {
                        onHit: { cc.open = false; Theme.ipc("breath", "open") } }
                 Row2 { k: Theme.xia ? "The Four Seas" : "Under Heaven"; v: cc.farHour
                        onHit: { cc.open = false; Theme.ipc("clocks", "open") } }
+                Row2 { k: Theme.xia ? "The Moon Palace" : "Moon Viewing"; v: cc.moonWord
+                       onHit: { cc.open = false; Theme.ipc("moon", "open") } }
+                Row2 { k: Theme.xia ? "The Heavens Ahead" : "Seven Skies"; v: cc.weekWord
+                       onHit: { cc.open = false; Theme.ipc("skyweek", "open") } }
                 Row2 { k: Theme.xia ? "The Lineage" : "The Colophon"; v: "this machine"; last: true
                        onHit: { cc.open = false; Theme.ipc("colophon", "open") } }
             }

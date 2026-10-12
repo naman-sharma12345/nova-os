@@ -424,6 +424,7 @@ sw week | grep -q '"hi": 33, "lo": 25, "rain": 0' && grep -q '&daily=weather_cod
 sw off && sw week | grep -q '"off": true' && sw on && grep -q 'card.s.off' "$ROOT/shell/quickshell/tenka/skyweek/SkyWeekCard.qml" &&
 grep -q '^ *SkyWeek {}' "$ROOT/shell/quickshell/tenka/shell.qml" && grep -q '"tenka:skyweek"' "$IC/etc/skel/.config/hypr/hyprland.lua" &&
 [ -f "$IC/usr/share/tenka/skyweek/LiteSkyWeek.qml" ] && grep -q 'value="tenka-sky open"' "$IC/etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml" &&
-grep -q 'tenka:skyweek' "$IC/usr/bin/tenka-codex" && grep -q '^Exec=tenka-sky open$' "$IC/usr/share/applications/tenka-skyweek.desktop" || { echo "FAIL: seven skies"; fail=1; }
+grep -q 'tenka:skyweek' "$IC/usr/bin/tenka-codex" && grep -q 'Theme.ipc("skyweek", "open")' "$ROOT/shell/quickshell/tenka/ControlCenter.qml" &&
+grep -q 'Theme.ipc("skyweek", "open")' "$ROOT/shell/quickshell/tenka/DeskLedger.qml" && grep -q 'Theme.ipc("moon", "open")' "$ROOT/shell/quickshell/tenka/ControlCenter.qml" && grep -q '^Exec=tenka-sky open$' "$IC/usr/share/applications/tenka-skyweek.desktop" || { echo "FAIL: seven skies"; fail=1; }
 [ "$fail" = 0 ] && echo "check-session: ok"
 exit $fail

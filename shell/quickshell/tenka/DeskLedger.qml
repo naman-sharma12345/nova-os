@@ -256,7 +256,10 @@ Item {
                 LedgerMeter { k: "Memory"; v: dl.mem }
                 LedgerMeter { k: "Disk"; v: dl.disk }
                 Item { width: 1; height: 4 }
-                Text { text: dl.weather !== "" ? dl.weather : Theme.sky.word ? Theme.sky.place + "  " + Theme.sky.temp + "  \u00b7  " + Theme.sky.word : dl.power; color: Theme.alpha(Theme.t.text, 0.5); font.family: Theme.display; font.pixelSize: 12; font.letterSpacing: 1 }
+                Text { text: dl.weather !== "" ? dl.weather : Theme.sky.word ? Theme.sky.place + "  " + Theme.sky.temp + "  \u00b7  " + Theme.sky.word : dl.power; color: Theme.alpha(Theme.t.text, 0.5); font.family: Theme.display; font.pixelSize: 12; font.letterSpacing: 1
+                       // the sky's line opens the week ahead (Seven Skies)
+                       MouseArea { anchors.fill: parent; enabled: !!Theme.sky.word && dl.weather === ""; cursorShape: Qt.PointingHandCursor
+                                   onClicked: Theme.ipc("skyweek", "open") } }
             }
         }
     }

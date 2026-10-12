@@ -89,8 +89,12 @@ def chevron(d, col, sw=1.6):
         return f'<polyline points="{p}" fill="none" stroke="{col}" stroke-width="{sw}" stroke-linecap="round" stroke-linejoin="round"/>'
     return f
 
-def build(name, T):
+def build(name, T, glass=False):
+    """glass=True: Rice V washi glass for Hyprland, where the compositor blurs behind see-through windows.
+    glass=False: the solid twin (Tenka Lite, performance mode, the installer): xfwm4 has no blur, so text
+    must never read through onto the wallpaper there. tenka-qt-glass picks one per session."""
     p = T["p"]
+    G = (lambda c, a: (c, a)) if glass else (lambda c, a: c)   # alpha only on the glass twin
     R = 6 if name == "samurai" else 8          # Xianxia is the softer, rounder pack
     base, mantle, surf, ovl, text, sub, acc = p["base"], p["mantle"], p["surface"], p["overlay"], p["text"], p["subtext"], p["accent"]
     hover = _mix(surf, ovl, .55)
@@ -99,10 +103,10 @@ def build(name, T):
     line = _mix(ovl, text, .08)
     sv = _Svg()
     # buttons, combos, spin boxes
-    box(sv, "button", "normal", surf, line, R)
-    box(sv, "button", "focused", hover, _mix(line, acc, .45), R)
-    box(sv, "button", "pressed", ovl, acc, R)
-    box(sv, "button", "toggled", acc_soft, acc, R)
+    box(sv, "button", "normal", G(surf, .62), line, R)
+    box(sv, "button", "focused", G(hover, .74), _mix(line, acc, .45), R)
+    box(sv, "button", "pressed", G(ovl, .82), acc, R)
+    box(sv, "button", "toggled", G(acc_soft, .74), acc, R)
     box(sv, "button", "disabled", (surf, .5), (line, .5), R)
     # tool buttons: flat until touched
     box(sv, "tbutton", "normal", None, None, R)
@@ -111,32 +115,32 @@ def build(name, T):
     box(sv, "tbutton", "toggled", acc_soft, None, R)
     box(sv, "tbutton", "disabled", None, None, R)
     # text fields
-    box(sv, "lineedit", "normal", mantle, line, R)
-    box(sv, "lineedit", "focused", mantle, acc, R)
+    box(sv, "lineedit", "normal", G(mantle, .52), line, R)
+    box(sv, "lineedit", "focused", G(mantle, .62), acc, R)
     box(sv, "lineedit", "disabled", (mantle, .5), (line, .5), R)
     # frames
     box(sv, "common", "normal", None, line, R)
     box(sv, "common", "focused", None, acc, R)
-    box(sv, "group", "normal", (surf, .45), line, R)
-    box(sv, "tabframe", "normal", _mix(base, surf, .5), line, R)
-    box(sv, "tooltip", "normal", mantle, line, R)
-    box(sv, "menu", "normal", mantle, line, R)
-    box(sv, "header", "normal", mantle, None, 3, sides={"bottom": line})
+    box(sv, "group", "normal", (surf, .22 if glass else .45), line, R)
+    box(sv, "tabframe", "normal", G(_mix(base, surf, .5), .30), line, R)
+    box(sv, "tooltip", "normal", G(mantle, .94), line, R)
+    box(sv, "menu", "normal", G(mantle, .94), line, R)
+    box(sv, "header", "normal", G(mantle, .45), None, 3, sides={"bottom": line})
     box(sv, "header", "focused", hover, None, 3, sides={"bottom": line})
     box(sv, "header", "pressed", ovl, None, 3, sides={"bottom": acc})
-    box(sv, "header", "toggled", mantle, None, 3, sides={"bottom": acc})
+    box(sv, "header", "toggled", G(mantle, .45), None, 3, sides={"bottom": acc})
     box(sv, "toolbar", "normal", None, None, 2)
     # tabs: flat, the current one is underlined in the accent
     box(sv, "tab", "normal", None, None, 3)
     box(sv, "tab", "focused", (hover, .6), None, 3)
-    box(sv, "tab", "toggled", _mix(base, surf, .5), None, 3, sides={"bottom": acc, "bottom_w": 2})
-    box(sv, "tab", "pressed", _mix(base, surf, .5), None, 3, sides={"bottom": acc, "bottom_w": 2})
+    box(sv, "tab", "toggled", G(_mix(base, surf, .5), .40), None, 3, sides={"bottom": acc, "bottom_w": 2})
+    box(sv, "tab", "pressed", G(_mix(base, surf, .5), .40), None, 3, sides={"bottom": acc, "bottom_w": 2})
     # lists and menus
     for el in ("itemview", "menuitem", "menubaritem"):
         box(sv, el, "normal", None, None, R - 2)
-        box(sv, el, "focused", (ovl, .7), None, R - 2)
-        box(sv, el, "pressed", sel, None, R - 2)
-        box(sv, el, "toggled", sel, None, R - 2)
+        box(sv, el, "focused", (ovl, .40 if glass else .7), None, R - 2)
+        box(sv, el, "pressed", (acc, .34) if glass else sel, None, R - 2)   # glass: the accent selection GTK uses
+        box(sv, el, "toggled", (acc, .34) if glass else sel, None, R - 2)
         box(sv, el, "disabled", None, None, R - 2)
     # scrollbars, sliders, progress
     box(sv, "scrollbargroove", "normal", None, None, 3)
@@ -208,13 +212,28 @@ def build(name, T):
         f'<line x1="{ox+20+19*math.cos(a):.2f}" y1="{oy+20+19*math.sin(a):.2f}" x2="{ox+20+16.5*math.cos(a):.2f}" '
         f'y2="{oy+20+16.5*math.sin(a):.2f}" stroke="{ovl}" stroke-width="1" stroke-linecap="round"/>'
         for a in (math.radians(120 + i * 25) for i in range(13))))
+    if glass:
+        # the window sheet: a thin ink tint, lighter at the top (lit like the GTK glass) and deeper at the
+        # foot, under a milky frost; Hyprland's blur does the rest
+        tint = base if name == "samurai" else _mix(base, surf, .5)
+        ox, oy = sv.at(S, S)
+        sv.g("window-normal",
+             f'<linearGradient id="kvwin" x1="0" y1="0" x2="0" y2="1">'
+             f'<stop offset="0" stop-color="{tint}" stop-opacity="0.30"/><stop offset="1" stop-color="{tint}" stop-opacity="0.46"/></linearGradient>'
+             f'<rect x="{ox}" y="{oy}" width="{S}" height="{S}" fill="url(#kvwin)"/>'
+             f'<rect x="{ox}" y="{oy}" width="{S}" height="{S}" fill="{text}" fill-opacity="0.06"/>')
     svg = sv.done()
 
     hl = _mix(acc, base, .35)
+    # video players and editors that paint their own canvas stay opaque (Kvantum's stock list)
+    OPAQUE = ("opaque=kaffeine,kmplayer,subtitlecomposer,kdenlive,vlc,smplayer,smplayer2,avidemux,avidemux2_qt4,"
+              "avidemux3_qt4,avidemux3_qt5,kamoso,QtCreator,VirtualBox,VirtualBoxVM,trojita,dragon,digikam,lyx,mpv,"
+              "obs,krita,qemu-system-x86_64\n") if glass else ""
+    WINT = ("\n[WindowTranslucent]\ninterior=true\ninterior.element=window\nframe=false\nframe.expansion=0\n") if glass else ""
     disp = name.capitalize()
     kv = f"""[%General]
 author=Tenka (generated by scripts/gen-themes.py)
-comment=Tenka {disp}: flat ink, one accent, no glow
+comment=Tenka {disp}{" washi glass" if glass else ""}: flat ink, one accent, no glow
 x11drag=menubar_and_primary_toolbar
 alt_mnemonic=true
 left_tabs=false
@@ -223,8 +242,8 @@ group_toolbar_buttons=false
 spread_progressbar=true
 progressbar_thickness=4
 composite=true
-translucent_windows=false
-blurring=false
+translucent_windows={"true" if glass else "false"}
+{OPAQUE}blurring=false
 popup_blurring=false
 menu_shadow_depth=0
 tooltip_shadow_depth=0
@@ -264,13 +283,13 @@ submenu_overlap=0
 shadowless_popup=true
 
 [GeneralColors]
-window.color={base}
-base.color={mantle}
-alt.base.color={_mix(mantle, surf, .5)}
+window.color={base}{"99" if glass else ""}
+base.color={mantle}{"5c" if glass else ""}
+alt.base.color={_mix(mantle, surf, .5)}{"70" if glass else ""}
 button.color={surf}
 light.color={_mix(ovl, text, .12)}
 mid.light.color={ovl}
-dark.color={mantle}
+dark.color={mantle}{"8c" if glass else ""}
 mid.color={_mix(surf, ovl, .5)}
 highlight.color={hl}
 inactive.highlight.color={_mix(hl, base, .3)}
@@ -646,5 +665,5 @@ interior=false
 [Window]
 interior=false
 frame=false
-"""
+{WINT}"""
     return svg, kv

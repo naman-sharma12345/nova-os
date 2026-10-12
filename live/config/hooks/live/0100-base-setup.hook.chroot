@@ -111,7 +111,8 @@ for t in /usr/share/tenka/themes/*/home/.config/Kvantum/Tenka-*; do
   [ -d "$t" ] && mkdir -p "/usr/share/Kvantum/$(basename "$t")" && cp -rT "$t" "/usr/share/Kvantum/$(basename "$t")"
 done
 install -d /root/.config/Kvantum
-printf '[General]\ntheme=Tenka-Samurai\n' > /root/.config/Kvantum/kvantum.kvconfig
+# the solid twin: the installer must read cleanly on Tenka Lite too, where nothing blurs behind it
+printf '[General]\ntheme=Tenka-SamuraiSolid\n' > /root/.config/Kvantum/kvantum.kvconfig
 [ -f /usr/bin/calamares-install-debian ] && sed -i 's/^pkexec calamares$/pkexec env QT_STYLE_OVERRIDE=kvantum calamares/' /usr/bin/calamares-install-debian
 
 # ---------------------------------------------------------------- user defaults

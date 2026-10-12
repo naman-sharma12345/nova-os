@@ -31,6 +31,8 @@ else
   [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ] && rm -f "$HOME/.cache/tenka/session.css"
   msg="Performance mode off: full motion and glass."
 fi
+# Qt windows follow: solid while blur rests, glass again after
+[ -x /usr/libexec/tenka/tenka-qt-glass ] && /usr/libexec/tenka/tenka-qt-glass --live
 [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ] && hyprctl reload >/dev/null 2>&1
 # only with a desktop up: tenka-hyprland-session runs this before Hyprland exists, and a notify-send there
 # would D-Bus-activate mako (and can block the session start while that activation times out)

@@ -539,9 +539,12 @@ def gen(name, T):
     # ---------- Kvantum (every Qt widget: polkit prompt, installer, qt6ct...) ----------
     # qt6ct picks style=kvantum above; Kvantum's own colours come from the same palette, so
     # custom_palette is off (two palettes fighting is how Qt apps end up half-themed).
-    kv_svg, kv_conf = tenka_kvantum.build(name, T)
-    W(f"{H}/.config/Kvantum/{T['gtk']}/{T['gtk']}.svg", kv_svg)
-    W(f"{H}/.config/Kvantum/{T['gtk']}/{T['gtk']}.kvconfig", kv_conf)
+    # Two twins: the glass one (Hyprland blurs behind see-through Qt windows) and a solid one for Tenka Lite,
+    # performance mode and the installer (no blur there). tenka-qt-glass picks per session; the glass one is the default.
+    for glass, kname in ((True, T['gtk']), (False, T['gtk'] + "Solid")):
+        kv_svg, kv_conf = tenka_kvantum.build(name, T, glass=glass)
+        W(f"{H}/.config/Kvantum/{kname}/{kname}.svg", kv_svg)
+        W(f"{H}/.config/Kvantum/{kname}/{kname}.kvconfig", kv_conf)
     W(f"{H}/.config/Kvantum/kvantum.kvconfig", f"[General]\ntheme={T['gtk']}\n")
     # ---------- Firefox ESR: chrome + new-tab colours (loaded by /usr/lib/firefox-esr/tenka.cfg) ----------
     # One user sheet from ~/.config/tenka, so tenka-theme re-skins Firefox at its next window.

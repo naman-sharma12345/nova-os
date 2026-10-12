@@ -1,0 +1,25 @@
+#!/bin/sh
+# tenka-qt-glass [--live]: Qt windows (Kvantum) follow the desk's glass.
+#   Hyprland with blur on  -> Tenka-<Theme>       see-through washi glass; the compositor blurs behind it
+#   Tenka Lite (XFCE)      -> Tenka-<Theme>Solid  xfwm4 has no blur, so text must never read through
+#   performance mode       -> Tenka-<Theme>Solid  blur is off there too
+# Run by tenka-theme after it lays down a pack, and by tenka-perf. --live: open Qt apps repaint now.
+T=$(tenka-theme --current 2>/dev/null); E="/usr/share/tenka/themes/$T/theme.env"
+[ -f "$E" ] && . "$E"
+[ -n "${THEME_GTK:-}" ] || exit 0
+K="${XDG_CONFIG_HOME:-$HOME/.config}/Kvantum"; mkdir -p "$K"
+if [ "${XDG_CURRENT_DESKTOP:-}" = XFCE ] || [ -e "$HOME/.config/tenka/perf" ]; then v="${THEME_GTK}Solid"; else v="$THEME_GTK"; fi
+[ -d "$K/$v" ] || [ -d "/usr/share/Kvantum/$v" ] || v="$THEME_GTK"   # an older pack without the twin
+new=$(printf '[General]\ntheme=%s' "$v")
+[ "$(cat "$K/kvantum.kvconfig" 2>/dev/null)" = "$new" ] && exit 0
+printf '%s\n' "$new" > "$K/kvantum.kvconfig"
+if [ "${1:-}" = --live ]; then
+  # same cue tenka-recolour uses: flipping qt6ct's style key makes Qt rebuild Kvantum, which re-reads the theme
+  Q="${XDG_CONFIG_HOME:-$HOME/.config}/qt6ct/qt6ct.conf"
+  if [ -f "$Q" ] && grep -q '^style=kvantum' "$Q"; then
+    F="$HOME/.cache/tenka/qt-style"; mkdir -p "${F%/*}"
+    [ "$(cat "$F" 2>/dev/null)" = kvantum-dark ] && s=kvantum || s=kvantum-dark
+    sed -i "s/^style=kvantum.*/style=$s/" "$Q" && echo "$s" > "$F"
+  fi
+fi
+exit 0

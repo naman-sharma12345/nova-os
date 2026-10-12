@@ -25,6 +25,7 @@ D="$THEMES/$T"
 
 # 1. user configs (overlay)
 cp -rT "$D/home" "$HOME"
+[ -x /usr/libexec/tenka/tenka-qt-glass ] && /usr/libexec/tenka/tenka-qt-glass   # Qt: glass on Hyprland, solid on Lite / performance mode
 echo "$T" > "$STATE/theme"
 ln -sf "$D/crest-1024.png" "$HOME/.cache/tenka/crest.png" 2>/dev/null
 ln -sf "/etc/xdg/quickshell/tenka/assets/$T/seal.png" "$HOME/.cache/tenka/seal.png" 2>/dev/null

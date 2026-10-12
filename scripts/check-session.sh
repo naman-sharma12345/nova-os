@@ -437,5 +437,11 @@ print(int(a["alt"] > 70 and 165 < a["az"] < 195 and 235 < a["tilt"] < 280 and a[
           0 < b["alt"] < 5 and 235 < b["az"] < 255 and 200 < b["tilt"] < 250))' "$BIN/tenka-moon")
 [ "$DM" = 1 ] && grep -q 'id: deskMoon' "$ROOT/shell/quickshell/tenka/Desk.qml" &&
 grep -q 'command: \["tenka-moon", "state"\]' "$ROOT/shell/quickshell/tenka/Desk.qml" || { echo "FAIL: desk moon ($DM)"; fail=1; }
+# 27. After dark the lock's almanac line leads with tonight's moon by its old name (tenka-moon's "night"), in all three
+#     lock directions that carry the line.
+[ "$(grep -c 'night: Theme.phase === "night"' "$ROOT/shell/quickshell/tenka/LockFace.qml")" = 3 ] &&
+grep -q 'line.m.night + ' "$ROOT/shell/quickshell/tenka/almanac/AlmanacLine.qml" &&
+grep -q 'command: \["tenka-moon", "state"\]' "$ROOT/shell/quickshell/tenka/almanac/AlmanacLine.qml" &&
+mo 2026-10-19T20:30 | grep -q '"night": "The 10th night"' || { echo "FAIL: lock moon line"; fail=1; }
 [ "$fail" = 0 ] && echo "check-session: ok"
 exit $fail

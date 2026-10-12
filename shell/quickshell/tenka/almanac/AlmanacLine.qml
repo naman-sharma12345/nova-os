@@ -1,6 +1,6 @@
 // One quiet line from the almanac: tonight's moon, drawn flat, and the season ("Cold Dew  ·  Wild geese return";
 // on Tianxia the term's old saying). Theme-free like MoonGlyph: the owner sets the colours and the face.
-// It asks tenka-almanac itself while `running`, then every 20 minutes. Used by the lock (LockFace.qml), which also
+// It asks tenka-almanac itself while `running`, then every 20 minutes (and tenka-moon, after dark). Used by the lock (LockFace.qml), which also
 // hands it the sky outside ("Autumn rain 24°", tenka-sky) to end the line.
 import QtQuick
 import Quickshell.Io
@@ -17,6 +17,8 @@ Row {
     property bool caps: false
     property string theme: ""                   // re-ask when the pack changes
     property string sky: ""                     // the weather outside in words (Theme.sky), after the season
+    property bool night: false                  // after dark the moon leads: tonight's old name takes the season's saying
+    property var m: null                        //   ("The crescent of the third night  ·  Cold Dew  ·  A clear night 24°")
     property var a: null
     spacing: px * 0.7
     visible: a !== null
@@ -29,7 +31,14 @@ Row {
         command: ["tenka-almanac", "json"]
         stdout: StdioCollector { onStreamFinished: { try { line.a = JSON.parse(text) } catch (e) {} } }
     }
-    Timer { interval: 20 * 60 * 1000; repeat: true; running: line.running; onTriggered: ask.running = true }
+    Timer { interval: 20 * 60 * 1000; repeat: true; running: line.running; onTriggered: { ask.running = true; if (line.night) moonAsk.running = true } }
+    onNightChanged: if (running && night) moonAsk.running = true
+    Process {
+        id: moonAsk
+        running: line.running && line.night
+        command: ["tenka-moon", "state"]
+        stdout: StdioCollector { onStreamFinished: { try { const v = JSON.parse(text); if (v && v.night) line.m = v } catch (e) {} } }
+    }
 
     MoonGlyph {
         anchors.verticalCenter: parent.verticalCenter
@@ -39,7 +48,9 @@ Row {
     }
     Text {
         anchors.verticalCenter: parent.verticalCenter
-        readonly property string words: line.a ? line.a.term + "  \u00b7  " + line.a.detail + (line.sky ? "  \u00b7  " + line.sky : "") : ""
+        readonly property bool moonFirst: line.night && line.m !== null && (line.m.illumination || 0) >= 0.02
+        readonly property string words: line.a ? (moonFirst ? line.m.night + "  \u00b7  " + line.a.term : line.a.term + "  \u00b7  " + line.a.detail)
+                                                 + (line.sky ? "  \u00b7  " + line.sky : "") : ""
         text: line.caps ? words.toUpperCase() : words
         color: line.textColor; font.family: line.face; font.pixelSize: line.px
         font.letterSpacing: line.caps ? line.px * 0.32 : 0.5

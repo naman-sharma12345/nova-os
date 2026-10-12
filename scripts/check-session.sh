@@ -275,6 +275,9 @@ S2=$(HOME="$T/inc" XDG_RUNTIME_DIR="$T/inc/rt" python3 "$BIN/tenka-incense" stat
 echo "$S1" | python3 -c 'import json,sys; s=json.load(sys.stdin); sys.exit(0 if s["burning"] and 110<=s["left"]<=120 and s["minutes"]==2 else 1)' &&
 echo "$S2" | python3 -c 'import json,sys; s=json.load(sys.stdin); sys.exit(0 if not s["burning"] and s["minutes"]==2 else 1)' &&
 [ -n "$SP" ] && ! kill -0 "$SP" 2>/dev/null || { echo "FAIL: tenka-incense light/out: $S1 / $S2"; fail=1; }
+HOME="$T/inc" XDG_RUNTIME_DIR="$T/inc/rt" python3 "$BIN/tenka-incense" garden pines &&
+HOME="$T/inc" XDG_RUNTIME_DIR="$T/inc/rt" python3 "$BIN/tenka-incense" state | grep -q '"garden": "pines"' &&
+! HOME="$T/inc" XDG_RUNTIME_DIR="$T/inc/rt" python3 "$BIN/tenka-incense" garden thunder 2>/dev/null || { echo "FAIL: tenka-incense garden"; fail=1; }
 grep -q '^import Quickshell.Hyprland$' "$ROOT/shell/quickshell/tenka/Incense.qml" && grep -q '"tenka:incense"' "$IC/etc/skel/.config/hypr/hyprland.lua" &&
 grep -q 'value="tenka-incense open"' "$IC/etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml" &&
 [ -f "$IC/usr/share/tenka/incense/LiteIncense.qml" ] && grep -q '^ *Incense {}' "$ROOT/shell/quickshell/tenka/shell.qml" || { echo "FAIL: incense wiring"; fail=1; }

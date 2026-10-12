@@ -21,10 +21,14 @@ Item {
     readonly property var lengths: [5, 10, 15, 25, 45, 60]
     property int choice: 15
     property double now: Date.now()
-    width: 600; height: 360
+    width: 600; height: 380
     signal dismissed()
     signal lightAsked(int minutes)
     signal outAsked()
+    signal gardenAsked(string name)
+    readonly property var gardens: ["", "rain", "stream", "pines", "embers"]
+    readonly property string garden: s && s.garden ? s.garden : ""
+    function nextGarden() { return gardens[(gardens.indexOf(garden) + 1) % gardens.length] }
 
     onSChanged: if (s && s.minutes) choice = s.minutes
     readonly property bool burning: !!s.burning && s.until > now
@@ -46,6 +50,7 @@ Item {
         else if (e.key === Qt.Key_Right) choice = lengths[Math.min(lengths.length - 1, i + 1)]
         else if (e.key === Qt.Key_Return || e.key === Qt.Key_Enter) card.lightAsked(choice)
         else if (e.key === Qt.Key_X) { if (card.burning) card.outAsked() }
+        else if (e.key === Qt.Key_G) card.gardenAsked(card.nextGarden())
         else return
         e.accepted = true
     }
@@ -155,9 +160,19 @@ Item {
                                : "Enter lights it"
             color: card.alpha(card.text, 0.7); font.family: card.uiFace; font.pixelSize: 13
         }
+        // The Garden (Super+G's sounds) can play while the stick burns; G chooses which, or none
+        Row {
+            y: 292; spacing: 10
+            Text { text: card.xia ? "THE MOUNTAIN HALL" : "THE GARDEN"; color: card.alpha(card.gold, 0.85); font.family: card.face
+                   font.pixelSize: 10; font.letterSpacing: 4; anchors.verticalCenter: parent.verticalCenter }
+            Text { text: card.garden ? card.garden.charAt(0).toUpperCase() + card.garden.slice(1) + (card.burning ? " plays while it burns" : " plays with the stick") : "silence"
+                   color: card.garden ? card.text : card.alpha(card.text, 0.45); font.family: card.uiFace; font.pixelSize: 13
+                   anchors.verticalCenter: parent.verticalCenter }
+        }
+        MouseArea { y: 284; width: parent.width; height: 26; onClicked: card.gardenAsked(card.nextGarden()) }
         Text {
             anchors.bottom: parent.bottom; anchors.bottomMargin: 20
-            text: "1 – 6 choose  ·  ESC closes, the stick burns on"
+            text: "1 – 6 choose  ·  G the garden  ·  ESC closes, the stick burns on"
             color: card.alpha(card.text, 0.32); font.family: card.uiFace; font.pixelSize: 11
         }
     }

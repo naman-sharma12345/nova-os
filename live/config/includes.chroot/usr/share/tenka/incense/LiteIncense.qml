@@ -31,7 +31,7 @@ Window {
         var d = {}; try { d = JSON.parse(read(statePath)) } catch (e) { return }
         var t = Date.now(), burning = !!d.until && d.until > t
         var s = { burning: burning, until: burning ? d.until : 0, total: Math.round((d.total || 0) / 1000),
-                  minutes: d.minutes || 15, burned: d.burned || 0 }
+                  minutes: d.minutes || 15, burned: d.burned || 0, garden: d.garden || "" }
         // only on a change: a new `s` resets the card's choice to the stored length, which would undo a key
         var k = JSON.stringify(s)
         if (k !== w.lastState) { w.lastState = k; card.s = s }
@@ -57,6 +57,7 @@ Window {
         onDismissed: Qt.quit()
         onLightAsked: m => { console.log("LIGHT " + m); lightSoon.restart() }
         onOutAsked: { console.log("OUT"); lightSoon.restart() }
+        onGardenAsked: n => { console.log("GARDEN " + (n || "off")); lightSoon.restart() }
     }
     Timer { id: lightSoon; interval: 300; onTriggered: w.load() }
 }

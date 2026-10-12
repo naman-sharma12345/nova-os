@@ -29,6 +29,7 @@ PanelWindow {
         function toggle(): void { ic.open ? (ic.open = false) : ic.reveal() }
         function light(minutes: int): void { ic.ask(["light", String(minutes)]) }
         function out(): void { ic.ask(["out"]) }
+        function garden(name: string): void { ic.ask(["garden", name]) }
         function state(): string { return (ic.open ? "open" : "closed") + " burning=" + card.burning + " left=" + Math.round(card.remain / 1000)
                                           + " minutes=" + card.s.minutes + " choice=" + card.choice }
     }
@@ -66,5 +67,6 @@ PanelWindow {
         onDismissed: ic.open = false
         onLightAsked: m => ic.ask(["light", String(m)])
         onOutAsked: ic.ask(["out"])
+        onGardenAsked: n => ic.ask(["garden", n || "off"])
     }
 }

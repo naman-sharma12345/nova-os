@@ -4,6 +4,7 @@ gone a soft bell (the theme's own "complete" sound) and one quiet note say so. N
 sleeping process that rings once and exits; putting it out ends that process.
   tenka-incense light MIN   light a stick of MIN minutes (1..240); a stick already burning is replaced
   tenka-incense out         put it out
+  tenka-incense garden NAME let The Garden play while the stick burns: rain | stream | pines | embers | off
   tenka-incense state       {"burning", "left", "total", "minutes", "until", "burned"} as JSON (seconds; until in ms)
   tenka-incense open        the card (Super + I): qs ipc on Hyprland, a small Qt window on Tenka Lite
 State: ~/.config/tenka/incense.json. The card reads it; this program is the only writer.
@@ -51,16 +52,42 @@ def light(minutes):
     minutes = max(1, min(240, int(minutes)))
     stop_sleeper()
     t = now_ms()
-    write({"start": t, "until": t + minutes * 60000, "total": minutes * 60000, "minutes": minutes})
+    g = read().get("garden", "")
+    write({"start": t, "until": t + minutes * 60000, "total": minutes * 60000, "minutes": minutes, "garden": g})
+    if g:                                        # The Garden plays while the stick burns (Super+G's sounds)
+        subprocess.run(["tenka-ambience", "play", g], capture_output=True)
     p = subprocess.Popen([sys.executable, os.path.abspath(__file__), "_ring", str(t + minutes * 60000)],
                          stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
     with open(PID, "w") as f:
         f.write(str(p.pid))
 
+def garden_off(d):
+    """stop The Garden if it is still the sound this stick started"""
+    g = d.get("garden", "")
+    if not g:
+        return
+    try:
+        s = json.loads(subprocess.run(["tenka-ambience", "state"], capture_output=True, text=True).stdout)
+        if s.get("playing") and s.get("name") == g:
+            subprocess.run(["tenka-ambience", "stop"], capture_output=True)
+    except (OSError, ValueError):
+        pass
+
 def out():
     stop_sleeper()
     d = read()
-    write({"minutes": d.get("minutes", 15)})
+    if d.get("until", 0) > now_ms(): garden_off(d)
+    write({"minutes": d.get("minutes", 15), "garden": d.get("garden", "")})
+
+GARDEN = ["", "rain", "stream", "pines", "embers"]
+
+def garden(name):
+    """choose the sound that plays with the next stick ("" for none)"""
+    name = "" if name in ("off", "none") else name
+    if name not in GARDEN:
+        print("tenka-incense: garden is one of off, " + ", ".join(GARDEN[1:]), file=sys.stderr); return 2
+    d = read(); d["garden"] = name; write(d)
+    return 0
 
 def ring(until):
     while True:
@@ -71,9 +98,10 @@ def ring(until):
     d = read()
     if d.get("until") != until:                  # put out or relit since: not ours to ring
         return
-    write({"minutes": d.get("minutes", 15), "burned": now_ms()})
+    write({"minutes": d.get("minutes", 15), "burned": now_ms(), "garden": d.get("garden", "")})
     try: os.remove(PID)
     except OSError: pass
+    garden_off(d)
     m = d.get("minutes", 0)
     subprocess.run(["tenka-sound", "complete"], capture_output=True)
     title = "The joss stick has burned down" if xia() else "The incense has burned down"
@@ -84,7 +112,7 @@ def state():
     burning = bool(d.get("until")) and d["until"] > t
     return {"burning": burning, "left": max(0, round((d.get("until", t) - t) / 1000)) if burning else 0,
             "total": round(d.get("total", 0) / 1000), "minutes": d.get("minutes", 15),
-            "until": d.get("until", 0) if burning else 0, "burned": d.get("burned", 0)}
+            "until": d.get("until", 0) if burning else 0, "burned": d.get("burned", 0), "garden": d.get("garden", "")}
 
 def open_card():
     import select
@@ -114,6 +142,8 @@ def open_card():
             light(int(w[1]))
         elif w[:1] == ["OUT"]:
             out()
+        elif w[:1] == ["GARDEN"]:
+            garden(w[1] if len(w) > 1 else "")
     p.wait()
     try: os.remove(lock)
     except OSError: pass
@@ -126,6 +156,8 @@ def main():
         light(int(a[1]))
     elif c == "out":
         out()
+    elif c == "garden":
+        sys.exit(garden(a[1] if len(a) > 1 else ""))
     elif c == "_ring" and len(a) > 1:
         ring(int(a[1]))
     elif c == "open":

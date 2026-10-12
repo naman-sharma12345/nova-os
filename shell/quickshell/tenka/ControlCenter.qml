@@ -67,6 +67,10 @@ PanelWindow {
     property var week: ({})
     Process { id: weekP; running: cc.open; command: ["tenka-sky", "week"]
               stdout: StdioCollector { onStreamFinished: { try { cc.week = JSON.parse(text) } catch (e) {} } } }
+    // The Season's Poem (tenka-poem): the poet of this term's poem on its TOOLS row
+    property var poem: ({})
+    Process { id: poemP; running: cc.open; command: ["tenka-poem", "state"]
+              stdout: StdioCollector { onStreamFinished: { try { cc.poem = JSON.parse(text) } catch (e) {} } } }
     readonly property string moonWord: cc.moon.phase ? cc.moon.phase.toLowerCase() + "  \u00b7  " + Math.round(cc.moon.illumination * 100) + "%" : "tonight's moon"
     readonly property string weekWord: cc.week.off ? "resting" : (cc.week.days && cc.week.days.length > 1)
                                        ? "tomorrow  \u00b7  " + cc.week.days[1].word.toLowerCase() + "  \u00b7  " + cc.week.days[1].hi + "\u00b0" : "the week ahead"
@@ -432,6 +436,8 @@ PanelWindow {
                        onHit: { cc.open = false; Theme.ipc("moon", "open") } }
                 Row2 { k: Theme.xia ? "The Heavens Ahead" : "Seven Skies"; v: cc.weekWord
                        onHit: { cc.open = false; Theme.ipc("skyweek", "open") } }
+                Row2 { k: Theme.xia ? "The Season's Verse" : "The Season's Poem"; v: cc.poem.poet || "a poem for the term"
+                       onHit: { cc.open = false; Theme.ipc("poem", "open") } }
                 Row2 { k: Theme.xia ? "The Lineage" : "The Colophon"; v: "this machine"; last: true
                        onHit: { cc.open = false; Theme.ipc("colophon", "open") } }
             }

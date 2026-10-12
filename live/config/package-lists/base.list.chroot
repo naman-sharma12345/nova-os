@@ -103,6 +103,8 @@ librsvg2-common
 webp-pixbuf-loader
 libavif-gdk-pixbuf
 heif-gdk-pixbuf
+# video thumbnails in Thunar (tumbler reads its .thumbnailer); without it every .mp4/.mkv was a generic icon. ~0.3 MB, ffmpeg libs already ship with mpv
+ffmpegthumbnailer
 # themed terminal + reader tools (configs from scripts/gen-themes.py)
 neovim
 bat

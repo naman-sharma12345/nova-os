@@ -56,6 +56,16 @@ PanelWindow {
     Process { id: pauseP; running: cc.open; command: ["tenka-breath", "pause"]
               stdout: StdioCollector { onStreamFinished: { try { cc.pause = JSON.parse(text) } catch (e) {} } } }
     Process { id: pauseSet; onExited: { pauseP.running = false; pauseP.running = true } }
+    // Under Heaven (tenka-clocks): the first place you keep, at its own hour, on the TOOLS row
+    property var clocks: ({ cities: [] })
+    Process { id: clocksP; running: cc.open; command: ["tenka-clocks", "state"]
+              stdout: StdioCollector { onStreamFinished: { try { cc.clocks = JSON.parse(text) } catch (e) {} } } }
+    readonly property string farHour: {
+        const c = (cc.clocks.cities || [])[0]
+        if (!c) return "the hour elsewhere"
+        const d = new Date(Theme.now.getTime() + c.offset * 1000)
+        return c.name + "  " + String(d.getUTCHours()).padStart(2, "0") + ":" + String(d.getUTCMinutes()).padStart(2, "0")
+    }
     // Night ink (tenka-nightink): off, with the sun (warms over the twilight), or warm now
     property var ink: ({ mode: "off", kelvin: 6500, on: false })
     Process { id: inkP; running: cc.open; command: ["tenka-nightink", "state"]
@@ -404,6 +414,8 @@ PanelWindow {
                        onHit: { cc.open = false; Theme.ipc("journal", "open") } }
                 Row2 { k: Theme.xia ? "Gathering Qi" : "The Breath"; v: "a minute's breath"
                        onHit: { cc.open = false; Theme.ipc("breath", "open") } }
+                Row2 { k: Theme.xia ? "The Four Seas" : "Under Heaven"; v: cc.farHour
+                       onHit: { cc.open = false; Theme.ipc("clocks", "open") } }
                 Row2 { k: Theme.xia ? "The Lineage" : "The Colophon"; v: "this machine"; last: true
                        onHit: { cc.open = false; Theme.ipc("colophon", "open") } }
             }

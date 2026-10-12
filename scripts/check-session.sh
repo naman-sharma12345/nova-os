@@ -403,6 +403,6 @@ Z=Asia/Tokyo ck | grep -q '"here": {"zone": "Asia/Tokyo"' && ! grep -q 'urllib\|
 grep -q '^ *Clocks {}' "$ROOT/shell/quickshell/tenka/shell.qml" && [ -f "$ROOT/shell/quickshell/tenka/clocks/ClocksCard.qml" ] &&
 grep -q '"tenka:clocks"' "$IC/etc/skel/.config/hypr/hyprland.lua" && [ -f "$IC/usr/share/tenka/clocks/LiteClocks.qml" ] &&
 grep -q 'value="tenka-clocks open"' "$IC/etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml" &&
-grep -q 'tenka:clocks' "$IC/usr/bin/tenka-codex" && grep -q '^Exec=tenka-clocks open$' "$IC/usr/share/applications/tenka-clocks.desktop" || { echo "FAIL: under heaven"; fail=1; }
+grep -q 'tenka:clocks' "$IC/usr/bin/tenka-codex" && grep -q 'Theme.ipc("clocks", "open")' "$ROOT/shell/quickshell/tenka/ControlCenter.qml" && grep -q '^Exec=tenka-clocks open$' "$IC/usr/share/applications/tenka-clocks.desktop" || { echo "FAIL: under heaven"; fail=1; }
 [ "$fail" = 0 ] && echo "check-session: ok"
 exit $fail

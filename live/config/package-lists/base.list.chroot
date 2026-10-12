@@ -75,6 +75,9 @@ fonts-jetbrains-mono
 fonts-noto-color-emoji
 fonts-noto-core
 fonts-ipaexfont-mincho
+# Chinese (simplified + traditional) and Korean: without it half of everyday Simplified Chinese and all Hangul
+# drew as boxes (IPAex is Japanese-only), on a desk whose second path is Tianxia. 1.6 MB, sans + mono.
+fonts-wqy-microhei
 papirus-icon-theme
 bibata-cursor-theme
 orchis-gtk-theme

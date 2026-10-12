@@ -25,8 +25,8 @@ hl.config({
         dim_special = 0.35,
         inactive_opacity = 0.97,
         blur = {
-            size = 6,
-            passes = 3,
+            size = 7,
+            passes = 4,
             special = true,
             popups_ignorealpha = 0.2,
             input_methods = true,

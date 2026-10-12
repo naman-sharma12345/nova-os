@@ -3,6 +3,8 @@
 <channel name="thunar" version="1.0">
   <property name="last-menubar-visible" type="bool" value="false"/>
   <property name="last-view" type="string" value="ThunarIconView"/>
+  <!-- the path as breadcrumbs in the header band, not a typed line (Ctrl+L still opens the entry) -->
+  <property name="last-location-bar" type="string" value="ThunarLocationButtons"/>
   <property name="last-icon-view-zoom-level" type="string" value="THUNAR_ZOOM_LEVEL_150_PERCENT"/>
   <property name="last-separator-position" type="int" value="230"/>
   <property name="last-show-hidden" type="bool" value="false"/>

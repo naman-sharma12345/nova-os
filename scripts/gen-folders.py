@@ -72,6 +72,22 @@ def svg(kind, p, style):
         body = (f'<path d="{BACK}" fill="{p["gold"]}" fill-opacity=".10" stroke="{p["gold"]}" stroke-width="2"/>'
                 f'<path d="{FRONT}" fill="{p["gold"]}" fill-opacity=".14" stroke="{p["gold"]}" stroke-width="2"/>')
         return (f'<g opacity=".22"><path d="{FRONT}" fill="none" stroke="{p["gold"]}" stroke-width="5"/></g>' + body + glyph(p["gold"], 2))
+    if style == "silk":      # Rice V: a lacquer back in the theme's colour, a silk-paper front that catches light
+        #  (a soft top-to-bottom shade), one gold lip, the glyph as a fine ink line. Reads on dark glass, no glow.
+        def mx(a, b, t):
+            a, b = a.lstrip("#"), b.lstrip("#")
+            return "#" + "".join(f"{round(int(a[i:i+2],16)*(1-t)+int(b[i:i+2],16)*t):02x}" for i in (0, 2, 4))
+        back = mx(p["accent"], p["base"], 0.38)
+        top, bot = p["paper"], mx(p["washi"], p["washi2"], 0.7)
+        fine = (f'<g transform="translate(16.6 23.4) scale(.62)" fill="none" stroke="{p["base"]}" stroke-opacity=".62" stroke-width="2.2" '
+                f'stroke-linecap="round" stroke-linejoin="round"><path d="{g}"/></g>' if g else "")
+        return (f'<defs><linearGradient id="f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="{top}"/>'
+                f'<stop offset="1" stop-color="{bot}"/></linearGradient></defs>'
+                f'<path d="{BACK}" fill="{back}"/>'
+                f'<path d="{FRONT}" fill="url(#f)"/>'
+                f'<path d="M4.2 18.9h39.6" stroke="{p["gold"]}" stroke-width="1.2" stroke-opacity=".95"/>'
+                f'<path d="M4 37.5v.0a3 3 0 0 0 3 3h34a3 3 0 0 0 3-3" fill="none" stroke="{p["base"]}" stroke-opacity=".18" stroke-width="1"/>'
+                + fine)
     if style == "washi":     # pale paper folder with a lacquer tab: bold on dark surfaces
         return (f'<path d="{BACK}" fill="{p["accent"]}"/>'
                 f'<path d="{FRONT}" fill="{p["paper"]}"/>'
@@ -101,7 +117,7 @@ def write(style, out_root=None):
             s = doc(svg(kind, p, style))
             for n in names:
                 open(os.path.join(d, n + ".svg"), "w").write(s)
-        if style in ("edge", "flat", "paper"):
+        if style in ("edge", "flat", "paper", "silk"):
             for kind, names in DEV.items():
                 s = doc(dev_svg(kind, p))
                 for n in names:
@@ -135,11 +151,19 @@ MNAMES = {
 }
 
 def mime_svg(kind, p):
+    # Rice V: a silk-paper page (the folders' front), a deeper paper fold, the type's glyph as a fine ink line and one
+    # short lip of the theme's colour at the foot: light enough to read on the dark glass the windows are made of
     g = MG[kind]
-    glyph = (f'<g transform="translate(16 18) scale(.67)" fill="none" stroke="{p["gold"]}" stroke-opacity=".8" stroke-width="2.4" '
+    def mx(a, b, t):
+        a, b = a.lstrip("#"), b.lstrip("#")
+        return "#" + "".join(f"{round(int(a[i:i+2],16)*(1-t)+int(b[i:i+2],16)*t):02x}" for i in (0, 2, 4))
+    glyph = (f'<g transform="translate(16 18) scale(.67)" fill="none" stroke="{p["base"]}" stroke-opacity=".62" stroke-width="2.2" '
              f'stroke-linecap="round" stroke-linejoin="round"><path d="{g}"/></g>') if g else ""
-    return (f'<path d="{PAGE}" fill="{p["inkb"]}"/><path d="{FOLD}" fill="{p["inkb2"]}"/>'
-            f'<path d="M14 37h20" stroke="{p["gold"]}" stroke-width="1.1" stroke-opacity=".85"/>' + glyph)
+    return (f'<defs><linearGradient id="m" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="{p["paper"]}"/>'
+            f'<stop offset="1" stop-color="{mx(p["washi"], p["washi2"], 0.7)}"/></linearGradient></defs>'
+            f'<path d="{PAGE}" fill="url(#m)"/><path d="{FOLD}" fill="{p["washi2"]}"/>'
+            f'<path d="M15 37h18" stroke="{mx(p["accent"], p["base"], 0.2)}" stroke-width="1.4" stroke-linecap="round"/>' + glyph)
+
 
 def write_mimes():
     for name, p in PAL.items():
@@ -151,7 +175,7 @@ def write_mimes():
                 open(os.path.join(d, n + ".svg"), "w").write(s)
 
 if __name__ == "__main__":
-    style = (sys.argv[1] if len(sys.argv) > 1 else os.environ.get("FOLDER_STYLE", "edge"))
+    style = (sys.argv[1] if len(sys.argv) > 1 else os.environ.get("FOLDER_STYLE", "silk"))
     out = sys.argv[2] if len(sys.argv) > 2 else None
     write(style, out)
     if out is None: write_mimes()

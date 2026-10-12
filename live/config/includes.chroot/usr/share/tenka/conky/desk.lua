@@ -52,6 +52,7 @@ local function almanac()
     local term = s:match('"term"%s*:%s*"([^"]*)"')
     local e = tonumber(s:match('"elongation"%s*:%s*([%d%.]+)') or '')
     alm = term and { term = term, e = e or 0, phase = s:match('"phase"%s*:%s*"([^"]*)"') or '' } or nil
+    if alm then alm.rise = s:match('"rise"%s*:%s*"0?([%d:]+)"'); alm.set = s:match('"set"%s*:%s*"0?([%d:]+)"') end
     return alm
 end
 -- the moon drawn flat: faint unlit disc, hairline gold rim, the lit part in the desk's text colour
@@ -164,6 +165,13 @@ function conky_tenka_desk()
             text(cr, tw, X + 9 + sw, Y + 300 + 1.5, 13, 0, 0, 0, 0.5, 6)
             local w2 = text(cr, tw, X + 8 + sw, Y + 300, 13, tr, tg, tb, 0.8, 6)
             moon(cr, X + 8 + sw + w2 + 22, Y + 295, 8, a.e, tr, tg, tb, gr, gg, gb)
+            -- and the sun over your place today (tenka-almanac sun), after the moon
+            if a.rise and a.set then
+                local st = '·   SUNRISE ' .. a.rise .. '   SUNSET ' .. a.set
+                local sx2 = X + 8 + sw + w2 + 44
+                text(cr, st, sx2 + 1, Y + 300 + 1.5, 13, 0, 0, 0, 0.5, 6)
+                text(cr, st, sx2, Y + 300, 13, tr, tg, tb, 0.7, 6)
+            end
         end
     end
     -- the day's proverb (one a day, the same line the flagship desk and lock show), wrapped at ~560 px

@@ -339,7 +339,8 @@ mkdir -p "$T/sun"
 [ "$(HOME="$T/sun" TZ=Arctic/Longyearbyen python3 "$BIN/tenka-almanac" phase 2026-12-21T12:00)" = night ] &&
 mkdir -p "$T/sun/.config/tenka" && echo '{ "name": "London", "lat": 51.5, "lon": -0.13 }' > "$T/sun/.config/tenka/place.json" &&
 HOME="$T/sun" TZ=Europe/London python3 "$BIN/tenka-almanac" sun 2026-10-12 | grep -q '^Sunrise 07:[12][0-9]  ·  Sunset 18:[01][0-9]  ·  .* over London$' &&
-grep -q 'tenka-almanac phase' "$BIN/tenka-hour" && grep -q 'card.d.sun' "$ROOT/shell/quickshell/tenka/almanac/AlmanacCard.qml" || { echo "FAIL: the sun"; fail=1; }
+grep -q 'tenka-almanac phase' "$BIN/tenka-hour" && grep -q 'card.d.sun' "$ROOT/shell/quickshell/tenka/almanac/AlmanacCard.qml" &&
+grep -q 'dl.almanac.sun' "$ROOT/shell/quickshell/tenka/DeskLedger.qml" && grep -q "SUNRISE ' .. a.rise" "$IC/usr/share/tenka/conky/desk.lua" || { echo "FAIL: the sun"; fail=1; }
 # 19. Night ink with the sun: warm through the night, a slow fade over each twilight, the right command per session
 N="$T/ink"; mkdir -p "$N"
 ni() { HOME="$N" XDG_RUNTIME_DIR="$N" TZ=Asia/Kolkata TENKA_ALMANAC="$BIN/tenka-almanac" TENKA_NIGHTINK_DRY=1 python3 "$BIN/tenka-nightink" "$@"; }

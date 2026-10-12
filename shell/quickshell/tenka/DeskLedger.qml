@@ -144,6 +144,32 @@ Item {
                                color: Theme.alpha(Theme.gold, 0.9); font.family: Theme.display; font.pixelSize: 12 }
                     }
                 }
+                // the sun over your place today (tenka-almanac): the day as a hairline, the light on it in gold, now a dot
+                Item {
+                    id: sunRow
+                    readonly property var s: dl.almanac && dl.almanac.sun && dl.almanac.sun.rise ? dl.almanac.sun : null
+                    function fx(hm) { const p = hm.split(":"); return (+p[0] * 60 + +p[1]) / 1440 }
+                    function hm(t) { return t.replace(/^0/, "") }
+                    visible: s !== null
+                    width: parent.width; height: visible ? 40 : 0
+                    Rectangle { width: parent.width; height: 1; color: Theme.alpha(Theme.t.text, 0.08) }
+                    MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: Theme.ipc("almanac", "open") }
+                    Item {
+                        id: sunBar; y: 12; width: parent.width; height: 7
+                        Rectangle { y: 3; width: parent.width; height: 1; color: Theme.alpha(Theme.t.text, 0.14) }
+                        Rectangle { visible: sunRow.s !== null; y: 2; height: 3; color: Theme.alpha(Theme.gold, 0.85)
+                                    x: sunRow.s ? sunBar.width * sunRow.fx(sunRow.s.rise) : 0
+                                    width: sunRow.s ? sunBar.width * (sunRow.fx(sunRow.s.set) - sunRow.fx(sunRow.s.rise)) : 0 }
+                        Rectangle { x: sunBar.width * (Theme.now.getHours() * 60 + Theme.now.getMinutes()) / 1440 - 3.5; y: 0
+                                    width: 7; height: 7; radius: 3.5; color: Theme.t.text }
+                    }
+                    Text { id: riseT; y: 22; x: sunRow.s ? Math.max(0, Math.min(sunRow.width / 2 - width - 6, sunRow.width * sunRow.fx(sunRow.s.rise) - width / 2)) : 0
+                           text: sunRow.s ? "SUNRISE  " + sunRow.hm(sunRow.s.rise) : ""; color: Theme.alpha(Theme.t.text, 0.6)
+                           font.family: Theme.display; font.pixelSize: 10; font.letterSpacing: 2 }
+                    Text { y: 22; x: sunRow.s ? Math.min(sunRow.width - width, Math.max(sunRow.width / 2 + 6, sunRow.width * sunRow.fx(sunRow.s.set) - width / 2)) : 0
+                           text: sunRow.s ? "SUNSET  " + sunRow.hm(sunRow.s.set) : ""; color: Theme.alpha(Theme.t.text, 0.6)
+                           font.family: Theme.display; font.pixelSize: 10; font.letterSpacing: 2 }
+                }
                 // today's page in the Pillow Book: its first words, or an open invitation; a click opens the book
                 Item {
                     width: parent.width; height: 30

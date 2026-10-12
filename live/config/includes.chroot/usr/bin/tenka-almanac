@@ -304,6 +304,7 @@ def main(argv):
             try: when = (dt.datetime.strptime(a, "%Y-%m-%dT%H:%M") if "T" in a else
                          dt.datetime.strptime(a, "%Y-%m-%d").replace(hour=12)).timestamp()
             except ValueError: print("tenka-almanac: not a date (YYYY-MM-DD or YYYY-MM-DDTHH:MM): " + a, file=sys.stderr); return 2
+    if when is None and os.environ.get("TENKA_NOW"): when = float(os.environ["TENKA_NOW"])   # a fixed clock (renders, tests), as tenka-moon
     if mode == "season":                # the desk's season word, turned half a year below the equator
         p = place()
         m = dt.datetime.fromtimestamp(when or time.time()).month

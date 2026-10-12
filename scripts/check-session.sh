@@ -498,5 +498,8 @@ echo "$SX" | grep -q '"today": {"date": "2027-02-05", "day": 5, "name": "New Yea
 grep -q 'command: \["tenka-feasts", "state"\]' "$ROOT/shell/quickshell/tenka/DeskLedger.qml" && grep -q 'dl.feastOn(day)' "$ROOT/shell/quickshell/tenka/DeskLedger.qml" &&
 grep -q 'dl.feasts.today.name' "$ROOT/shell/quickshell/tenka/DeskLedger.qml" &&
 grep -q 'command: \["tenka-feasts", "state"\]' "$ROOT/shell/quickshell/tenka/almanac/AlmanacLine.qml" && grep -q 'line.f.name + ' "$ROOT/shell/quickshell/tenka/almanac/AlmanacLine.qml" || { echo "FAIL: feast days"; fail=1; }
+# 32. A fixed clock: tenka-almanac honours TENKA_NOW (as tenka-moon and tenka-feasts do), so a render or a test of a
+#     given day shows that day's term and moon, not today's. Unset on a real desk.
+[ "$(TENKA_NOW=1788964200 HOME="$T/feastsam" python3 "$BIN/tenka-almanac" line)" = "White Dew  ·  Dew glistens white on grass  ·  Waning crescent" ] || { echo "FAIL: almanac fixed clock"; fail=1; }
 [ "$fail" = 0 ] && echo "check-session: ok"
 exit $fail

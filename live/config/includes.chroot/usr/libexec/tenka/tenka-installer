@@ -1,0 +1,11 @@
+#!/bin/sh
+# Root side of the live session's INSTALL TO DISK: calamares-install-debian runs `pkexec /usr/libexec/tenka/tenka-installer`
+# (polkit action org.tenka.installer.run, allow_gui, so DISPLAY/XAUTHORITY survive).
+# pkexec gives its program a minimal environment, so the llvmpipe settings tenka-session-default puts into the user
+# session under pure CPU emulation (/run/tenka/emulated) never reached the installer: under QEMU without KVM, Calamares'
+# GL ran llvmpipe's 256-bit code and segfaulted in JIT code ~25 s after the click, before its window mapped
+# (REAL-VM, 03a5e5e nightly). Real hardware and KVM: no /run/tenka/emulated, nothing changes.
+if [ -e /run/tenka/emulated ]; then
+  export LP_NATIVE_VECTOR_WIDTH=128 GALLIUM_OVERRIDE_CPU_CAPS=sse4.1
+fi
+exec /usr/bin/calamares -style kvantum "$@"

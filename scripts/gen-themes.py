@@ -939,39 +939,62 @@ set font "Inter 10"
     # tuned per theme (Tenka decisive, Tianxia drifting). RICE=gradient restores the old 2 px look.
     rice = os.environ.get("RICE", "hairline")
     if rice == "hairline":
-        border = f'"{a(p["accent2"], "d9")}"'
+        # Rice IV (the brush and the silk): still a 1 px hairline, now a two-tone gradient that turns once when focus
+        # moves (borderangle "once": no endless loop, nothing redraws at rest), a lifted shadow (scale < 1, long and
+        # low), the scratchpad dimmed and blurred behind, tabbed groups drawn in the theme's own ink, and motion with
+        # a character per theme: Tenka a decisive brush stroke (fast in, weighted stop), Tianxia silk (slow, no
+        # overshoot, drifting). No glow: shadows are black or the theme's own ink, never coloured light.
+        sam = name == "samurai"
+        border = (f'{{ colors = {{"{a(p["accent2"], "e6")}", "{a(p["accent"], "8c")}"}}, angle = 45 }}' if sam else
+                  f'{{ colors = {{"{a(p["accent"], "d9")}", "{a(p["accent2"], "a6")}"}}, angle = 135 }}')
         inactive = a(p["text"], "14")
-        # ledger corners: Tenka's windows are nearly square like the desk sheet and the control center
-        # (a blade edge), Tianxia keeps a little more softness (mist)
-        bsize, rnd, rpow = 1, (6 if name == "samurai" else 12), 2.5
-        shadow = "0x66000000"
-        curves = [("emphasizedDecel", (0.05, 0.7), (0.1, 1)), ("emphasizedAccel", (0.3, 0), (0.8, 0.15)),
-                  ("standard", (0.2, 0), (0, 1)), ("menuDecel", (0.1, 1), (0, 1)), ("menuAccel", (0.52, 0.03), (0.72, 0.08))]
-        if name == "samurai":
-            anims = [("windowsIn", 4, "emphasizedDecel", "popin 92%"), ("windowsOut", 3, "emphasizedAccel", "popin 95%"),
-                     ("windowsMove", 5, "emphasizedDecel", "slide"), ("border", 8, "standard", None), ("fade", 4, "standard", None),
-                     ("fadeLayersIn", 4, "menuDecel", None), ("fadeLayersOut", 3, "menuAccel", None),
-                     ("layersIn", 4, "emphasizedDecel", "slide"), ("layersOut", 3, "emphasizedAccel", "slide"),
-                     ("workspaces", 5, "emphasizedDecel", "slide"), ("specialWorkspace", 5, "emphasizedDecel", "slidevert")]
+        # ledger corners: Tenka's windows are nearly square like the desk sheet and the control center (a blade edge),
+        # Tianxia keeps more softness (mist) and a rounder squircle
+        bsize, rnd, rpow = 1, (6 if sam else 12), (2.5 if sam else 3.0)
+        shadow = "0x80000000" if sam else "0x8c050c0b"     # Tianxia's shadow is its own deep jade ink, still dark
+        if sam:
+            curves = [("brush", (0.16, 1), (0.3, 1)), ("lift", (0.7, 0), (0.84, 0)), ("ink", (0.25, 0.1), (0.25, 1)),
+                      ("sheath", (0.32, 0.72), (0, 1)), ("menuDecel", (0.1, 1), (0, 1)), ("menuAccel", (0.52, 0.03), (0.72, 0.08))]
+            anims = [("windowsIn", 4, "brush", "popin 94%"), ("windowsOut", 3, "lift", "popin 97%"),
+                     ("windowsMove", 4.5, "brush", "slide"), ("border", 6, "ink", None), ("borderangle", 18, "ink", "once"),
+                     ("fade", 3.5, "ink", None), ("fadeDim", 5, "ink", None), ("fadeLayersIn", 4, "menuDecel", None),
+                     ("fadeLayersOut", 3, "menuAccel", None), ("layersIn", 4, "brush", "slide"), ("layersOut", 3, "lift", "slide"),
+                     ("workspaces", 4.5, "sheath", "slide"), ("specialWorkspace", 5, "brush", "slidevert")]
         else:
-            anims = [("windowsIn", 6, "emphasizedDecel", "popin 86%"), ("windowsOut", 5, "emphasizedAccel", "popin 92%"),
-                     ("windowsMove", 6, "emphasizedDecel", "slide"), ("border", 10, "standard", None), ("fade", 6, "standard", None),
-                     ("fadeLayersIn", 6, "menuDecel", None), ("fadeLayersOut", 4, "menuAccel", None),
-                     ("layersIn", 6, "emphasizedDecel", "slide"), ("layersOut", 4, "emphasizedAccel", "slide"),
-                     ("workspaces", 7, "emphasizedDecel", "slidefadevert 15%"), ("specialWorkspace", 7, "emphasizedDecel", "slidefadevert 20%")]
-        extra_general = ["        border_size = 1,", "        gaps_in = 7,", "        gaps_out = 16,", "        gaps_workspaces = 50,"]
-        extra_deco = ["        rounding_power = 2.5,", "        dim_inactive = true,", "        dim_strength = 0.05,"]
-        shadow_extra = ["            range = 28,", "            render_power = 3,", '            offset = "0 6",']
+            curves = [("silk", (0.22, 0.61), (0.36, 1)), ("mist", (0.45, 0), (0.55, 1)), ("drift", (0.05, 0.9), (0.1, 1)),
+                      ("menuDecel", (0.1, 1), (0, 1)), ("menuAccel", (0.52, 0.03), (0.72, 0.08))]
+            anims = [("windowsIn", 6, "silk", "popin 88%"), ("windowsOut", 5, "mist", "popin 94%"),
+                     ("windowsMove", 6, "silk", "slide"), ("border", 9, "mist", None), ("borderangle", 30, "mist", "once"),
+                     ("fade", 6, "mist", None), ("fadeDim", 7, "mist", None), ("fadeLayersIn", 6, "menuDecel", None),
+                     ("fadeLayersOut", 4, "menuAccel", None), ("layersIn", 6, "silk", "slide"), ("layersOut", 4, "mist", "slide"),
+                     ("workspaces", 7, "silk", "slidefadevert 18%"), ("specialWorkspace", 7, "drift", "slidefadevert 25%")]
+        gi, go = (6, 14) if sam else (8, 18)
+        extra_general = ["        border_size = 1,", f"        gaps_in = {gi},", f"        gaps_out = {go},", "        gaps_workspaces = 50,"]
+        extra_deco = [f"        rounding_power = {rpow},", "        dim_inactive = true,", f"        dim_strength = {0.05 if sam else 0.04},",
+                      "        dim_special = 0.35,", f"        inactive_opacity = {0.97 if sam else 0.95},",
+                      "        blur = {", f"            size = {6 if sam else 9},", "            passes = 3,", "            special = true,",
+                      "            popups_ignorealpha = 0.2,", "            input_methods = true,", f"            vibrancy = {0.18 if sam else 0.26},", "        },"]
+        shadow_extra = ["            range = 36,", "            render_power = 4,", '            offset = "0 10",', "            scale = 0.98,"]
+        # tabbed groups (Super + W): a quiet bar in the theme's ink, Marcellus titles, a thin indicator, no stock blue
+        extra_top = ["    group = {", "        col = {", f"            border_active = {border},", f'            border_inactive = "{inactive}",',
+                     "        },", "        groupbar = {", '            font_family = "Marcellus",', "            font_size = 11,",
+                     "            height = 18,", "            indicator_height = 2,", "            gradients = true,",
+                     f"            rounding = {max(2, rnd - 4)},", f"            gradient_rounding = {max(2, rnd - 4)},",
+                     f'            text_color = "{a(p["text"])}",', "            col = {",
+                     f'                active = "{a(p["accent2"] if sam else p["accent"], "40")}",',
+                     f'                inactive = "{a(p["text"], "12")}",', "            },", "        },", "    },"]
     else:
         inactive = a(p["overlay"], "aa"); bsize, rnd = T["border"], T["rounding"]
-        extra_general, extra_deco, shadow_extra = [], [], []
+        extra_general, extra_top = [], []
+        extra_deco = ["        inactive_opacity = 0.97,", "        blur = {", "            size = 7,", "            passes = 3,", "            vibrancy = 0.22,", "        },"]
+        shadow_extra = ["            range = 26,", "            render_power = 3,", '            offset = "0 8",']
     lua = [f"-- generated by scripts/gen-themes.py\n-- {note}", "local T = {}",
            "T.name = " + json.dumps(name), "T.display = " + json.dumps(T["display"]), "T.cursor = " + json.dumps(T["cursor"]),
            "T.c = {" + ", ".join(f'{k} = "{v}"' for k, v in p.items()) + "}", "",
            "hl.config({", "    general = {", *extra_general, "        col = {", f"            active_border   = {border},",
            f'            inactive_border = "{inactive}",', "        },", "    },",
            "    decoration = {", f"        rounding = {rnd},", *extra_deco, "        shadow = {", f"            color = {shadow},",
-           *shadow_extra, "            color_inactive = 0x33000000,", "        },", "    },", "})", ""]
+           *shadow_extra, "            color_inactive = 0x33000000,", "        },", "    },", *extra_top, "})", ""]
     for cn, p1, p2 in curves:
         lua.append(f'hl.curve("{cn}", {{ type = "bezier", points = {{ {{{p1[0]}, {p1[1]}}}, {{{p2[0]}, {p2[1]}}} }} }})')
     for leaf, sp, cv, st in anims:

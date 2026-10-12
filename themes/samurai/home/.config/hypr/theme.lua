@@ -9,44 +9,78 @@ T.c = {base = "#0f0d0c", mantle = "#0a0908", surface = "#1b1816", overlay = "#2a
 hl.config({
     general = {
         border_size = 1,
-        gaps_in = 7,
-        gaps_out = 16,
+        gaps_in = 6,
+        gaps_out = 14,
         gaps_workspaces = 50,
         col = {
-            active_border   = "rgba(c9a35ad9)",
+            active_border   = { colors = {"rgba(c9a35ae6)", "rgba(d8412f8c)"}, angle = 45 },
             inactive_border = "rgba(efe6d614)",
         },
     },
     decoration = {
-        rounding = 14,
+        rounding = 6,
         rounding_power = 2.5,
         dim_inactive = true,
         dim_strength = 0.05,
+        dim_special = 0.35,
+        inactive_opacity = 0.97,
+        blur = {
+            size = 6,
+            passes = 3,
+            special = true,
+            popups_ignorealpha = 0.2,
+            input_methods = true,
+            vibrancy = 0.18,
+        },
         shadow = {
-            color = 0x66000000,
-            range = 28,
-            render_power = 3,
-            offset = "0 6",
+            color = 0x80000000,
+            range = 36,
+            render_power = 4,
+            offset = "0 10",
+            scale = 0.98,
             color_inactive = 0x33000000,
+        },
+    },
+    group = {
+        col = {
+            border_active = { colors = {"rgba(c9a35ae6)", "rgba(d8412f8c)"}, angle = 45 },
+            border_inactive = "rgba(efe6d614)",
+        },
+        groupbar = {
+            font_family = "Marcellus",
+            font_size = 11,
+            height = 18,
+            indicator_height = 2,
+            gradients = true,
+            rounding = 2,
+            gradient_rounding = 2,
+            text_color = "rgba(efe6d6ff)",
+            col = {
+                active = "rgba(c9a35a40)",
+                inactive = "rgba(efe6d612)",
+            },
         },
     },
 })
 
-hl.curve("emphasizedDecel", { type = "bezier", points = { {0.05, 0.7}, {0.1, 1} } })
-hl.curve("emphasizedAccel", { type = "bezier", points = { {0.3, 0}, {0.8, 0.15} } })
-hl.curve("standard", { type = "bezier", points = { {0.2, 0}, {0, 1} } })
+hl.curve("brush", { type = "bezier", points = { {0.16, 1}, {0.3, 1} } })
+hl.curve("lift", { type = "bezier", points = { {0.7, 0}, {0.84, 0} } })
+hl.curve("ink", { type = "bezier", points = { {0.25, 0.1}, {0.25, 1} } })
+hl.curve("sheath", { type = "bezier", points = { {0.32, 0.72}, {0, 1} } })
 hl.curve("menuDecel", { type = "bezier", points = { {0.1, 1}, {0, 1} } })
 hl.curve("menuAccel", { type = "bezier", points = { {0.52, 0.03}, {0.72, 0.08} } })
-hl.animation({ leaf = "windowsIn", enabled = true, speed = 4, bezier = "emphasizedDecel", style = "popin 92%" })
-hl.animation({ leaf = "windowsOut", enabled = true, speed = 3, bezier = "emphasizedAccel", style = "popin 95%" })
-hl.animation({ leaf = "windowsMove", enabled = true, speed = 5, bezier = "emphasizedDecel", style = "slide" })
-hl.animation({ leaf = "border", enabled = true, speed = 8, bezier = "standard" })
-hl.animation({ leaf = "fade", enabled = true, speed = 4, bezier = "standard" })
+hl.animation({ leaf = "windowsIn", enabled = true, speed = 4, bezier = "brush", style = "popin 94%" })
+hl.animation({ leaf = "windowsOut", enabled = true, speed = 3, bezier = "lift", style = "popin 97%" })
+hl.animation({ leaf = "windowsMove", enabled = true, speed = 4.5, bezier = "brush", style = "slide" })
+hl.animation({ leaf = "border", enabled = true, speed = 6, bezier = "ink" })
+hl.animation({ leaf = "borderangle", enabled = true, speed = 18, bezier = "ink", style = "once" })
+hl.animation({ leaf = "fade", enabled = true, speed = 3.5, bezier = "ink" })
+hl.animation({ leaf = "fadeDim", enabled = true, speed = 5, bezier = "ink" })
 hl.animation({ leaf = "fadeLayersIn", enabled = true, speed = 4, bezier = "menuDecel" })
 hl.animation({ leaf = "fadeLayersOut", enabled = true, speed = 3, bezier = "menuAccel" })
-hl.animation({ leaf = "layersIn", enabled = true, speed = 4, bezier = "emphasizedDecel", style = "slide" })
-hl.animation({ leaf = "layersOut", enabled = true, speed = 3, bezier = "emphasizedAccel", style = "slide" })
-hl.animation({ leaf = "workspaces", enabled = true, speed = 5, bezier = "emphasizedDecel", style = "slide" })
-hl.animation({ leaf = "specialWorkspace", enabled = true, speed = 5, bezier = "emphasizedDecel", style = "slidevert" })
+hl.animation({ leaf = "layersIn", enabled = true, speed = 4, bezier = "brush", style = "slide" })
+hl.animation({ leaf = "layersOut", enabled = true, speed = 3, bezier = "lift", style = "slide" })
+hl.animation({ leaf = "workspaces", enabled = true, speed = 4.5, bezier = "sheath", style = "slide" })
+hl.animation({ leaf = "specialWorkspace", enabled = true, speed = 5, bezier = "brush", style = "slidevert" })
 
 return T

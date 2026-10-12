@@ -39,26 +39,20 @@ hl.config({
         resize_on_border = true,
         layout = "dwindle",
     },
+    -- shadow range/power/offset, blur size/vibrancy, opacity and dim come from theme.lua: it is read before this
+    -- block, so anything set here would overwrite the theme (the rice's shadow and blur were being overwritten)
     decoration = {
         active_opacity = 1.0,
-        inactive_opacity = 0.97,
-        dim_inactive = false,
         shadow = {
             enabled = true,
-            range = 26,
-            render_power = 3,
-            offset = "0 8",
         },
         blur = {
             enabled = true,
-            size = 7,
-            passes = 3,
             new_optimizations = true,
             xray = false,
             noise = 0.025,
             contrast = 1.05,
             brightness = 0.85,
-            vibrancy = 0.22,
             vibrancy_darkness = 0.4,
             popups = true,
         },

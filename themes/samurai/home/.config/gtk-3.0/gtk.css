@@ -21,8 +21,9 @@
    every window is one sheet of tinted glass over the art. Hyprland blurs what is behind it (more passes, a
    little grain), the sheet darkens toward the bottom so text always sits on enough ink, and type carries a
    soft drop shadow so it reads over any wallpaper. One tint per window, no patchwork of panes. No glow. ---- */
-window.background:not(.xfce4-panel):not(.thunar) { background-color: rgba(15, 13, 12, 0.42); background-image: linear-gradient(to bottom, rgba(239, 230, 214, 0.07), transparent 40%); box-shadow: inset 0 1px rgba(239, 230, 214, 0.14); color: #efe6d6; }
-window.background:not(.xfce4-panel):not(.thunar) textview text, window.background:not(.xfce4-panel):not(.thunar) .view:not(iconview) { background-color: rgba(10, 9, 8, 0.22); }
+/* GtkDialog windows are `dialog` nodes, not `window` (the settings manager, properties and file dialogs): the same glass */
+window.background:not(.xfce4-panel):not(.thunar), dialog.background { background-color: rgba(15, 13, 12, 0.42); background-image: linear-gradient(to bottom, rgba(239, 230, 214, 0.07), transparent 40%); box-shadow: inset 0 1px rgba(239, 230, 214, 0.14); color: #efe6d6; }
+window.background:not(.xfce4-panel):not(.thunar) textview text, dialog.background textview text, window.background:not(.xfce4-panel):not(.thunar) .view:not(iconview), dialog.background .view:not(iconview) { background-color: rgba(10, 9, 8, 0.22); }
 .sidebar { background-color: rgba(10, 9, 8, 0.3); color: #efe6d6; }
 headerbar, .titlebar { background-color: rgba(239, 230, 214, 0.05); background-image: none; color: #efe6d6; box-shadow: none; border-bottom: 1px solid rgba(201, 163, 90, 0.18); }
 selection { background-color: rgba(216, 65, 47, 0.34); color: #efe6d6; }
@@ -39,9 +40,9 @@ tooltip label { font-family: Marcellus; font-size: 12px; letter-spacing: 0.3px; 
 button { border-radius: 6px; }
 entry { border-radius: 6px; background-color: rgba(10, 9, 8, 0.45); border: 1px solid rgba(239, 230, 214, 0.1); box-shadow: none; caret-color: #c9a35a; }
 entry:focus { border-color: rgba(201, 163, 90, 0.55); }
-window.background:not(.xfce4-panel):not(.thunar) iconview, window.background:not(.xfce4-panel):not(.thunar) iconview.view,
-window.background:not(.xfce4-panel):not(.thunar) scrolledwindow, window.background:not(.xfce4-panel):not(.thunar) viewport,
-window.background:not(.xfce4-panel):not(.thunar) .background { background-color: transparent; }
+window.background:not(.xfce4-panel):not(.thunar) iconview, dialog.background iconview, window.background:not(.xfce4-panel):not(.thunar) iconview.view, dialog.background iconview.view,
+window.background:not(.xfce4-panel):not(.thunar) scrolledwindow, dialog.background scrolledwindow, window.background:not(.xfce4-panel):not(.thunar) viewport, dialog.background viewport,
+window.background:not(.xfce4-panel):not(.thunar) .background, dialog.background .background { background-color: transparent; }
 menubar { background-color: transparent; background-image: none; padding: 2px 8px; border-bottom: 1px solid rgba(201, 163, 90, 0.14); box-shadow: none; }
 menubar > menuitem { padding: 6px 12px; border-radius: 6px; font-family: Marcellus; color: rgba(239, 230, 214, 0.82); }
 menubar > menuitem:hover { background-color: rgba(201, 163, 90, 0.14); color: #efe6d6; box-shadow: none; }
@@ -75,7 +76,8 @@ window.thunar.background, window.thunar.background:not(.xfce4-panel) {
 .thunar .sidebar *, .thunar .shortcuts-pane * { background-color: transparent; }
 .thunar .sidebar, .thunar .shortcuts-pane { background-color: rgba(10, 9, 8, 0.3); }
 .thunar .sidebar treeview.view { padding: 7px 12px; color: rgba(239, 230, 214, 0.82); font-size: 13px; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6); }
-.thunar .sidebar treeview.view:selected, .thunar .sidebar treeview.view:selected:focus { background-color: rgba(216, 65, 47, 0.34); background-image: none; color: #efe6d6; border-radius: 0; border: none; }
+/* the chosen place: a quiet accent wash with a 2 px accent rule at its left edge, like a ledger's margin mark */
+.thunar .sidebar treeview.view:selected, .thunar .sidebar treeview.view:selected:focus { background-color: rgba(216, 65, 47, 0.2); background-image: none; box-shadow: inset 2px 0 #d8412f; color: #efe6d6; border-radius: 0; border: none; }
 .thunar .sidebar treeview.view:hover { background-color: rgba(239, 230, 214, 0.06); border-radius: 0; }
 .thunar .sidebar treeview.view.expander { color: rgba(201, 163, 90, 0.6); }
 .thunar toolbar, .thunar .toolbar { background-color: rgba(239, 230, 214, 0.05); border-bottom: 1px solid rgba(201, 163, 90, 0.2); padding: 9px 14px; }

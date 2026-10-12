@@ -2,7 +2,7 @@
 window.thunar.background:not(.xfce4-panel):not(.tenka-lite) { background-color: rgba(11, 21, 19, 0.97); background-image: none; }
 .thunar .sidebar:not(.tenka-lite), .thunar .sidebar treeview.view:not(.tenka-lite) { background-color: rgba(7, 16, 14, 0.35); }
 /* every other window too: Hyprland's washi glass is see-through because it is blurred; unblurred it would be noise */
-window.background:not(.xfce4-panel):not(.thunar):not(.tenka-lite) { background-color: #0b1513; }
+window.background:not(.xfce4-panel):not(.thunar):not(.tenka-lite), dialog.background:not(.tenka-lite) { background-color: #0b1513; }
 .sidebar:not(.tenka-lite) { background-color: rgba(7, 16, 14, 0.5); }
 headerbar:not(.tenka-lite), .titlebar:not(.tenka-lite) { background-color: #12211e; }
 textview text:not(.tenka-lite), window.mousepad textview.view:not(.tenka-lite) { background-color: #0b1513; }

@@ -75,7 +75,7 @@ def gen(name, T):
     window.thunar.background:not(.xfce4-panel):not(.tenka-lite) {{ background-color: {rgba(p['base'], 0.97)}; background-image: none; }}
     .thunar .sidebar:not(.tenka-lite), .thunar .sidebar treeview.view:not(.tenka-lite) {{ background-color: {rgba(p['mantle'], 0.35)}; }}
     /* every other window too: Hyprland's washi glass is see-through because it is blurred; unblurred it would be noise */
-    window.background:not(.xfce4-panel):not(.thunar):not(.tenka-lite) {{ background-color: {p['base']}; }}
+    window.background:not(.xfce4-panel):not(.thunar):not(.tenka-lite), dialog.background:not(.tenka-lite) {{ background-color: {p['base']}; }}
     .sidebar:not(.tenka-lite) {{ background-color: {rgba(p['mantle'], 0.5)}; }}
     headerbar:not(.tenka-lite), .titlebar:not(.tenka-lite) {{ background-color: {p['surface']}; }}
     textview text:not(.tenka-lite), window.mousepad textview.view:not(.tenka-lite) {{ background-color: {p['base']}; }}
@@ -418,8 +418,9 @@ def gen(name, T):
        every window is one sheet of tinted glass over the art. Hyprland blurs what is behind it (more passes, a
        little grain), the sheet darkens toward the bottom so text always sits on enough ink, and type carries a
        soft drop shadow so it reads over any wallpaper. One tint per window, no patchwork of panes. No glow. ---- */
-    window.background:not(.xfce4-panel):not(.thunar) {{ background-color: {gl_win}; background-image: linear-gradient(to bottom, {gl_frost}, transparent 40%); box-shadow: inset 0 1px {gl_lit}; color: {p['text']}; }}
-    window.background:not(.xfce4-panel):not(.thunar) textview text, window.background:not(.xfce4-panel):not(.thunar) .view:not(iconview) {{ background-color: {gl_view}; }}
+    /* GtkDialog windows are `dialog` nodes, not `window` (the settings manager, properties and file dialogs): the same glass */
+    window.background:not(.xfce4-panel):not(.thunar), dialog.background {{ background-color: {gl_win}; background-image: linear-gradient(to bottom, {gl_frost}, transparent 40%); box-shadow: inset 0 1px {gl_lit}; color: {p['text']}; }}
+    window.background:not(.xfce4-panel):not(.thunar) textview text, dialog.background textview text, window.background:not(.xfce4-panel):not(.thunar) .view:not(iconview), dialog.background .view:not(iconview) {{ background-color: {gl_view}; }}
     .sidebar {{ background-color: {gl_side}; color: {p['text']}; }}
     headerbar, .titlebar {{ background-color: {gl_head}; background-image: none; color: {p['text']}; box-shadow: none; border-bottom: 1px solid {rgba(p['accent2'], 0.18)}; }}
     selection {{ background-color: {gl_sel}; color: {p['text']}; }}
@@ -436,9 +437,9 @@ def gen(name, T):
     button {{ border-radius: {Rs}px; }}
     entry {{ border-radius: {Rs}px; background-color: {rgba(p['mantle'], 0.45)}; border: 1px solid {rgba(p['text'], 0.10)}; box-shadow: none; caret-color: {p['accent2']}; }}
     entry:focus {{ border-color: {rgba(p['accent2'], 0.55)}; }}
-    window.background:not(.xfce4-panel):not(.thunar) iconview, window.background:not(.xfce4-panel):not(.thunar) iconview.view,
-    window.background:not(.xfce4-panel):not(.thunar) scrolledwindow, window.background:not(.xfce4-panel):not(.thunar) viewport,
-    window.background:not(.xfce4-panel):not(.thunar) .background {{ background-color: transparent; }}
+    window.background:not(.xfce4-panel):not(.thunar) iconview, dialog.background iconview, window.background:not(.xfce4-panel):not(.thunar) iconview.view, dialog.background iconview.view,
+    window.background:not(.xfce4-panel):not(.thunar) scrolledwindow, dialog.background scrolledwindow, window.background:not(.xfce4-panel):not(.thunar) viewport, dialog.background viewport,
+    window.background:not(.xfce4-panel):not(.thunar) .background, dialog.background .background {{ background-color: transparent; }}
     menubar {{ background-color: transparent; background-image: none; padding: 2px 8px; border-bottom: 1px solid {rgba(p['accent2'], 0.14)}; box-shadow: none; }}
     menubar > menuitem {{ padding: 6px 12px; border-radius: {Rs}px; font-family: Marcellus; color: {rgba(p['text'], 0.82)}; }}
     menubar > menuitem:hover {{ background-color: {rgba(p['accent2'], 0.14)}; color: {p['text']}; box-shadow: none; }}
@@ -472,7 +473,8 @@ def gen(name, T):
     .thunar .sidebar *, .thunar .shortcuts-pane * {{ background-color: transparent; }}
     .thunar .sidebar, .thunar .shortcuts-pane {{ background-color: {gl_side}; }}
     .thunar .sidebar treeview.view {{ padding: 7px 12px; color: {rgba(p['text'], 0.82)}; font-size: 13px; text-shadow: 0 1px 2px {rgba('#000000', 0.6)}; }}
-    .thunar .sidebar treeview.view:selected, .thunar .sidebar treeview.view:selected:focus {{ background-color: {gl_sel}; background-image: none; color: {p['text']}; border-radius: 0; border: none; }}
+    /* the chosen place: a quiet accent wash with a 2 px accent rule at its left edge, like a ledger's margin mark */
+    .thunar .sidebar treeview.view:selected, .thunar .sidebar treeview.view:selected:focus {{ background-color: {rgba(p['accent'], 0.20)}; background-image: none; box-shadow: inset 2px 0 {p['accent']}; color: {p['text']}; border-radius: 0; border: none; }}
     .thunar .sidebar treeview.view:hover {{ background-color: {rgba(p['text'], 0.06)}; border-radius: 0; }}
     .thunar .sidebar treeview.view.expander {{ color: {rgba(p['accent2'], 0.6)}; }}
     .thunar toolbar, .thunar .toolbar {{ background-color: {gl_head}; border-bottom: 1px solid {rgba(p['accent2'], 0.20)}; padding: 9px 14px; }}

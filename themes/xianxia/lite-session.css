@@ -6,3 +6,6 @@ window.background:not(.xfce4-panel):not(.thunar):not(.tenka-lite), dialog.backgr
 .sidebar:not(.tenka-lite) { background-color: rgba(7, 16, 14, 0.5); }
 headerbar:not(.tenka-lite), .titlebar:not(.tenka-lite) { background-color: #12211e; }
 textview text:not(.tenka-lite), window.mousepad textview.view:not(.tenka-lite) { background-color: #0b1513; }
+/* T21: no blur on Lite, so menus stay dense ink sheets (the Hyprland glass rule would otherwise reach them) */
+window.background.popup:not(.xfce4-panel):not(.thunar):not(#whiskermenu-window):not(#XfceNotifyWindow):not(.tenka-lite) { background-color: rgba(18, 33, 30, 0.97); background-image: none; }
+popover.background:not(.tenka-lite), popover.menu:not(.tenka-lite) { background-color: rgba(18, 33, 30, 0.97); background-image: none; }

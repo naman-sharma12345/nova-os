@@ -79,6 +79,9 @@ def gen(name, T):
     .sidebar:not(.tenka-lite) {{ background-color: {rgba(p['mantle'], 0.5)}; }}
     headerbar:not(.tenka-lite), .titlebar:not(.tenka-lite) {{ background-color: {p['surface']}; }}
     textview text:not(.tenka-lite), window.mousepad textview.view:not(.tenka-lite) {{ background-color: {p['base']}; }}
+    /* T21: no blur on Lite, so menus stay dense ink sheets (the Hyprland glass rule would otherwise reach them) */
+    window.background.popup:not(.xfce4-panel):not(.thunar):not(#whiskermenu-window):not(#XfceNotifyWindow):not(.tenka-lite) {{ background-color: {rgba(p['surface'], 0.97)}; background-image: none; }}
+    popover.background:not(.tenka-lite), popover.menu:not(.tenka-lite) {{ background-color: {rgba(p['surface'], 0.97)}; background-image: none; }}
     """))
     # ---------- theme.env (read by scripts) ----------
     W(f"themes/{name}/theme.env", "\n".join([
@@ -355,6 +358,8 @@ def gen(name, T):
     gl_lit = rgba(p['text'], 0.14)
     gl_sel = rgba(p['accent'], 0.34)
     gl_pop = rgba(p['surface'], 0.92)
+    gl_menu = rgba(p['surface'], 0.80)  # T21 A2: menus/popovers are glass over Hyprland's popup blur (Lite keeps them dense)
+    gl_tip = rgba(p['surface'], 0.84)
     # every glass window and dialog except Files (its own rules), the panel and Lite's menu/notification windows
     GW = "window.background:not(.xfce4-panel):not(.thunar):not(#whiskermenu-window):not(#XfceNotifyWindow)"
     GB = "button:not(.link):not(.flat):not(.suggested-action):not(.destructive-action)"  # a plain push button (links, flat tool buttons and the accent buttons keep their own look)
@@ -444,6 +449,17 @@ def gen(name, T):
     button.suggested-action:disabled, button.suggested-action:disabled label {{ background-color: {rgba(p['accent2'], 0.30)}; color: {rgba(p['mantle'], 0.75)}; }}
     paned > separator, paned.wide > separator {{ background-color: transparent; background-image: none; border: none; box-shadow: none; }}
     placessidebar, .sidebar-pane {{ border-right: 1px solid {rgba(p['accent2'], 0.28)}; }}
+    /* T21: the About dialog opens with the program name focused and GTK selects a focused selectable label; the name is
+       a title, not a selection, so it opens clear: no highlight, no focus ring, the ink stays. */
+    window.aboutdialog image + label > selection, window.aboutdialog image + label:focus > selection {{ background-color: transparent; color: {p['text']}; }}
+    window.aboutdialog image + label:focus, window.aboutdialog image + label:focus-visible {{ outline: none; box-shadow: none; }}
+    /* T21 A2: menus, popovers and tooltips are small sheets of glass over Hyprland's popup blur (blur.popups = true),
+       edged with one gold hairline. Ink text, no glow. */
+    popover > contents, popover.menu > contents {{ background-color: {gl_menu}; background-image: linear-gradient(to bottom, {gl_frost}, transparent 45%); border: 1px solid {rgba(p['accent2'], 0.34)}; box-shadow: inset 0 1px {gl_lit}, 0 12px 30px {rgba('#000000', 0.40)}; }}
+    popover > arrow {{ background-color: {gl_menu}; border: 1px solid {rgba(p['accent2'], 0.34)}; }}
+    popover.menu modelbutton:hover, popover.menu modelbutton:selected, popover.menu row:hover {{ background-color: {rgba(p['accent2'], 0.16)}; color: {p['text']}; }}
+    popover separator {{ background-color: {rgba(p['accent2'], 0.18)}; }}
+    tooltip, tooltip.background {{ background-color: {gl_tip}; background-image: linear-gradient(to bottom, {gl_frost}, transparent 60%); border: 1px solid {rgba(p['accent2'], 0.34)}; box-shadow: inset 0 1px {gl_lit}; }}
     """))
     # Tenka Lite (xfwm4: no blur) writes ~/.cache/tenka/session.css at login with denser glass; Hyprland removes it.
     # GTK skips a missing import with a warning.
@@ -587,6 +603,17 @@ def gen(name, T):
     button.suggested-action:disabled, button.suggested-action:disabled label {{ background-color: {rgba(p['accent2'], 0.30)}; color: {rgba(p['mantle'], 0.75)}; }}
     paned > separator, paned.wide > separator {{ background-color: transparent; background-image: none; border: none; box-shadow: none; }}
     placessidebar, .sidebar-pane {{ border-right: 1px solid {rgba(p['accent2'], 0.28)}; }}
+    /* T21 A2: a menu is one small sheet of glass over Hyprland's popup blur (blur.popups = true). GTK puts menus, combo
+       lists and completions in a popup window: that window is the sheet, edged with one gold hairline, and the menu
+       inside it is clear (it used to sit 3 px inside as a near-solid slab). Tooltips and popovers match. No glow. */
+    {GW}.popup {{ background-color: {gl_menu}; background-image: linear-gradient(to bottom, {gl_frost}, transparent 45%); border: 1px solid {rgba(p['accent2'], 0.34)}; border-radius: {R}px; box-shadow: inset 0 1px {gl_lit}; }}
+    window.popup decoration, .csd.popup decoration {{ border-radius: {R}px; box-shadow: 0 12px 30px {rgba('#000000', 0.40)}; border: none; }}
+    window.popup menu, .background.popup > menu, .csd.popup > menu {{ background-color: transparent; background-image: none; border: none; box-shadow: none; margin: 0; border-radius: {R}px; }}
+    window.popup menu > arrow {{ background-color: transparent; border: none; }}
+    popover.background, popover.menu {{ background-color: {gl_menu}; background-image: linear-gradient(to bottom, {gl_frost}, transparent 45%); border: 1px solid {rgba(p['accent2'], 0.34)}; box-shadow: inset 0 1px {gl_lit}, 0 12px 30px {rgba('#000000', 0.40)}; }}
+    tooltip, tooltip.background {{ background-color: {gl_tip}; background-image: linear-gradient(to bottom, {gl_frost}, transparent 60%); border: 1px solid {rgba(p['accent2'], 0.34)}; box-shadow: inset 0 1px {gl_lit}; }}
+    /* the About dialog's name opens focused, and a focused selectable label is selected: keep the title clear */
+    .aboutdialog image + label selection, dialog.background box > image + label selection {{ background-color: transparent; color: {p['text']}; }}
     """))
     W(f"{H}/.config/gtk-3.0/settings.ini", textwrap.dedent(f"""\
     [Settings]

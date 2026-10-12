@@ -18,6 +18,9 @@ local menu     = "tenka-launcher"
 hl.env("XCURSOR_THEME", T.cursor)
 hl.env("XCURSOR_SIZE", "24")
 hl.env("HYPRCURSOR_SIZE", "24")
+-- the same cursors as a hyprcursor theme (usr/share/icons/<theme>/manifest.hl, scripts/gen-cursors.py): drawn by
+-- Hyprland at any scale; X apps keep the Xcursor copy
+hl.env("HYPRCURSOR_THEME", T.cursor)
 hl.env("QT_QPA_PLATFORM", "wayland;xcb")
 hl.env("QT_QPA_PLATFORMTHEME", "qt6ct")
 hl.env("QT_WAYLAND_DISABLE_WINDOWDECORATION", "1")

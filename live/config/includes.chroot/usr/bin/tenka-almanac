@@ -12,6 +12,7 @@ saying (Tianxia), the moon's phase and how far off the next term is. Computed he
   tenka-almanac open       the card: the wheel of the year and the moon (the desk's MONTH row opens it too)
   tenka-almanac sun        sunrise, sunset and twilight for your place, as one line
   tenka-almanac phase      dawn, day, dusk or night by the real sun (tenka-hour reads this)
+  tenka-almanac season     plum, lotus, maple or snow for the desk, turned half a year south of the equator
   tenka-almanac DATE ...   any of the above for a date (YYYY-MM-DD, or YYYY-MM-DDTHH:MM), e.g. tenka-almanac text 2027-03-21
 Your place, for the sun, needs no location service: ~/.config/tenka/place.json ({"name", "lat", "lon"}) when you set
 one, otherwise the city your time zone is named for (from the system's zone1970.tab), so it is close, not exact.
@@ -296,13 +297,18 @@ def open_card():
 def main(argv):
     mode, when = "json", None
     for a in argv:
-        if a in ("json", "text", "line", "wheel", "sun", "phase"): mode = a
+        if a in ("json", "text", "line", "wheel", "sun", "phase", "season"): mode = a
         elif a == "open": return open_card()
         elif a in ("-h", "--help", "help"): print(__doc__.strip()); return 0
         else:
             try: when = (dt.datetime.strptime(a, "%Y-%m-%dT%H:%M") if "T" in a else
                          dt.datetime.strptime(a, "%Y-%m-%d").replace(hour=12)).timestamp()
             except ValueError: print("tenka-almanac: not a date (YYYY-MM-DD or YYYY-MM-DDTHH:MM): " + a, file=sys.stderr); return 2
+    if mode == "season":                # the desk's season word, turned half a year below the equator
+        p = place()
+        m = dt.datetime.fromtimestamp(when or time.time()).month
+        if p and p["lat"] < 0: m = (m + 5) % 12 + 1
+        print("plum" if 3 <= m <= 5 else "lotus" if 6 <= m <= 8 else "maple" if 9 <= m <= 11 else "snow"); return 0
     if mode in ("sun", "phase"):
         s = sun(when)
         if not s: print("tenka-almanac: no place for the sun (set ~/.config/tenka/place.json)", file=sys.stderr); return 1

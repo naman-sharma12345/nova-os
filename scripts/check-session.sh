@@ -335,6 +335,8 @@ mkdir -p "$T/sun"
 [ "$(al sun 2026-10-12)" = "Sunrise 05:32  ·  Sunset 17:15  ·  11h 43m of light over Kolkata" ] &&
 [ "$(al phase 2026-10-12T04:30)" = night ] && [ "$(al phase 2026-10-12T05:20)" = dawn ] && [ "$(al phase 2026-10-12T12:00)" = day ] &&
 [ "$(al phase 2026-10-12T17:30)" = dusk ] && [ "$(al phase 2026-10-12T19:00)" = night ] &&
+[ "$(al season 2026-10-12)" = maple ] && [ "$(HOME="$T/sun" TZ=Australia/Sydney python3 "$BIN/tenka-almanac" season 2026-10-12)" = plum ] &&
+[ "$(HOME="$T/sun" TZ=America/Sao_Paulo python3 "$BIN/tenka-almanac" season 2026-07-01)" = snow ] && grep -q 'tenka-almanac season' "$BIN/tenka-hour" &&
 [ "$(HOME="$T/sun" TZ=Arctic/Longyearbyen python3 "$BIN/tenka-almanac" phase 2026-06-21T00:30)" = day ] &&
 [ "$(HOME="$T/sun" TZ=Arctic/Longyearbyen python3 "$BIN/tenka-almanac" phase 2026-12-21T12:00)" = night ] &&
 mkdir -p "$T/sun/.config/tenka" && echo '{ "name": "London", "lat": 51.5, "lon": -0.13 }' > "$T/sun/.config/tenka/place.json" &&

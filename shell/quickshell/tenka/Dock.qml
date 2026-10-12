@@ -33,7 +33,7 @@ PanelWindow {
         { i: "music", n: "Music", id: "mpv", run: "mpv --player-operation-mode=pseudo-gui ~/Music" },
         { i: "store", n: "Get apps", id: "store", run: "xdg-open https://flathub.org" },
         { sep: true },
-        { i: "settings", n: "Settings", id: "nwg-look", run: "nwg-look" },
+        { i: "settings", n: "Settings", id: "tenka-control", run: "qs -c tenka ipc call control toggle" },   // Tenka's own panel (skins, toggles, sliders); Appearance stays in the launcher
         { i: "trash", n: "Trash", id: "trash", run: "thunar trash:///" }
     ]
     function running(id) {

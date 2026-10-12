@@ -392,5 +392,17 @@ sk off && sk | grep -q '"off": true' && [ ! -e "$SK/.cache/tenka/sky.json" ] && 
 grep -q '"tenka-sky"' "$ROOT/shell/quickshell/tenka/Theme.qml" && grep -q 'Theme.sky.kind === "rain"' "$ROOT/shell/quickshell/tenka/Desk.qml" &&
 grep -q 'kind: "rain"' "$ROOT/shell/quickshell/tenka/Desk.qml" && [ -f "$ROOT/shell/quickshell/tenka/assets/rain.png" ] && grep -q 'Theme.sky.word' "$ROOT/shell/quickshell/tenka/DeskLedger.qml" &&
 [ "$(grep -c 'sky: Theme.sky.word' "$ROOT/shell/quickshell/tenka/LockFace.qml")" = 3 ] && grep -q 'line.sky' "$ROOT/shell/quickshell/tenka/almanac/AlmanacLine.qml" || { echo "FAIL: the sky"; fail=1; }
+# 23. Under Heaven (Tianxia: The Four Seas): the hour in the places you keep, offsets and sun worked out here
+CK="$T/clocks"; mkdir -p "$CK/.config/tenka"
+ck() { HOME="$CK" TZ="${Z:-Asia/Kolkata}" TENKA_NOW=1791814200 TENKA_ALMANAC="$BIN/tenka-almanac" python3 "$BIN/tenka-clocks" "$@"; }
+ck text | grep -q '^Tokyo  *23:10  +3:30  *sunrise 05:45  sunset 17:12' && ck text | grep -q '^New York  *10:10  .9:30' &&
+ck add Sydney | grep -q '"zone": "Australia/Sydney"' && ck text | grep -q '^Sydney  *01:10  +5:30  *sunrise 06:1[6-9]  sunset 19:0[6-9]' &&
+ck remove London >/dev/null && ! ck text | grep -q London && ! ck add Nowhereville 2>/dev/null &&
+echo '{"name": "xianxia"}' > "$CK/.config/tenka/shell-theme.json" && rm "$CK/.config/tenka/clocks.json" && ck | grep -q '"title": "The Four Seas"' && ck | grep -q 'Asia/Shanghai' &&
+Z=Asia/Tokyo ck | grep -q '"here": {"zone": "Asia/Tokyo"' && ! grep -q 'urllib\|http' "$BIN/tenka-clocks" &&
+grep -q '^ *Clocks {}' "$ROOT/shell/quickshell/tenka/shell.qml" && [ -f "$ROOT/shell/quickshell/tenka/clocks/ClocksCard.qml" ] &&
+grep -q '"tenka:clocks"' "$IC/etc/skel/.config/hypr/hyprland.lua" && [ -f "$IC/usr/share/tenka/clocks/LiteClocks.qml" ] &&
+grep -q 'value="tenka-clocks open"' "$IC/etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml" &&
+grep -q 'tenka:clocks' "$IC/usr/bin/tenka-codex" && grep -q '^Exec=tenka-clocks open$' "$IC/usr/share/applications/tenka-clocks.desktop" || { echo "FAIL: under heaven"; fail=1; }
 [ "$fail" = 0 ] && echo "check-session: ok"
 exit $fail

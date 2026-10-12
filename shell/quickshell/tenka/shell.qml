@@ -42,6 +42,7 @@ ShellRoot {
     Garden {}
     Journal {}
     Breath {}
+    Clocks {}
     ControlCenter {}
     Notifications {}
     Osd {}

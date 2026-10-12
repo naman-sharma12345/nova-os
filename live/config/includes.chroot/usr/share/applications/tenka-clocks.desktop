@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Under Heaven
+GenericName=World Clock
+Comment=The hour in the places you keep, each with its own day of sun (Super + U)
+Exec=tenka-clocks open
+Icon=preferences-system-time-symbolic
+Categories=Utility;Clock;
+Keywords=clock;world;time;zone;timezone;city;hour;sunrise;sunset;four seas;tianxia;

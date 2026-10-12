@@ -149,6 +149,7 @@ hl.bind(M .. " + I",           hl.dsp.global("tenka:incense"))         -- the in
 hl.bind(M .. " + G",           hl.dsp.global("tenka:garden"))          -- the garden: rain, a stream, pines, embers
 hl.bind(M .. " + K",           hl.dsp.global("tenka:journal"))         -- the pillow book: a few lines a day
 hl.bind(M .. " + O",           hl.dsp.global("tenka:breath"))          -- the breath: a breathing guide drawn as an enso
+hl.bind(M .. " + U",           hl.dsp.global("tenka:clocks"))          -- under heaven: the hour in the places you keep
 hl.bind("Print",               hl.dsp.exec_cmd("tenka-shot area"))
 hl.bind("SHIFT + Print",       hl.dsp.exec_cmd("tenka-shot screen"))
 hl.bind(M .. " + SHIFT + E",   hl.dsp.exec_cmd("tenka-power"))

@@ -1,0 +1,199 @@
+#!/usr/bin/python3
+"""tenka-clocks: Under Heaven (Tianxia: The Four Seas), the hour in the places you keep, Super + U.
+Each place shows its time, how far it is from here, its old double-hour (the Hour of the Ox...) and its own day
+drawn as one hairline: the daylight in gold, the twilight fainter, a dot for now. Sunrise and sunset are worked
+out on this machine from the place's coordinates in the time-zone table, so nothing is fetched or sent anywhere.
+  tenka-clocks [state]          the places, as JSON for the card
+  tenka-clocks text             the same, as lines
+  tenka-clocks add ZONE [NAME]  keep a place (ZONE as in the time-zone table, e.g. Europe/Paris, or a city: Paris)
+  tenka-clocks remove ZONE      let one go
+  tenka-clocks zones [WORDS]    the places you can add (all of them, or those matching WORDS)
+  tenka-clocks open             the card (qs ipc on the flagship, a small Qt window on Tenka Lite)
+Kept in ~/.config/tenka/clocks.json; until it exists Tenka keeps Tokyo, London and New York (Tianxia: Shanghai).
+"""
+import datetime as dt, json, os, subprocess, sys, time
+
+HOME = os.path.expanduser("~")
+CONF = os.path.join(os.environ.get("XDG_CONFIG_HOME") or os.path.join(HOME, ".config"), "tenka")
+J = os.path.join(CONF, "clocks.json")
+RT = os.environ.get("XDG_RUNTIME_DIR") or "/tmp"
+TABS = ("/usr/share/zoneinfo/zone1970.tab", "/usr/share/zoneinfo/zone.tab")
+MAX = 6
+_alm = None
+
+def almanac():
+    global _alm
+    if _alm is None:
+        from importlib.machinery import SourceFileLoader
+        _alm = SourceFileLoader("tenka_almanac", os.environ.get("TENKA_ALMANAC", "/usr/bin/tenka-almanac")).load_module()
+    return _alm
+
+def theme():
+    try: return json.load(open(os.path.join(CONF, "shell-theme.json"))).get("name") or "samurai"
+    except (OSError, ValueError): return "samurai"
+
+def nice(zone): return zone.split("/")[-1].replace("_", " ")
+
+def table():
+    """zone -> (lat, lon) from the system's time-zone table"""
+    out = {}
+    for tab in TABS:
+        try:
+            for line in open(tab, encoding="utf-8"):
+                f = line.rstrip("\n").split("\t")
+                if line.startswith("#") or len(f) < 3 or f[2] in out: continue
+                c = f[1]; k = 1 + next(i for i, ch in enumerate(c[1:]) if ch in "+-")
+                def deg(s):
+                    sg = -1 if s[0] == "-" else 1; s = s[1:]
+                    w = 2 if len(s) in (4, 6) else 3
+                    return sg * (int(s[:w]) + int(s[w:w + 2]) / 60 + (int(s[w + 2:w + 4]) / 3600 if len(s) > w + 2 else 0))
+                out[f[2]] = (deg(c[:k]), deg(c[k:]))
+        except OSError:
+            continue
+    return out
+
+def default():
+    first = "Asia/Shanghai" if theme() == "xianxia" else "Asia/Tokyo"
+    return [{"zone": z, "name": nice(z)} for z in (first, "Europe/London", "America/New_York")]
+
+def read():
+    try:
+        d = json.load(open(J, encoding="utf-8"))
+        return [{"zone": str(c["zone"]), "name": str(c.get("name") or nice(c["zone"]))} for c in d.get("cities", [])][:MAX]
+    except (OSError, ValueError, KeyError, TypeError, AttributeError):
+        return default()
+
+def write(cities):
+    os.makedirs(CONF, exist_ok=True)
+    with open(J + ".new", "w", encoding="utf-8") as f: json.dump({"cities": cities}, f, ensure_ascii=False, indent=1)
+    os.replace(J + ".new", J)
+
+def home_zone():
+    tz = os.environ.get("TZ", "").lstrip(":")
+    if tz and "/" in tz: return tz
+    try: return os.path.realpath("/etc/localtime").split("/zoneinfo/", 1)[1]
+    except IndexError:
+        try: return open("/etc/timezone").read().strip()
+        except OSError: return "UTC"
+
+def in_zone(zone, fn):
+    """run fn with the process's local time set to `zone` (zoneinfo-free: the C library's own TZ)"""
+    old = os.environ.get("TZ")
+    os.environ["TZ"] = zone; time.tzset()
+    try: return fn()
+    finally:
+        if old is None: os.environ.pop("TZ", None)
+        else: os.environ["TZ"] = old
+        time.tzset()
+
+def now():
+    t = os.environ.get("TENKA_NOW")                    # tests and renders: epoch seconds
+    return float(t) if t else time.time()
+
+def place(zone, name, coords, t, here=False):
+    lat, lon = coords.get(zone, (None, None))
+    if here:
+        p = almanac().place()                           # place.json or the zone's city: the almanac's own here
+        if p: lat, lon, name = p["lat"], p["lon"], (p["name"] or name)
+    def local():
+        lt = time.localtime(t)
+        r = {"offset": lt.tm_gmtoff, "abbr": lt.tm_zone, "date": time.strftime("%Y-%m-%d", lt)}
+        if lat is not None:
+            s = almanac().sun_day(t, lat, lon)
+            mid = time.mktime(time.strptime(r["date"], "%Y-%m-%d"))
+            m = lambda u: round((u - mid) / 60) if u else None
+            r.update(dawn=m(s["dawn"]), rise=m(s["rise"]), set=m(s["set"]), dusk=m(s["dusk"]), up=s["up"])
+        return r
+    d = {"zone": zone, "name": name, "here": here, "lat": None if lat is None else round(lat, 2)}
+    d.update(in_zone(zone, local))
+    return d
+
+def state():
+    t = now(); coords = table(); hz = home_zone()
+    xia = theme() == "xianxia"
+    here = place(hz, nice(hz), coords, t, here=True)
+    cities = [place(c["zone"], c["name"], coords, t) for c in read() if c["zone"] != hz]
+    return {"title": "The Four Seas" if xia else "Under Heaven", "now": int(t), "here": here, "cities": cities,
+            "max": MAX}
+
+def rel(a, b):
+    d = (a - b) // 60; s = "+" if d >= 0 else "\u2212"; d = abs(d)
+    return "same time" if d == 0 else "%s%d:%02d" % (s, d // 60, d % 60) if d % 60 else "%s%d h" % (s, d // 60)
+
+def text():
+    s = state(); h = s["here"]
+    print(s["title"].upper())
+    for c in [h] + s["cities"]:
+        lt = dt.datetime.utcfromtimestamp(s["now"] + c["offset"])
+        sun = ("  sunrise %02d:%02d  sunset %02d:%02d" % (c["rise"] // 60, c["rise"] % 60, c["set"] // 60, c["set"] % 60)
+               if c.get("rise") is not None and c.get("set") is not None else "")
+        print("%-14s %s  %-9s%s" % (c["name"], lt.strftime("%H:%M"), "here" if c["here"] else rel(c["offset"], h["offset"]), sun))
+
+def find(words):
+    coords = table(); w = words.lower().replace(" ", "_")
+    hits = [z for z in coords if w in z.lower()] if w else sorted(coords)
+    hits.sort(key=lambda z: (not nice(z).lower().replace(" ", "_").startswith(w), len(z), z))
+    return hits
+
+def open_card():
+    if os.environ.get("WAYLAND_DISPLAY") and subprocess.run(["pgrep", "-x", "qs"], capture_output=True).returncode == 0:
+        subprocess.run(["qs", "-c", "tenka", "ipc", "call", "clocks", "toggle"], capture_output=True); return 0
+    if not os.environ.get("DISPLAY"): text(); return 0
+    lock = os.path.join(RT, "tenka-clocks-card.pid")
+    try:                                                # asked again while open: close it
+        pid = int(open(lock).read().strip())
+        if b"LiteClocks.qml" not in open("/proc/%d/cmdline" % pid, "rb").read(): raise ValueError
+        os.kill(pid, 15); os.remove(lock); return 0
+    except (OSError, ValueError):
+        pass
+    facts, zones = os.path.join(RT, "tenka-clocks.json"), os.path.join(RT, "tenka-clocks-zones.json")
+    def dump():
+        with open(facts + ".new", "w", encoding="utf-8") as f: json.dump(state(), f, ensure_ascii=False)
+        os.replace(facts + ".new", facts)
+    dump()
+    with open(zones, "w", encoding="utf-8") as f: json.dump([{"zone": z, "name": nice(z)} for z in sorted(table())], f)
+    env = dict(os.environ, QML_XHR_ALLOW_FILE_READ="1", QT_QPA_PLATFORM="xcb")
+    p = subprocess.Popen(["/usr/lib/qt6/bin/qml", "/usr/share/tenka/clocks/LiteClocks.qml", "--", facts, zones,
+                          os.path.join(CONF, "shell-theme.json")],
+                         stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, env=env, text=True)
+    with open(lock, "w") as f: f.write(str(p.pid))
+    import re
+    for line in p.stderr:                               # the card asks ("CLOCKS ADD <zone>"); this program keeps the list
+        m = re.search(r"CLOCKS (ADD|REMOVE) (\S+)", line)
+        if m:
+            main([m.group(1).lower(), m.group(2)], quiet=True); dump()
+    p.wait()
+    for f in (lock, facts, zones):
+        try: os.remove(f)
+        except OSError: pass
+    return 0
+
+def main(a, quiet=False):
+    c = a[0] if a else "state"
+    if c == "state": print(json.dumps(state(), ensure_ascii=False)); return 0
+    if c == "text": text(); return 0
+    if c == "open": return open_card()
+    if c == "zones":
+        hits = find(" ".join(a[1:]))
+        print(json.dumps([{"zone": z, "name": nice(z)} for z in hits[:40 if len(a) > 1 else None]], ensure_ascii=False)); return 0
+    if c == "add" and len(a) >= 2:
+        hits = [a[1]] if a[1] in table() else find(a[1])
+        if not hits:
+            print("tenka-clocks: no place called " + a[1], file=sys.stderr); return 1
+        z = hits[0]; cities = [x for x in read() if x["zone"] != z]
+        if len(cities) >= MAX:
+            print("tenka-clocks: %d places is the most the card keeps; remove one first" % MAX, file=sys.stderr); return 1
+        cities.append({"zone": z, "name": " ".join(a[2:]) or nice(z)}); write(cities)
+        if not quiet: print(json.dumps(state(), ensure_ascii=False))
+        return 0
+    if c == "remove" and len(a) == 2:
+        cities = read(); keep = [x for x in cities if a[1] not in (x["zone"], x["name"])]
+        if len(keep) == len(cities):
+            print("tenka-clocks: not kept: " + a[1], file=sys.stderr); return 1
+        write(keep)
+        if not quiet: print(json.dumps(state(), ensure_ascii=False))
+        return 0
+    print(__doc__.strip(), file=sys.stderr); return 2
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

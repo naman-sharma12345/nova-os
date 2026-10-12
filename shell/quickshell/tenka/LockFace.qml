@@ -61,6 +61,7 @@ Item {
         // the season and tonight's moon, from the almanac
         AlmanacLine { id: alm1; anchors.top: dt.bottom; anchors.topMargin: 16 * face.s; x: 6 * face.s
                       running: face.visible && face.style === "card"; theme: Theme.t.name || ""
+                      sky: Theme.sky.word ? Theme.sky.word + "  " + Theme.sky.temp : ""
                       px: 17 * face.s; face: Theme.display; textColor: Theme.alpha(Theme.t.text, 0.62)
                       lit: Theme.alpha(Theme.t.text, 0.86); dark: Theme.alpha(Theme.t.text, 0.10); rim: Theme.alpha(Theme.gold, 0.5) }
         Text { id: ttl; anchors.top: alm1.bottom; anchors.topMargin: 26 * face.s; x: 6 * face.s
@@ -146,6 +147,7 @@ Item {
                    font.family: Theme.display; font.pixelSize: 26 * face.s; font.letterSpacing: 2 }
             AlmanacLine { anchors.horizontalCenter: parent.horizontalCenter
                           running: face.visible && face.style === "brush"; theme: Theme.t.name || ""
+                      sky: Theme.sky.word ? Theme.sky.word + "  " + Theme.sky.temp : ""
                           px: 16 * face.s; face: Theme.display; textColor: Theme.alpha(Theme.t.text, 0.62)
                           lit: Theme.alpha(Theme.t.text, 0.86); dark: Theme.alpha(Theme.t.text, 0.10); rim: Theme.alpha(Theme.gold, 0.5) }
             Rectangle {
@@ -225,6 +227,7 @@ Item {
                    font.pixelSize: 24 * face.s; font.letterSpacing: 1 }
             Item { width: 1; height: 14 * face.s }
             AlmanacLine { running: face.visible && face.style === "ledger"; theme: Theme.t.name || ""
+                      sky: Theme.sky.word ? Theme.sky.word + "  " + Theme.sky.temp : ""
                           px: 16 * face.s; face: Theme.display; textColor: Theme.alpha(Theme.t.text, 0.6)
                           lit: Theme.alpha(Theme.t.text, 0.86); dark: Theme.alpha(Theme.t.text, 0.10); rim: Theme.alpha(Theme.gold, 0.5) }
             Item { width: 1; height: 44 * face.s }

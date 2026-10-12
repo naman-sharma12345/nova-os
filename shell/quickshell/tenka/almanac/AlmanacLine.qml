@@ -1,6 +1,7 @@
 // One quiet line from the almanac: tonight's moon, drawn flat, and the season ("Cold Dew  ·  Wild geese return";
 // on Tianxia the term's old saying). Theme-free like MoonGlyph: the owner sets the colours and the face.
-// It asks tenka-almanac itself while `running`, then every 20 minutes. Used by the lock (LockFace.qml).
+// It asks tenka-almanac itself while `running`, then every 20 minutes. Used by the lock (LockFace.qml), which also
+// hands it the sky outside ("Autumn rain 24°", tenka-sky) to end the line.
 import QtQuick
 import Quickshell.Io
 
@@ -15,6 +16,7 @@ Row {
     property real px: 17
     property bool caps: false
     property string theme: ""                   // re-ask when the pack changes
+    property string sky: ""                     // the weather outside in words (Theme.sky), after the season
     property var a: null
     spacing: px * 0.7
     visible: a !== null
@@ -37,7 +39,7 @@ Row {
     }
     Text {
         anchors.verticalCenter: parent.verticalCenter
-        readonly property string words: line.a ? line.a.term + "  \u00b7  " + line.a.detail : ""
+        readonly property string words: line.a ? line.a.term + "  \u00b7  " + line.a.detail + (line.sky ? "  \u00b7  " + line.sky : "") : ""
         text: line.caps ? words.toUpperCase() : words
         color: line.textColor; font.family: line.face; font.pixelSize: line.px
         font.letterSpacing: line.caps ? line.px * 0.32 : 0.5

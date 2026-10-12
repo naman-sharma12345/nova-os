@@ -387,6 +387,7 @@ sk() { HOME="$SK" TZ="${Z:-Asia/Kolkata}" TENKA_ALMANAC="$BIN/tenka-almanac" pyt
 [ "$(Z=Australia/Sydney TENKA_SKY_FIXTURE=63,18 sk line)" = "Sydney  18°  ·  Spring rain" ] && TENKA_SKY_FIXTURE=95,30 sk | grep -q '"kind": "storm"' &&
 sk off && sk | grep -q '"off": true' && [ ! -e "$SK/.cache/tenka/sky.json" ] && sk on && grep -q 'latitude=%.1f&longitude=%.1f' "$BIN/tenka-sky" &&
 grep -q '"tenka-sky"' "$ROOT/shell/quickshell/tenka/Theme.qml" && grep -q 'Theme.sky.kind === "rain"' "$ROOT/shell/quickshell/tenka/Desk.qml" &&
-grep -q 'kind: "rain"' "$ROOT/shell/quickshell/tenka/Desk.qml" && [ -f "$ROOT/shell/quickshell/tenka/assets/rain.png" ] && grep -q 'Theme.sky.word' "$ROOT/shell/quickshell/tenka/DeskLedger.qml" || { echo "FAIL: the sky"; fail=1; }
+grep -q 'kind: "rain"' "$ROOT/shell/quickshell/tenka/Desk.qml" && [ -f "$ROOT/shell/quickshell/tenka/assets/rain.png" ] && grep -q 'Theme.sky.word' "$ROOT/shell/quickshell/tenka/DeskLedger.qml" &&
+[ "$(grep -c 'sky: Theme.sky.word' "$ROOT/shell/quickshell/tenka/LockFace.qml")" = 3 ] && grep -q 'line.sky' "$ROOT/shell/quickshell/tenka/almanac/AlmanacLine.qml" || { echo "FAIL: the sky"; fail=1; }
 [ "$fail" = 0 ] && echo "check-session: ok"
 exit $fail

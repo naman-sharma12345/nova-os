@@ -229,6 +229,10 @@ def build(name, T, glass=False):
     OPAQUE = ("opaque=kaffeine,kmplayer,subtitlecomposer,kdenlive,vlc,smplayer,smplayer2,avidemux,avidemux2_qt4,"
               "avidemux3_qt4,avidemux3_qt5,kamoso,QtCreator,VirtualBox,VirtualBoxVM,trojita,dragon,digikam,lyx,mpv,"
               "obs,krita,qemu-system-x86_64\n") if glass else ""
+    # glass: type carries a soft drop shadow so it reads over any wallpaper (as the GTK glass does)
+    SHADOW = ("text.shadow=1\ntext.shadow.xshift=0\ntext.shadow.yshift=1\ntext.shadow.color=#000000\ntext.shadow.alpha=150\n"
+              "text.shadow.depth=1\n") if glass else "text.shadow=0\n"
+    tab_rest = _mix(sub, text, .45) if glass else sub   # resting tab names: a step brighter on the lighter frost
     WINT = ("\n[WindowTranslucent]\ninterior=true\ninterior.element=window\nframe=false\nframe.expansion=0\n") if glass else ""
     disp = name.capitalize()
     kv = f"""[%General]
@@ -339,8 +343,7 @@ text.focus.color={text}
 text.press.color={text}
 text.toggle.color={text}
 text.disabled.color={_mix(sub, base, .45)}
-text.shadow=0
-text.margin=1
+{SHADOW}text.margin=1
 text.iconspacing=6
 text.margin.left=10
 text.margin.right=10
@@ -441,7 +444,7 @@ frame.top=3
 frame.bottom=3
 frame.left=3
 frame.right=3
-text.normal.color={sub}
+text.normal.color={tab_rest}
 text.focus.color={text}
 text.toggle.color={text}
 text.press.color={text}

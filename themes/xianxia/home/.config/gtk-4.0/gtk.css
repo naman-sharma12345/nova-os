@@ -72,3 +72,10 @@ headerbar button.suggested-action, .dialog-action-area > button.suggested-action
 pathbar > button, .path-bar > button { font-family: Marcellus; }
 progressbar trough { min-height: 4px; background-color: rgba(238, 243, 236, 0.1); border: none; border-radius: 99px; box-shadow: none; }
 progressbar progress { min-height: 4px; background-color: #e2bd6b; background-image: none; border: none; border-radius: 99px; box-shadow: none; }
+/* T20: the answer button (Open, Save, Select) is the one solid gold mark on the glass, ink on gold. */
+button.suggested-action, headerbar button.suggested-action, .dialog-action-area > button.suggested-action { background-color: rgba(226, 189, 107, 0.88); background-image: none; border: 1px solid #e2bd6b; color: #07100e; font-weight: 600; box-shadow: none; text-shadow: none; }
+button.suggested-action label { color: #07100e; text-shadow: none; }
+button.suggested-action:hover { background-color: #e2bd6b; }
+button.suggested-action:disabled, button.suggested-action:disabled label { background-color: rgba(226, 189, 107, 0.3); color: rgba(7, 16, 14, 0.75); }
+paned > separator, paned.wide > separator { background-color: transparent; background-image: none; border: none; box-shadow: none; }
+placessidebar, .sidebar-pane { border-right: 1px solid rgba(226, 189, 107, 0.28); }

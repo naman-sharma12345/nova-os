@@ -437,6 +437,13 @@ def gen(name, T):
     pathbar > button, .path-bar > button {{ font-family: Marcellus; }}
     progressbar trough {{ min-height: 4px; background-color: {rgba(p['text'], 0.10)}; border: none; border-radius: 99px; box-shadow: none; }}
     progressbar progress {{ min-height: 4px; background-color: {p['accent2']}; background-image: none; border: none; border-radius: 99px; box-shadow: none; }}
+    /* T20: the answer button (Open, Save, Select) is the one solid gold mark on the glass, ink on gold. */
+    button.suggested-action, headerbar button.suggested-action, .dialog-action-area > button.suggested-action {{ background-color: {rgba(p['accent2'], 0.88)}; background-image: none; border: 1px solid {p['accent2']}; color: {p['mantle']}; font-weight: 600; box-shadow: none; text-shadow: none; }}
+    button.suggested-action label {{ color: {p['mantle']}; text-shadow: none; }}
+    button.suggested-action:hover {{ background-color: {p['accent2']}; }}
+    button.suggested-action:disabled, button.suggested-action:disabled label {{ background-color: {rgba(p['accent2'], 0.30)}; color: {rgba(p['mantle'], 0.75)}; }}
+    paned > separator, paned.wide > separator {{ background-color: transparent; background-image: none; border: none; box-shadow: none; }}
+    placessidebar, .sidebar-pane {{ border-right: 1px solid {rgba(p['accent2'], 0.28)}; }}
     """))
     # Tenka Lite (xfwm4: no blur) writes ~/.cache/tenka/session.css at login with denser glass; Hyprland removes it.
     # GTK skips a missing import with a warning.
@@ -573,6 +580,13 @@ def gen(name, T):
     {GS('infobar > revealer > box', 'infobar:hover > revealer > box', 'infobar:backdrop > revealer > box')} {{ background-color: {rgba(p['text'], 0.06)}; background-image: none; border: none; border-bottom: 1px solid {rgba(p['accent2'], 0.14)}; box-shadow: inset 2px 0 {rgba(p['accent2'], 0.7)}; color: {p['text']}; }}
     {GS('infobar.error > revealer > box', 'infobar.error:hover > revealer > box', 'infobar.error:backdrop > revealer > box')} {{ background-color: {rgba(p['accent'], 0.12)}; box-shadow: inset 2px 0 {p['accent']}; }}
     {GS('infobar > revealer > box label')} {{ color: {p['text']}; }}
+    /* T20: the answer button (Open, Save, Select) is the one solid gold mark on the glass, ink on gold. */
+    button.suggested-action, headerbar button.suggested-action, .dialog-action-area > button.suggested-action {{ background-color: {rgba(p['accent2'], 0.88)}; background-image: none; border: 1px solid {p['accent2']}; color: {p['mantle']}; font-weight: 600; box-shadow: none; text-shadow: none; }}
+    button.suggested-action label {{ color: {p['mantle']}; text-shadow: none; }}
+    button.suggested-action:hover {{ background-color: {p['accent2']}; }}
+    button.suggested-action:disabled, button.suggested-action:disabled label {{ background-color: {rgba(p['accent2'], 0.30)}; color: {rgba(p['mantle'], 0.75)}; }}
+    paned > separator, paned.wide > separator {{ background-color: transparent; background-image: none; border: none; box-shadow: none; }}
+    placessidebar, .sidebar-pane {{ border-right: 1px solid {rgba(p['accent2'], 0.28)}; }}
     """))
     W(f"{H}/.config/gtk-3.0/settings.ini", textwrap.dedent(f"""\
     [Settings]

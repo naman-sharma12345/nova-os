@@ -12,6 +12,13 @@ Item {
     property bool lightArt: false
     property bool resting: false
     property bool active: true
+    // the desk lets a click on the moon open Moon Viewing (Moon.qml); the lock does not. hitItem is the moon's own
+    // square while it is shown, else nothing, so the owner can add it to its input mask without catching other clicks
+    property bool clickable: false
+    readonly property Item hitItem: clickable && orb.shown && !resting ? moonHit : null
+    // a sibling of the orb, not its child: the input mask follows an item's own x/y, and the orb glides
+    MouseArea { id: moonHit; x: orb.x; y: orb.y; width: orb.width; height: orb.height; enabled: sky.hitItem !== null
+                cursorShape: Qt.PointingHandCursor; onClicked: Theme.ipc("moon", "open") }
     // ---- the real moon, on a clear night. tenka-moon says where it stands in this sky (altitude, azimuth and the
     // tilt of its lit limb, worked out on the machine, nothing asked online); it is set in the picture's
     // open sky: rising at the left of that space, setting at the right (turned over in the southern half of

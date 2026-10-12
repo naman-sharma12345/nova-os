@@ -453,5 +453,12 @@ AK=$(HOME="$MX" TZ=Asia/Kolkata TENKA_PLACE=22.57,88.36,Kolkata TENKA_ALMANAC="$
 echo "$AL" | grep -q '"also": "The morning star before dawn  ·  Jupiter from 23:00  ·  Mars from 23:30"' &&
 echo "$AK" | grep -q '"also": "The Year Star from 01:50  ·  the Sparkling Deluder from 01:00  ·  the Settling Star until 03:30  ·  the Orionids peak tonight"' &&
 grep -q 'card.s.also' "$ROOT/shell/quickshell/tenka/moon/MoonCard.qml" || { echo "FAIL: also tonight"; fail=1; }
+# 29. A click on the desk moon opens Moon Viewing: the desk's input mask adds the moon's own square while it is up, and that
+#     square is a sibling of the orb (an input mask follows its item's own x/y; a child of the gliding orb would be left
+#     behind where the moon first appeared). The lock's moon is not clickable.
+SK="$ROOT/shell/quickshell/tenka/SkyMoon.qml"; DK="$ROOT/shell/quickshell/tenka/Desk.qml"
+grep -q 'Region { item: deskMoon.hitItem }' "$DK" && grep -q 'clickable: true' "$DK" &&
+grep -q 'MouseArea { id: moonHit; x: orb.x; y: orb.y' "$SK" && grep -q 'Theme.ipc("moon", "open")' "$SK" &&
+! grep -q 'clickable: true' "$ROOT/shell/quickshell/tenka/LockFace.qml" || { echo "FAIL: desk moon click"; fail=1; }
 [ "$fail" = 0 ] && echo "check-session: ok"
 exit $fail

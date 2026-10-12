@@ -13,7 +13,8 @@ PanelWindow {
     exclusionMode: ExclusionMode.Ignore
     WlrLayershell.layer: WlrLayer.Bottom
     WlrLayershell.namespace: "tenka-desk"
-    mask: Region { item: Theme.deskStyle === "film" ? filmHit : Theme.deskStyle === "scroll" ? scrollHit : clockHit }
+    mask: Region { item: Theme.deskStyle === "film" ? filmHit : Theme.deskStyle === "scroll" ? scrollHit : clockHit
+                   Region { item: deskMoon.hitItem } }   // the moon, while it is up, opens Moon Viewing
     readonly property real s: Math.min(width / 1920, height / 1080)
 
     Image { anchors.fill: parent; source: "assets/vignette.png"; smooth: true; opacity: 0.85 }
@@ -103,7 +104,7 @@ PanelWindow {
 
     // ---- the real moon, on a clear night, in the picture's open sky (SkyMoon.qml; the lock shows the same one)
     SkyMoon { id: deskMoon; anchors.fill: parent; s: desk.s; ink: desk.type; lightArt: desk.lightArt
-              resting: Theme.working || Theme.hush || Theme.focus }
+              resting: Theme.working || Theme.hush || Theme.focus; clickable: true }
 
     // ---- the art's tone behind the type. A tiny canvas reads the wallpaper (48x27) and averages the
     // luminance under the title block; on a pale picture (snow, mist) the desk's type turns to the

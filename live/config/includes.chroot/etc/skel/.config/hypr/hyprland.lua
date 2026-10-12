@@ -83,7 +83,10 @@ hl.gesture({ fingers = 3, direction = "horizontal", action = "workspace" })
 
 -- layers: frosted glass for every shell surface --------------------------
 for _, ns in ipairs({ "waybar", "launcher", "notifications", "logout_dialog", "swayosd", "gtk-layer-shell",
-                      "tenka-launcher", "tenka-control", "tenka-notify", "tenka-cards", "tenka-dock", "tenka-osd", "tenka-power" }) do
+                      "tenka-launcher", "tenka-control", "tenka-notify", "tenka-cards", "tenka-dock", "tenka-osd", "tenka-power",
+                      -- the clipboard sheet is tinted for the compositor's blur (0.74 on Hyprland) and had none; the overview,
+                      -- switcher, Wi-Fi and pairing sheets frost too instead of sitting on the art as flat ink
+                      "tenka-recall", "tenka-overview", "tenka-switcher", "tenka-air", "tenka-bond" }) do
     hl.layer_rule({ name = "glass-" .. ns, match = { namespace = "^" .. ns .. "$" }, blur = true, ignore_alpha = 0.2 })
 end
 hl.layer_rule({ name = "wallpaper-fade", match = { namespace = "^wallpaper$" }, animation = "fade" })

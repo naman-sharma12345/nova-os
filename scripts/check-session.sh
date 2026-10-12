@@ -25,6 +25,9 @@
 # 15. The Garden: the four beds exist and loop clean (48 s, Vorbis), tenka-ambience knows them, refuses an
 #     unknown one, and is wired in both sessions (Super+G, the card in shell.qml, Lite's window, the menu entry)
 set -u
+# the checks grep UTF-8 output (the clocks print "−9:30" with a real minus); a bare build container has no
+# locale, and in C a "." matches one byte of it, so every check runs in C.UTF-8 (as it does on a desktop)
+export LC_ALL=C.UTF-8
 ROOT=$(cd "$(dirname "$0")/.." && pwd); BIN="$ROOT/live/config/includes.chroot/usr/bin"
 fail=0; T=$(mktemp -d); trap 'rm -rf "$T"' EXIT
 for f in "$BIN"/tenka-*; do

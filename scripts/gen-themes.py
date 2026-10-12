@@ -426,6 +426,8 @@ def gen(name, T):
     window.dialog .dialog-action-area > button:hover {{ background-color: {rgba(p['accent2'], 0.18)}; }}
     window.dialog .dialog-action-area > button.suggested-action {{ background-color: {rgba(p['accent2'], 0.24)}; border-color: {rgba(p['accent2'], 0.50)}; color: {p['text']}; }}
     window.dialog.message box > label {{ color: {p['text']}; }}
+    progressbar trough {{ min-height: 4px; background-color: {rgba(p['text'], 0.10)}; border: none; border-radius: 99px; box-shadow: none; }}
+    progressbar progress {{ min-height: 4px; background-color: {p['accent2']}; background-image: none; border: none; border-radius: 99px; box-shadow: none; }}
     """))
     # Tenka Lite (xfwm4: no blur) writes ~/.cache/tenka/session.css at login with denser glass; Hyprland removes it.
     # GTK skips a missing import with a warning.
@@ -449,6 +451,12 @@ def gen(name, T):
     dialog.background *:visited, dialog.background label > link:visited {{ color: {rgba(p['accent2'], 0.75)}; }}
     dialog.background label > selection {{ background-color: {rgba(p['accent2'], 0.28)}; color: {p['text']}; }}
     dialog.background > headerbar stackswitcher button {{ font-family: Marcellus; }}
+    /* the answer rows of GTK 3 dialogs (Close and Help in file properties, OK/Cancel in settings): gold on the glass, as in GTK 4 */
+    dialog.background buttonbox > button:not(.link):not(.flat):not(.suggested-action):not(.destructive-action) {{ background-color: {rgba(p['accent2'], 0.10)}; border-color: {rgba(p['accent2'], 0.30)}; color: {p['accent2']}; font-family: Marcellus; }}
+    dialog.background buttonbox > button:not(.link):not(.flat):not(.suggested-action):not(.destructive-action):hover {{ background-color: {rgba(p['accent2'], 0.18)}; border-color: {rgba(p['accent2'], 0.42)}; }}
+    /* progress (Thunar's copy/move/delete window and every other GTK 3 bar): a thin glass trough with a gold line, not a grey slab */
+    progressbar trough {{ min-height: 4px; background-color: {rgba(p['text'], 0.10)}; background-image: none; border: none; border-radius: 99px; box-shadow: none; }}
+    progressbar progress {{ min-height: 4px; background-color: {p['accent2']}; background-image: none; border: none; border-radius: 99px; box-shadow: none; }}
     window.background:not(.xfce4-panel):not(.thunar) textview text, dialog.background textview text, window.background:not(.xfce4-panel):not(.thunar) .view:not(iconview), dialog.background .view:not(iconview) {{ background-color: {gl_view}; }}
     .sidebar {{ background-color: {gl_side}; color: {p['text']}; }}
     headerbar, .titlebar {{ background-color: {gl_head}; background-image: none; color: {p['text']}; box-shadow: none; border-bottom: 1px solid {rgba(p['accent2'], 0.18)}; }}

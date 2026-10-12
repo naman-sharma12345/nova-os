@@ -36,6 +36,12 @@ dialog.background *:link, dialog.background label > link:link { color: #e2bd6b; 
 dialog.background *:visited, dialog.background label > link:visited { color: rgba(226, 189, 107, 0.75); }
 dialog.background label > selection { background-color: rgba(226, 189, 107, 0.28); color: #eef3ec; }
 dialog.background > headerbar stackswitcher button { font-family: Marcellus; }
+/* the answer rows of GTK 3 dialogs (Close and Help in file properties, OK/Cancel in settings): gold on the glass, as in GTK 4 */
+dialog.background buttonbox > button:not(.link):not(.flat):not(.suggested-action):not(.destructive-action) { background-color: rgba(226, 189, 107, 0.1); border-color: rgba(226, 189, 107, 0.3); color: #e2bd6b; font-family: Marcellus; }
+dialog.background buttonbox > button:not(.link):not(.flat):not(.suggested-action):not(.destructive-action):hover { background-color: rgba(226, 189, 107, 0.18); border-color: rgba(226, 189, 107, 0.42); }
+/* progress (Thunar's copy/move/delete window and every other GTK 3 bar): a thin glass trough with a gold line, not a grey slab */
+progressbar trough { min-height: 4px; background-color: rgba(238, 243, 236, 0.1); background-image: none; border: none; border-radius: 99px; box-shadow: none; }
+progressbar progress { min-height: 4px; background-color: #e2bd6b; background-image: none; border: none; border-radius: 99px; box-shadow: none; }
 window.background:not(.xfce4-panel):not(.thunar) textview text, dialog.background textview text, window.background:not(.xfce4-panel):not(.thunar) .view:not(iconview), dialog.background .view:not(iconview) { background-color: rgba(7, 16, 14, 0.22); }
 .sidebar { background-color: rgba(7, 16, 14, 0.3); color: #eef3ec; }
 headerbar, .titlebar { background-color: rgba(238, 243, 236, 0.05); background-image: none; color: #eef3ec; box-shadow: none; border-bottom: 1px solid rgba(226, 189, 107, 0.18); }

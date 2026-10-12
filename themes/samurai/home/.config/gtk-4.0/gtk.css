@@ -61,3 +61,5 @@ window.dialog .dialog-action-area > button { background-color: rgba(201, 163, 90
 window.dialog .dialog-action-area > button:hover { background-color: rgba(201, 163, 90, 0.18); }
 window.dialog .dialog-action-area > button.suggested-action { background-color: rgba(201, 163, 90, 0.24); border-color: rgba(201, 163, 90, 0.5); color: #efe6d6; }
 window.dialog.message box > label { color: #efe6d6; }
+progressbar trough { min-height: 4px; background-color: rgba(239, 230, 214, 0.1); border: none; border-radius: 99px; box-shadow: none; }
+progressbar progress { min-height: 4px; background-color: #c9a35a; background-image: none; border: none; border-radius: 99px; box-shadow: none; }

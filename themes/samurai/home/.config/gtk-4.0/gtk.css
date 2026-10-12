@@ -49,3 +49,15 @@ notebook > header tab { padding: 7px 16px; color: rgba(239, 230, 214, 0.62); fon
 notebook > header tab:checked { color: #efe6d6; box-shadow: inset 0 -1px #c9a35a; }
 separator { background-color: rgba(201, 163, 90, 0.16); }
 scrollbar slider { background-color: rgba(201, 163, 90, 0.35); border-radius: 99px; min-width: 3px; min-height: 3px; border: none; }
+/* About and message dialogs: one clear sheet, the program name in Cinzel Decorative, links and selection in gold
+   (not GTK's blue), and the answers in a dialog's button row read as gold on the glass. */
+window.aboutdialog headerbar, window.dialog headerbar { background-color: transparent; background-image: none; border-color: transparent; box-shadow: none; }
+window.aboutdialog box > label { color: #efe6d6; }
+window.aboutdialog image + label { font-family: "Cinzel Decorative"; font-size: 20px; letter-spacing: 1px; color: #efe6d6; }
+label > link, label > link:link { color: #c9a35a; }
+label > link:visited { color: rgba(201, 163, 90, 0.75); }
+label > selection { background-color: rgba(201, 163, 90, 0.28); color: #efe6d6; }
+window.dialog .dialog-action-area > button { background-color: rgba(201, 163, 90, 0.1); border-color: rgba(201, 163, 90, 0.3); color: #c9a35a; font-family: Marcellus; }
+window.dialog .dialog-action-area > button:hover { background-color: rgba(201, 163, 90, 0.18); }
+window.dialog .dialog-action-area > button.suggested-action { background-color: rgba(201, 163, 90, 0.24); border-color: rgba(201, 163, 90, 0.5); color: #efe6d6; }
+window.dialog.message box > label { color: #efe6d6; }

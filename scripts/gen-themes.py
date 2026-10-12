@@ -414,6 +414,18 @@ def gen(name, T):
     notebook > header tab:checked {{ color: {p['text']}; box-shadow: inset 0 -1px {p['accent2']}; }}
     separator {{ background-color: {rgba(p['accent2'], 0.16)}; }}
     scrollbar slider {{ background-color: {rgba(p['accent2'], 0.35)}; border-radius: 99px; min-width: 3px; min-height: 3px; border: none; }}
+    /* About and message dialogs: one clear sheet, the program name in Cinzel Decorative, links and selection in gold
+       (not GTK's blue), and the answers in a dialog's button row read as gold on the glass. */
+    window.aboutdialog headerbar, window.dialog headerbar {{ background-color: transparent; background-image: none; border-color: transparent; box-shadow: none; }}
+    window.aboutdialog box > label {{ color: {p['text']}; }}
+    window.aboutdialog image + label {{ font-family: "Cinzel Decorative"; font-size: 20px; letter-spacing: 1px; color: {p['text']}; }}
+    label > link, label > link:link {{ color: {p['accent2']}; }}
+    label > link:visited {{ color: {rgba(p['accent2'], 0.75)}; }}
+    label > selection {{ background-color: {rgba(p['accent2'], 0.28)}; color: {p['text']}; }}
+    window.dialog .dialog-action-area > button {{ background-color: {rgba(p['accent2'], 0.10)}; border-color: {rgba(p['accent2'], 0.30)}; color: {p['accent2']}; font-family: Marcellus; }}
+    window.dialog .dialog-action-area > button:hover {{ background-color: {rgba(p['accent2'], 0.18)}; }}
+    window.dialog .dialog-action-area > button.suggested-action {{ background-color: {rgba(p['accent2'], 0.24)}; border-color: {rgba(p['accent2'], 0.50)}; color: {p['text']}; }}
+    window.dialog.message box > label {{ color: {p['text']}; }}
     """))
     # Tenka Lite (xfwm4: no blur) writes ~/.cache/tenka/session.css at login with denser glass; Hyprland removes it.
     # GTK skips a missing import with a warning.
@@ -428,6 +440,15 @@ def gen(name, T):
        reaches, so the base theme painted them a near-solid 98% slab. Same glass now; the answers keep their gold, the message takes the page's ink. */
     messagedialog.background {{ background-color: {gl_win}; background-image: linear-gradient(to bottom, {gl_frost}, transparent 40%); box-shadow: inset 0 1px {gl_lit}; color: {p['text']}; }}
     messagedialog.background box > label {{ color: {p['text']}; }}
+    /* About dialogs: the title strip goes clear so the sheet is one pane, the program name is set in Cinzel Decorative,
+       links and selected text take the gold instead of the stock blue. GTK 3's About carries no style class of its own;
+       its logo is the one `image.icon-dropshadow`, and the name label sits right after it. */
+    dialog.background > headerbar.titlebar, dialog.background > .titlebar {{ background-color: transparent; background-image: none; border-color: transparent; box-shadow: none; }}
+    dialog.background > box > box > image.icon-dropshadow + label {{ font-family: "Cinzel Decorative"; font-size: 20px; letter-spacing: 1px; color: {p['text']}; }}
+    dialog.background *:link, dialog.background label > link:link {{ color: {p['accent2']}; }}
+    dialog.background *:visited, dialog.background label > link:visited {{ color: {rgba(p['accent2'], 0.75)}; }}
+    dialog.background label > selection {{ background-color: {rgba(p['accent2'], 0.28)}; color: {p['text']}; }}
+    dialog.background > headerbar stackswitcher button {{ font-family: Marcellus; }}
     window.background:not(.xfce4-panel):not(.thunar) textview text, dialog.background textview text, window.background:not(.xfce4-panel):not(.thunar) .view:not(iconview), dialog.background .view:not(iconview) {{ background-color: {gl_view}; }}
     .sidebar {{ background-color: {gl_side}; color: {p['text']}; }}
     headerbar, .titlebar {{ background-color: {gl_head}; background-image: none; color: {p['text']}; box-shadow: none; border-bottom: 1px solid {rgba(p['accent2'], 0.18)}; }}

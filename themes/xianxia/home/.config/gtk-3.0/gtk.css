@@ -27,6 +27,15 @@ window.background:not(.xfce4-panel):not(.thunar), dialog.background { background
    reaches, so the base theme painted them a near-solid 98% slab. Same glass now; the answers keep their gold, the message takes the page's ink. */
 messagedialog.background { background-color: rgba(14, 27, 24, 0.42); background-image: linear-gradient(to bottom, rgba(238, 243, 236, 0.07), transparent 40%); box-shadow: inset 0 1px rgba(238, 243, 236, 0.14); color: #eef3ec; }
 messagedialog.background box > label { color: #eef3ec; }
+/* About dialogs: the title strip goes clear so the sheet is one pane, the program name is set in Cinzel Decorative,
+   links and selected text take the gold instead of the stock blue. GTK 3's About carries no style class of its own;
+   its logo is the one `image.icon-dropshadow`, and the name label sits right after it. */
+dialog.background > headerbar.titlebar, dialog.background > .titlebar { background-color: transparent; background-image: none; border-color: transparent; box-shadow: none; }
+dialog.background > box > box > image.icon-dropshadow + label { font-family: "Cinzel Decorative"; font-size: 20px; letter-spacing: 1px; color: #eef3ec; }
+dialog.background *:link, dialog.background label > link:link { color: #e2bd6b; }
+dialog.background *:visited, dialog.background label > link:visited { color: rgba(226, 189, 107, 0.75); }
+dialog.background label > selection { background-color: rgba(226, 189, 107, 0.28); color: #eef3ec; }
+dialog.background > headerbar stackswitcher button { font-family: Marcellus; }
 window.background:not(.xfce4-panel):not(.thunar) textview text, dialog.background textview text, window.background:not(.xfce4-panel):not(.thunar) .view:not(iconview), dialog.background .view:not(iconview) { background-color: rgba(7, 16, 14, 0.22); }
 .sidebar { background-color: rgba(7, 16, 14, 0.3); color: #eef3ec; }
 headerbar, .titlebar { background-color: rgba(238, 243, 236, 0.05); background-image: none; color: #eef3ec; box-shadow: none; border-bottom: 1px solid rgba(226, 189, 107, 0.18); }

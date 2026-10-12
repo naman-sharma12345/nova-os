@@ -7,3 +7,8 @@ Exec=tenka-breath open
 Icon=media-record-symbolic
 Categories=Utility;
 Keywords=breath;breathe;breathing;calm;relax;meditate;meditation;pause;enso;qi;mindful;
+Actions=pause;
+
+[Desktop Action pause]
+Name=The pause: on or off
+Exec=tenka-breath pause toggle --say

@@ -132,6 +132,7 @@ fi
 if [ "${1:-}" = --login ]; then
   tenka-sound login &
   (setsid tenka-nightink run >/dev/null 2>&1 &)   # night ink: xrandr gamma, with the sun when asked
+  (setsid tenka-breath run >/dev/null 2>&1 &)     # the pause: reads X11 idle time itself, notes only when kept
   [ -e "$HOME/.config/tenka/welcomed" ] || tenka-welcome &
 fi
 exit 0

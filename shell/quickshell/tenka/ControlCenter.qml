@@ -51,6 +51,11 @@ PanelWindow {
     Process { id: watchP; running: cc.open; command: ["tenka-watch", "state"]
               stdout: StdioCollector { onStreamFinished: { try { cc.watch = JSON.parse(text) } catch (e) {} } } }
     Process { id: watchSet; onExited: { watchP.running = false; watchP.running = true } }
+    // The Pause (tenka-breath pause): a quiet note after a long stretch at the desk, when kept
+    property var pause: ({ on: false, every: 50, next_in: null })
+    Process { id: pauseP; running: cc.open; command: ["tenka-breath", "pause"]
+              stdout: StdioCollector { onStreamFinished: { try { cc.pause = JSON.parse(text) } catch (e) {} } } }
+    Process { id: pauseSet; onExited: { pauseP.running = false; pauseP.running = true } }
     // Night ink (tenka-nightink): off, with the sun (warms over the twilight), or warm now
     property var ink: ({ mode: "off", kelvin: 6500, on: false })
     Process { id: inkP; running: cc.open; command: ["tenka-nightink", "state"]
@@ -72,7 +77,7 @@ PanelWindow {
     Glass {
         id: panel
         visible: Theme.ccStyle === "glass"
-        width: 452; height: col.height + 48; radius: 28; tint: 0.46; line: 0.18; innerLine: 0.2
+        width: 452; height: Math.min(col.height + 48, cc.height - 58); radius: 28; tint: 0.46; line: 0.18; innerLine: 0.2
         y: 44
         x: parent.width - width - 14 + (cc.open ? 0 : 40)
         opacity: cc.open ? 1 : 0
@@ -81,6 +86,10 @@ PanelWindow {
         onXChanged: place()
         MouseArea { anchors.fill: parent }
 
+        // a short screen: the panel stops 14 px above the edge and its rows scroll
+        Flickable {
+            id: gfl; anchors.fill: parent; contentHeight: col.height + 48; clip: true
+            boundsBehavior: Flickable.StopAtBounds; interactive: contentHeight > height + 1
         Column {
             id: col
             x: 24; y: 24; width: parent.width - 48; spacing: 18
@@ -221,6 +230,12 @@ PanelWindow {
                 }
             }
         }
+        }
+        // more below: the ledger's own ink fades the last rows (no scrollbar, no glow); the wheel or a drag reads on
+        Rectangle { x: 1; width: parent.width - 2; height: 36; anchors.bottom: parent.bottom; anchors.bottomMargin: 1
+                    visible: gfl.contentHeight > gfl.height + 1 && !gfl.atYEnd; radius: Theme.ledgerR
+                    gradient: Gradient { GradientStop { position: 0; color: "transparent" }
+                                          GradientStop { position: 1; color: Theme.alpha(Theme.t.base, 0.92) } } }
     }
 
     // ======================================================================== face "ledger"
@@ -286,7 +301,7 @@ PanelWindow {
         id: ledger
         visible: Theme.ccStyle === "ledger"
         readonly property color ink: Theme.alpha(Theme.t.base, 1)
-        width: 420; height: lcol.height + 52
+        width: 420; height: Math.min(lcol.height + 52, cc.height - 58)
         y: 44
         x: parent.width - width - 14 + (cc.open ? 0 : 40)
         opacity: cc.open ? 1 : 0
@@ -296,6 +311,10 @@ PanelWindow {
         Rectangle { anchors.fill: parent; radius: Theme.ledgerR; color: Theme.alpha(Theme.t.base, Theme.selfBlur ? 0.9 : 0.78)
                     border.width: 1; border.color: Theme.alpha(Theme.gold, 0.5) }
 
+        // a short screen: the panel stops 14 px above the edge and its rows scroll
+        Flickable {
+            id: lfl; anchors.fill: parent; contentHeight: lcol.height + 52; clip: true
+            boundsBehavior: Flickable.StopAtBounds; interactive: contentHeight > height + 1
         Column {
             id: lcol
             x: 26; y: 24; width: parent.width - 52; spacing: 16
@@ -343,6 +362,9 @@ PanelWindow {
                 Row2 { k: Theme.xia ? "The Bell Tower" : "The Watch"; v: cc.watch.on ? cc.watch.next.replace("Hour of the ", "") + "  " + cc.watch.next_at : ""
                        on: cc.watch.on; toggle: true
                        onHit: { watchSet.command = ["tenka-watch", "toggle"]; watchSet.running = true } }
+                Row2 { k: Theme.xia ? "Rest the qi" : "The pause"; v: cc.pause.on ? "every " + cc.pause.every + " min" : ""
+                       on: cc.pause.on; toggle: true
+                       onHit: { pauseSet.command = ["tenka-breath", "pause", "toggle", "--say"]; pauseSet.running = true } }
                 // a tap goes off -> with the sun -> warm now -> off
                 Row2 { k: "Night ink"; v: !cc.ink.on ? "" : cc.ink.mode === "sun" && cc.ink.kelvin < 6500 ? cc.ink.kelvin + " K" : cc.inkWord.toLowerCase(); on: cc.ink.on; toggle: true
                        onHit: cc.inkCmd("cycle") }
@@ -365,6 +387,8 @@ PanelWindow {
                        onHit: { cc.open = false; Theme.ipc("garden", "open") } }
                 Row2 { k: Theme.xia ? "The Jade Record" : "The Pillow Book"; v: "a few lines a day"
                        onHit: { cc.open = false; Theme.ipc("journal", "open") } }
+                Row2 { k: Theme.xia ? "Gathering Qi" : "The Breath"; v: "a minute's breath"
+                       onHit: { cc.open = false; Theme.ipc("breath", "open") } }
                 Row2 { k: Theme.xia ? "The Lineage" : "The Colophon"; v: "this machine"; last: true
                        onHit: { cc.open = false; Theme.ipc("colophon", "open") } }
             }
@@ -406,5 +430,11 @@ PanelWindow {
                 }
             }
         }
+        }
+        // more below: the ledger's own ink fades the last rows (no scrollbar, no glow); the wheel or a drag reads on
+        Rectangle { x: 1; width: parent.width - 2; height: 36; anchors.bottom: parent.bottom; anchors.bottomMargin: 1
+                    visible: lfl.contentHeight > lfl.height + 1 && !lfl.atYEnd; radius: Theme.ledgerR
+                    gradient: Gradient { GradientStop { position: 0; color: "transparent" }
+                                          GradientStop { position: 1; color: Theme.alpha(Theme.t.base, 0.92) } } }
     }
 }

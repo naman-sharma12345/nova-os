@@ -367,5 +367,17 @@ grep -q '^import Quickshell.Hyprland$' "$ROOT/shell/quickshell/tenka/Breath.qml"
 grep -q '"tenka:breath"' "$IC/etc/skel/.config/hypr/hyprland.lua" && [ -f "$IC/usr/share/tenka/breath/LiteBreath.qml" ] &&
 grep -q 'value="tenka-breath open"' "$IC/etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml" &&
 grep -q 'tenka:breath' "$IC/usr/bin/tenka-codex" && grep -q '^Exec=tenka-breath open$' "$IC/usr/share/applications/tenka-breath.desktop" || { echo "FAIL: the breath"; fail=1; }
+# 21. The Pause: off until asked, a note after the stretch, away time (X11 idle or hypridle) starts it again, Focus holds it
+P2="$T/pause"; mkdir -p "$P2/.config/tenka"
+tp() { HOME="$P2" XDG_RUNTIME_DIR="$P2" TENKA_PAUSE_DRY=1 TENKA_IDLE_MS="${IDLE:-0}" python3 "$BIN/tenka-breath" "$@"; }
+tp pause | grep -q '"on": false, "every": 50' && TENKA_NOW=1000 tp pause on >/dev/null && [ -z "$(TENKA_NOW=3900 tp tick)" ] &&
+TENKA_NOW=4100 tp tick | grep -q '^NOTE A pause | 50 minutes at the desk' && [ -z "$(TENKA_NOW=5000 tp tick)" ] &&
+TENKA_NOW=7000 IDLE=200000 tp tick && [ -z "$(TENKA_NOW=9900 tp tick)" ] &&
+TENKA_NOW=10000 tp away && TENKA_NOW=13100 tp back && [ -z "$(TENKA_NOW=15000 tp tick)" ] &&
+echo '{"on": true}' > "$P2/.config/tenka/focus.json" && [ -z "$(TENKA_NOW=17000 tp tick)" ] && rm "$P2/.config/tenka/focus.json" &&
+tp pause every 25 | grep -q '"every": 25' && ! tp pause every 5 2>/dev/null &&
+grep -q 'on-timeout = tenka-breath away' "$IC/etc/skel/.config/hypr/hypridle.conf" && grep -q 'on-resume = tenka-breath back' "$IC/etc/skel/.config/hypr/hypridle.conf" &&
+grep -q '^tenka-breath run' "$BIN/tenka-session" && grep -q 'setsid tenka-breath run' "$BIN/tenka-lite-apply" &&
+grep -q '"tenka-breath", "pause"' "$ROOT/shell/quickshell/tenka/ControlCenter.qml" && grep -q 'id: lfl' "$ROOT/shell/quickshell/tenka/ControlCenter.qml" || { echo "FAIL: the pause"; fail=1; }
 [ "$fail" = 0 ] && echo "check-session: ok"
 exit $fail

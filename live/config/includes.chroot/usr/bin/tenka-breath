@@ -8,8 +8,14 @@ bell. The pace and length you chose last, and how many sittings you kept today, 
   tenka-breath set PACE MINUTES    remember a choice (PACE even|box|calm, MINUTES 1|3|5|10)
   tenka-breath done MINUTES        count a finished sitting and ring the bell
   tenka-breath open                the card: qs ipc on Hyprland, a small Qt window on Tenka Lite
+The Pause (off until asked): after a long stretch at the desk, one quiet note offers a minute's breath.
+  tenka-breath pause               whether it is kept, how often, and how long you have sat, as JSON
+  tenka-breath pause on|off|toggle [--say]    keep it or let it rest (~/.config/tenka/pause.json)
+  tenka-breath pause every MINUTES how long a stretch before the note (20-120, default 50)
+  tenka-breath away | back         from hypridle: two minutes away from the desk start the stretch again
+  tenka-breath run                 the session's watcher (one at a time; X11 reads its own idle time)
 """
-import datetime, json, os, signal, subprocess, sys
+import datetime, json, os, signal, subprocess, sys, threading, time
 
 HOME = os.path.expanduser("~")
 CONF = os.path.join(os.environ.get("XDG_CONFIG_HOME") or os.path.join(HOME, ".config"), "tenka")
@@ -96,6 +102,142 @@ def open_card():
     except OSError: pass
     return 0
 
+# ---- The Pause
+PAUSE = os.path.join(CONF, "pause.json")
+AWAY = 120                                       # seconds away from the desk that count as a rest
+
+def clock():
+    t = os.environ.get("TENKA_NOW")                  # tests only: epoch seconds
+    return float(t) if t else time.time()
+
+def pause_conf():
+    try: d = json.load(open(PAUSE))
+    except (OSError, ValueError): d = {}
+    d["on"] = bool(d.get("on", False))
+    d["every"] = min(120, max(20, int(d.get("every", 50))))
+    return d
+
+def pause_write(d):
+    os.makedirs(CONF, exist_ok=True)
+    with open(PAUSE + ".new", "w") as f: json.dump(d, f)
+    os.replace(PAUSE + ".new", PAUSE)
+
+def sat_path(): return os.path.join(RT, "tenka-pause.json")
+
+def sat_read():
+    try: s = json.load(open(sat_path()))
+    except (OSError, ValueError): s = {}
+    if not isinstance(s.get("since"), (int, float)): s["since"] = clock()
+    return s
+
+def sat_write(s):
+    with open(sat_path() + ".new", "w") as f: json.dump(s, f)
+    os.replace(sat_path() + ".new", sat_path())
+
+def x11_idle():
+    """milliseconds since the last key or pointer move on X11, or None"""
+    if os.environ.get("TENKA_IDLE_MS"): return int(os.environ["TENKA_IDLE_MS"])
+    if not os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"): return None
+    try:
+        import ctypes, ctypes.util
+        class Info(ctypes.Structure):
+            _fields_ = [("window", ctypes.c_ulong), ("state", ctypes.c_int), ("kind", ctypes.c_int),
+                        ("til_or_since", ctypes.c_ulong), ("idle", ctypes.c_ulong), ("eventMask", ctypes.c_ulong)]
+        x = ctypes.cdll.LoadLibrary(ctypes.util.find_library("X11") or "libX11.so.6")
+        xss = ctypes.cdll.LoadLibrary(ctypes.util.find_library("Xss") or "libXss.so.1")
+        x.XOpenDisplay.restype = ctypes.c_void_p; x.XDefaultRootWindow.restype = ctypes.c_ulong
+        x.XDefaultRootWindow.argtypes = [ctypes.c_void_p]; x.XCloseDisplay.argtypes = [ctypes.c_void_p]
+        xss.XScreenSaverAllocInfo.restype = ctypes.POINTER(Info)
+        xss.XScreenSaverQueryInfo.argtypes = [ctypes.c_void_p, ctypes.c_ulong, ctypes.POINTER(Info)]
+        d = x.XOpenDisplay(None)
+        if not d: return None
+        i = xss.XScreenSaverAllocInfo(); xss.XScreenSaverQueryInfo(d, x.XDefaultRootWindow(d), i)
+        ms = i.contents.idle; x.XCloseDisplay(d); return int(ms)
+    except Exception:
+        return None
+
+def kept_quiet():
+    """Focus and Stillness hold the note back, like every other voice of the desk"""
+    try:
+        f = json.load(open(os.path.join(CONF, "focus.json")))
+        if f.get("on") and (not f.get("until") or f["until"] > time.time() * 1000): return "focus"
+    except (OSError, ValueError):
+        pass
+    return "stillness" if os.path.exists(os.path.join(RT, "tenka-still")) else ""
+
+def pause_state():
+    d = pause_conf(); s = sat_read(); t = clock()
+    sat = 0 if s.get("away_at") else int((t - s["since"]) // 60)
+    return dict(d, sat=sat, away=bool(s.get("away_at")), next_in=max(0, d["every"] - sat) if d["on"] else None,
+                title="Rest the qi" if theme() == "xianxia" else "A pause")
+
+def note(minutes):
+    xia = theme() == "xianxia"
+    title = "Rest the qi" if xia else "A pause"
+    body = "%d minutes at the desk. Super + O, and breathe for a minute." % minutes
+    if os.environ.get("TENKA_PAUSE_DRY"):
+        print("NOTE %s | %s" % (title, body)); return
+    try:
+        p = subprocess.Popen(["notify-send", "-a", "Tenka", "-i", "media-record-symbolic", "-A", "breathe=Breathe", title, body],
+                             stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True)
+    except OSError:
+        return
+    def wait():                                       # a click on Breathe opens the card
+        if (p.communicate()[0] or "").strip() == "breathe": open_card()
+    threading.Thread(target=wait, daemon=True).start()
+
+def tick():
+    d = pause_conf(); s = sat_read(); t = clock()
+    idle = x11_idle()
+    if idle is not None and idle >= AWAY * 1000:
+        s["since"] = t; s.pop("away_at", None)          # away from the desk: the stretch starts again
+    elif s.get("away_at"):
+        s["since"] = t                                   # hypridle says away; nothing to count yet
+    elif d["on"] and t - s["since"] >= d["every"] * 60 and not kept_quiet():
+        note(d["every"]); s["since"] = t
+    sat_write(s)
+
+def away():
+    s = sat_read(); s["away_at"] = clock(); sat_write(s)
+
+def back():
+    s = sat_read(); t = clock()
+    if s.get("away_at"):
+        s["since"] = t; s.pop("away_at", None)          # hypridle fires after two quiet minutes: that was a rest
+    sat_write(s)
+
+def say_pause(d):
+    xia = theme() == "xianxia"
+    title = "Rest the qi" if xia else "A pause"
+    body = ("After %d minutes at the desk, one quiet note offers a minute's breath." % d["every"]) if d["on"] else "The pause rests."
+    subprocess.run(["notify-send", "-a", "Tenka", title, body], capture_output=True)
+
+def run():
+    pid = os.path.join(RT, "tenka-breath-watch.pid")
+    try:
+        old = int(open(pid).read().strip())
+        if b"tenka-breath" in open("/proc/%d/cmdline" % old, "rb").read(): return 0
+    except (OSError, ValueError):
+        pass
+    with open(pid, "w") as f: f.write(str(os.getpid()))
+    s = sat_read(); s["since"] = clock(); s.pop("away_at", None); sat_write(s)
+    while True:
+        time.sleep(30)
+        try: tick()
+        except Exception: pass
+
+def pause_cmd(a):
+    d = pause_conf()
+    if not a: print(json.dumps(pause_state())); return 0
+    if a[0] in ("on", "off", "toggle"):
+        d["on"] = (a[0] == "on") or (a[0] == "toggle" and not d["on"]); pause_write(d)
+        if d["on"]: s = sat_read(); s["since"] = clock(); sat_write(s)
+        if "--say" in a: say_pause(d)
+        print(json.dumps(pause_state())); return 0
+    if a[0] == "every" and len(a) > 1 and a[1].isdigit() and 20 <= int(a[1]) <= 120:
+        d["every"] = int(a[1]); pause_write(d); print(json.dumps(pause_state())); return 0
+    print(__doc__.strip(), file=sys.stderr); return 2
+
 def main():
     a = sys.argv[1:]
     c = a[0] if a else "state"
@@ -104,6 +246,11 @@ def main():
         s = load(); s["pace"], s["minutes"] = a[1], int(a[2]); save(s)
     elif c == "done" and len(a) == 2 and a[1].isdigit(): done(a[1])
     elif c == "open": return open_card()
+    elif c == "pause": return pause_cmd(a[1:])
+    elif c == "away": away()
+    elif c == "back": back()
+    elif c == "tick": tick()
+    elif c == "run": return run()
     else:
         print(__doc__.strip(), file=sys.stderr); return 2
     return 0

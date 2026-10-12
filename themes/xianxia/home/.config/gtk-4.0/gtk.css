@@ -51,7 +51,10 @@ headerbar .title, windowtitle .title { letter-spacing: 0; }
 checkbutton check:checked, checkbutton radio:checked, check:checked, radio:checked { background-color: #e2bd6b; border-color: #e2bd6b; color: #0b1513; }
 switch { background-color: rgba(238, 243, 236, 0.14); border: none; border-radius: 99px; }
 switch:checked { background-color: #5fc9a0; }
-switch slider { background-color: #eef3ec; border-radius: 99px; box-shadow: none; }
+/* T23: one knob across GTK 3 and GTK 4: GTK 4 drew the switch and slider knobs in cream while GTK 3 drew them gold; now a quiet ivory knob when off and gold when on, slider knobs gold */
+switch slider { background-color: rgba(238, 243, 236, 0.55); border-radius: 99px; box-shadow: none; }
+switch:checked slider { background-color: #e2bd6b; }
+scale slider { background-color: #e2bd6b; }
 notebook > header { background-color: transparent; border: none; box-shadow: none; }
 notebook > header tab { padding: 7px 16px; color: rgba(238, 243, 236, 0.62); font-family: Marcellus; }
 notebook > header tab:checked { color: #eef3ec; box-shadow: inset 0 -1px #e2bd6b; }

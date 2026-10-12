@@ -421,7 +421,10 @@ def gen(name, T):
     checkbutton check:checked, checkbutton radio:checked, check:checked, radio:checked {{ background-color: {p['accent2']}; border-color: {p['accent2']}; color: {p['base']}; }}
     switch {{ background-color: {rgba(p['text'], 0.14)}; border: none; border-radius: 99px; }}
     switch:checked {{ background-color: {p['accent']}; }}
-    switch slider {{ background-color: {p['text']}; border-radius: 99px; box-shadow: none; }}
+    /* T23: one knob across GTK 3 and GTK 4: GTK 4 drew the switch and slider knobs in cream while GTK 3 drew them gold; now a quiet ivory knob when off and gold when on, slider knobs gold */
+    switch slider {{ background-color: {rgba(p['text'], 0.55)}; border-radius: 99px; box-shadow: none; }}
+    switch:checked slider {{ background-color: {p['accent2']}; }}
+    scale slider {{ background-color: {p['accent2']}; }}
     notebook > header {{ background-color: transparent; border: none; box-shadow: none; }}
     notebook > header tab {{ padding: 7px 16px; color: {rgba(p['text'], 0.62)}; font-family: Marcellus; }}
     notebook > header tab:checked {{ color: {p['text']}; box-shadow: inset 0 -1px {p['accent2']}; }}
@@ -491,6 +494,9 @@ def gen(name, T):
     dialog.background > box > box > stack > box > label:first-child {{ font-family: "Inter"; font-size: 12px; letter-spacing: 1px; color: {rgba(p['text'], 0.66)}; }}
     /* T22: GTK 3 sliders had no rule and kept the stock blue knob, and a list box was a near-solid grey slab */
     scale slider {{ background-color: {p['accent2']}; background-image: none; border: none; border-radius: 99px; min-width: 14px; min-height: 14px; margin: -5px; box-shadow: none; }}
+    /* T23: the off knob was a dark disc on a dark track; a quiet ivory knob off, gold on, as in GTK 4 */
+    switch slider {{ background-color: {rgba(p['text'], 0.55)}; background-image: none; box-shadow: none; }}
+    switch:checked slider {{ background-color: {p['accent2']}; }}
     list {{ background-color: {gl_view}; }}
     dialog.background *:link, dialog.background label > link:link {{ color: {p['accent2']}; }}
     dialog.background *:visited, dialog.background label > link:visited {{ color: {rgba(p['accent2'], 0.75)}; }}

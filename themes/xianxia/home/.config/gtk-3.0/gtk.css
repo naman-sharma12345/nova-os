@@ -36,6 +36,9 @@ dialog.background > box > box > image.icon-dropshadow + label { font-family: "Ci
 dialog.background > box > box > stack > box > label:first-child { font-family: "Inter"; font-size: 12px; letter-spacing: 1px; color: rgba(238, 243, 236, 0.66); }
 /* T22: GTK 3 sliders had no rule and kept the stock blue knob, and a list box was a near-solid grey slab */
 scale slider { background-color: #e2bd6b; background-image: none; border: none; border-radius: 99px; min-width: 14px; min-height: 14px; margin: -5px; box-shadow: none; }
+/* T23: the off knob was a dark disc on a dark track; a quiet ivory knob off, gold on, as in GTK 4 */
+switch slider { background-color: rgba(238, 243, 236, 0.55); background-image: none; box-shadow: none; }
+switch:checked slider { background-color: #e2bd6b; }
 list { background-color: rgba(7, 16, 14, 0.22); }
 dialog.background *:link, dialog.background label > link:link { color: #e2bd6b; }
 dialog.background *:visited, dialog.background label > link:visited { color: rgba(226, 189, 107, 0.75); }

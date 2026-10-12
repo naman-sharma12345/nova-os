@@ -31,6 +31,10 @@ install -Dm644 /usr/share/tenka/themes/samurai/crest-1024.png /usr/share/icons/h
 # a newly drawn icon (GTK trusts icon-theme.cache over the directory listing)
 for t in /usr/share/icons/Tenka-* /usr/share/icons/hicolor; do [ -d "$t" ] && gtk-update-icon-cache -f -q "$t" 2>/dev/null || true; done
 
+# sudo's first-time lecture in the desk's words (etc/sudoers.d/tenka): sudo reads a drop-in only when root owns it
+# and nobody else can write to it, and visudo wants 0440
+chown root:root /etc/sudoers.d/tenka && chmod 0440 /etc/sudoers.d/tenka
+
 # ---------------------------------------------------------------- services
 systemctl enable sddm.service || true
 systemctl set-default graphical.target || true

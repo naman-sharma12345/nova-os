@@ -12,3 +12,7 @@ export GREP_COLORS='mt=1;38;2;216;65;47:fn=38;2;201;163;90:ln=38;2;125;116;102:b
 case $- in *i*) bind 'set colored-stats on' 2>/dev/null; bind 'set colored-completion-prefix on' 2>/dev/null;; esac
 # whiptail / newt dialogs (dpkg-reconfigure, installers): the terminal's own palette, so the page's ink, gold and accent
 export NEWT_COLORS='root=white,black roottext=brown,black helpline=gray,black window=lightgray,black shadow=black,black border=gray,black title=brown,black textbox=lightgray,black acttextbox=black,brown label=lightgray,black button=lightgray,black actbutton=black,brown compactbutton=lightgray,black checkbox=lightgray,black actcheckbox=black,brown entry=white,black disentry=gray,black listbox=lightgray,black actlistbox=black,brown sellistbox=red,black actsellistbox=black,brown emptyscale=,black fullscale=,brown'
+# jq and diff in the same ink, by the terminal's own palette: keys in vermilion, strings in gold, numbers in jade;
+# lines added in moss, removed in vermilion, each hunk's place in jade
+export JQ_COLORS='90:31:32:36:33:39:39:31'
+case $- in *i*) alias diff='diff --color=auto --palette="hd=1:ad=32:de=31:ln=36"';; esac

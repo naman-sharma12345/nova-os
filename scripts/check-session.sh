@@ -460,5 +460,24 @@ SK="$ROOT/shell/quickshell/tenka/SkyMoon.qml"; DK="$ROOT/shell/quickshell/tenka/
 grep -q 'Region { item: deskMoon.hitItem }' "$DK" && grep -q 'clickable: true' "$DK" &&
 grep -q 'MouseArea { id: moonHit; x: orb.x; y: orb.y' "$SK" && grep -q 'Theme.ipc("moon", "open")' "$SK" &&
 ! grep -q 'clickable: true' "$ROOT/shell/quickshell/tenka/LockFace.qml" || { echo "FAIL: desk moon click"; fail=1; }
+# 30. Terminal ink II: apt's lists, jq, diff and the kernel log (dmesg) wear the terminal's own palette, so they follow the
+#     theme; sudo's first-time lecture is the house's three rules, and the hook gives the drop-in the 0440 sudo wants.
+IC="$ROOT/live/config/includes.chroot"
+grep -q '^APT::Color::Action::Install "yellow";' "$IC/etc/apt/apt.conf.d/50tenka-ink" &&
+grep -q '^APT::Color::Action::Remove "red";' "$IC/etc/apt/apt.conf.d/50tenka-ink" &&
+! grep -q '^APT::Color "' "$IC/etc/apt/apt.conf.d/50tenka-ink" &&
+grep -q '^err 31$' "$IC/etc/terminal-colors.d/dmesg.scheme" &&
+grep -q '^Defaults lecture_file="/usr/share/tenka/sudo-lecture"$' "$IC/etc/sudoers.d/tenka" && [ -s "$IC/usr/share/tenka/sudo-lecture" ] &&
+grep -q 'chmod 0440 /etc/sudoers.d/tenka' "$ROOT/live/config/hooks/live/0100-base-setup.hook.chroot" || { echo "FAIL: terminal ink II files"; fail=1; }
+for t in samurai xianxia; do
+  grep -q "^export JQ_COLORS='90:31:32:36:33:39:39:31'$" "$ROOT/themes/$t/home/.bashrc.d/tenka-theme.sh" &&
+  grep -q 'diff --color=auto --palette=' "$ROOT/themes/$t/home/.bashrc.d/tenka-theme.sh" || { echo "FAIL: jq/diff ink $t"; fail=1; }
+done
+if command -v apt-config >/dev/null 2>&1; then
+  apt-config -c "$IC/etc/apt/apt.conf.d/50tenka-ink" dump 2>/dev/null | grep -q '^APT::Color::Show::Package "bold yellow";' || { echo "FAIL: apt ink parse"; fail=1; }
+fi
+if command -v jq >/dev/null 2>&1; then
+  echo '{"a":1}' | JQ_COLORS='90:31:32:36:33:39:39:31' jq -C . 2>&1 | grep -q 'Failed to set' && { echo "FAIL: JQ_COLORS refused"; fail=1; }
+fi
 [ "$fail" = 0 ] && echo "check-session: ok"
 exit $fail

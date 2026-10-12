@@ -1,0 +1,10 @@
+# Tenka: the kernel's log (dmesg) in the desk's ink, by the terminal's own palette (so it follows the theme).
+# The time in faded ink, each part of the system in jade, warnings in gold, errors in vermilion.
+time 90
+timebreak 1;37
+subsys 36
+warn 33
+err 31
+crit 1;31
+alert 1;31
+segfault 1;31

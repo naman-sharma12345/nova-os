@@ -1,0 +1,4 @@
+# Tenka: the first time someone lifts the seal (sudo), they read the house's three rules (in the desk's own words),
+# once, instead of sudo's stock lecture.
+Defaults lecture="once"
+Defaults lecture_file="/usr/share/tenka/sudo-lecture"

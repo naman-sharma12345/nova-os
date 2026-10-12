@@ -1,0 +1,10 @@
+// Tenka: apt's lists in the desk's ink. The names (yellow, cyan...) are the terminal's own palette, so Samurai
+// shows gold and vermilion and Tianxia its jade and gold, and a theme switch recolours apt with everything else.
+// Turn it off with APT::Color "no"; (or NO_COLOR=1).
+APT::Color::Action::Install "yellow";
+APT::Color::Action::Install-Dependencies "cyan";
+APT::Color::Action::Upgrade "green";
+APT::Color::Action::Downgrade "magenta";
+APT::Color::Action::Remove "red";
+APT::Color::Show::Package "bold yellow";
+APT::Color::Show::Field "\x1B[90m";

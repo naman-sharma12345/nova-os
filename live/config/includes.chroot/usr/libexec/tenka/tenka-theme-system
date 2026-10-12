@@ -39,7 +39,8 @@ fi
 
 # Plymouth (rebuilds the initramfs on installed systems)
 if command -v plymouth-set-default-theme >/dev/null; then
-  if [ -d /run/live ]; then plymouth-set-default-theme "tenka-$T"
+  # live session, or the installer (its own initramfs step runs right after): set the theme, skip the rebuild
+  if [ -d /run/live ] || [ -n "${TENKA_INSTALLING:-}" ]; then plymouth-set-default-theme "tenka-$T"
   else plymouth-set-default-theme -R "tenka-$T" >/dev/null 2>&1; fi
 fi
 exit 0

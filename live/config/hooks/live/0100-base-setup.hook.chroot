@@ -99,6 +99,13 @@ fi
 # ---------------------------------------------------------------- installer
 if [ -f /etc/calamares/settings.conf ]; then
   sed -i 's/^branding:.*/branding: tenka-samurai/' /etc/calamares/settings.conf
+  # keep the live session's path (Samurai or Xianxia) on the installed system: one step after users,
+  # before the GRUB and initramfs steps (usr/libexec/tenka/tenka-install-path)
+  if ! grep -q 'shellprocess@tenka-path' /etc/calamares/settings.conf; then
+    awk '/^- exec:/{e=1} e && /^  - users$/ && !d {print; print "  - shellprocess@tenka-path"; d=1; next} {print}' \
+      /etc/calamares/settings.conf > /tmp/cal.conf && cat /tmp/cal.conf > /etc/calamares/settings.conf && rm -f /tmp/cal.conf
+    printf 'instances:\n- id: tenka-path\n  module: shellprocess\n  config: shellprocess-tenka-path.conf\n' >> /etc/calamares/settings.conf
+  fi
 fi
 for f in /usr/share/applications/calamares-install-debian.desktop /etc/skel/Desktop/calamares-install-debian.desktop; do
   [ -f "$f" ] && sed -i -e 's/^Name=.*/Name=Install Tenka/' -e 's/^Name\[[^]]*\]=.*//' -e 's/^Icon=.*/Icon=tenka/' -e 's/^Comment=.*/Comment=Put Tenka on this computer/' "$f"

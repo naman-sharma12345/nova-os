@@ -1,0 +1,15 @@
+#!/bin/sh
+# Calamares step (shellprocess@tenka-path, run outside the target): the installed system keeps the path the
+# person chose in the live session. The installer copies the read-only live image, so a choice made live
+# (Xianxia) was lost and every install booted as Samurai: GRUB, splash, login screen and desk.
+# $1 = the target root Calamares mounted. Never fails the install: a problem here leaves the default path.
+ROOT="${1:-}"
+[ -n "$ROOT" ] && [ -d "$ROOT/etc" ] || exit 0
+T=$(cat /etc/tenka/theme 2>/dev/null)
+case "$T" in samurai|xianxia) ;; *) exit 0 ;; esac
+[ -d "$ROOT/usr/share/tenka/themes/$T" ] || exit 0
+mkdir -p "$ROOT/etc/tenka" && echo "$T" > "$ROOT/etc/tenka/theme"
+# os-release, login screen, installed GRUB theme and splash; the installer's own GRUB and initramfs
+# steps run after this one and pick them up
+chroot "$ROOT" env TENKA_INSTALLING=1 /usr/libexec/tenka/tenka-theme-system "$T" >/dev/null 2>&1
+exit 0

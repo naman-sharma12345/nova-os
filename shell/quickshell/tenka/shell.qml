@@ -43,6 +43,7 @@ ShellRoot {
     Journal {}
     Breath {}
     Clocks {}
+    Moon {}
     ControlCenter {}
     Notifications {}
     Osd {}

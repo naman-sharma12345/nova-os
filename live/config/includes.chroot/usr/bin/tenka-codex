@@ -31,6 +31,7 @@ KNOWN = [
     (r"global\(\"tenka:journal\"\)|tenka-journal", "Tenka", "The pillow book: a few lines a day"),
     (r"global\(\"tenka:breath\"\)|tenka-breath", "Tenka", "The breath: a breathing guide drawn as an enso"),
     (r"global\(\"tenka:clocks\"\)|tenka-clocks", "Tenka", "Under heaven: the hour in the places you keep"),
+    (r"global\(\"tenka:moon\"\)|tenka-moon", "Tenka", "Moon viewing: tonight's moon"),
     (r"tenka-nightink", "Tenka", "Night ink: off, with the sun, warm"),
     (r"exec_cmd\(terminal\)|xfce4-terminal|\bkitty\b", "Open", "Terminal"),
     (r"exec_cmd\(menu\)|tenka-launcher|whiskermenu", "Open", "Launcher"),

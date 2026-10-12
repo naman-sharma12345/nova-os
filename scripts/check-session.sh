@@ -404,5 +404,17 @@ grep -q '^ *Clocks {}' "$ROOT/shell/quickshell/tenka/shell.qml" && [ -f "$ROOT/s
 grep -q '"tenka:clocks"' "$IC/etc/skel/.config/hypr/hyprland.lua" && [ -f "$IC/usr/share/tenka/clocks/LiteClocks.qml" ] &&
 grep -q 'value="tenka-clocks open"' "$IC/etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml" &&
 grep -q 'tenka:clocks' "$IC/usr/bin/tenka-codex" && grep -q 'Theme.ipc("clocks", "open")' "$ROOT/shell/quickshell/tenka/ControlCenter.qml" && grep -q '^Exec=tenka-clocks open$' "$IC/usr/share/applications/tenka-clocks.desktop" || { echo "FAIL: under heaven"; fail=1; }
+# 24. Moon Viewing (Tianxia: The Moon Palace): the phase, the old lunar night, moonrise and moonset, all worked out here
+MO="$T/moon"; mkdir -p "$MO/.config/tenka"
+mo() { HOME="$MO" TZ="${Z:-Asia/Kolkata}" TENKA_ALMANAC="$BIN/tenka-almanac" python3 "$BIN/tenka-moon" "$@"; }
+mo 2026-02-17 | grep -q '"month": 1, "leap": false, "day": 1,' && mo 2025-10-06 text | grep -q '^The mid-autumn moon, the 15th night' &&
+mo 2025-08-01 | grep -q '"month_name": "Leap Month of Water"' && mo 2023-03-25 | grep -q '"month": 2, "leap": true' &&
+mo 2026-10-12T08:00 text | grep -q '^Next full moon: Mon 26 Oct 09:4[0-4]' && mo 2026-10-12T08:00 text | grep -q '^The crescent of the third night of the Long Month' &&
+Z=Australia/Sydney mo 2026-10-12 | grep -q '"south": true' && ! grep -q 'urllib\|http' "$BIN/tenka-moon" &&
+echo '{"name": "xianxia"}' > "$MO/.config/tenka/shell-theme.json" && mo 2026-10-12 | grep -q '"title": "The Moon Palace".*"month_name": "Chrysanthemum Month"' &&
+grep -q '^ *Moon {}' "$ROOT/shell/quickshell/tenka/shell.qml" && [ -f "$ROOT/shell/quickshell/tenka/moon/MoonCard.qml" ] &&
+grep -q '"tenka:moon"' "$IC/etc/skel/.config/hypr/hyprland.lua" && [ -f "$IC/usr/share/tenka/moon/LiteMoon.qml" ] &&
+grep -q 'value="tenka-moon open"' "$IC/etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml" &&
+grep -q 'tenka:moon' "$IC/usr/bin/tenka-codex" && grep -q '^Exec=tenka-moon open$' "$IC/usr/share/applications/tenka-moon.desktop" || { echo "FAIL: moon viewing"; fail=1; }
 [ "$fail" = 0 ] && echo "check-session: ok"
 exit $fail

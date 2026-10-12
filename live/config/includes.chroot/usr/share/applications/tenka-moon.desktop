@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Moon Viewing
+GenericName=Moon Phase
+Comment=Tonight's moon: its phase, its night of the old lunar month, moonrise and moonset (Super + M)
+Exec=tenka-moon open
+Icon=weather-clear-night-symbolic
+Categories=Utility;Astronomy;
+Keywords=moon;phase;lunar;calendar;moonrise;moonset;full moon;tsukimi;mid-autumn;moon palace;

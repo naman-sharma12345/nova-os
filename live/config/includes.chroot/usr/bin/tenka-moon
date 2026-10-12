@@ -1,0 +1,230 @@
+#!/usr/bin/python3
+"""tenka-moon: Moon Viewing (Tianxia: The Moon Palace), tonight's moon, Super + M.
+The moon drawn at its real phase (the lit side turned for your hemisphere), how much of it is lit and how old it
+is, when it rises and sets where you are, the night of the old lunar month it is (the third night's crescent, the
+hesitating moon of the sixteenth...) and the next full moon with its month's old name. Everything is worked out on
+this machine from the time, the date and your place (the almanac's place: ~/.config/tenka/place.json or the city
+your time zone is named for); nothing is fetched or sent anywhere.
+  tenka-moon [state]    tonight's moon as JSON (for the card)
+  tenka-moon text       the same, as lines
+  tenka-moon open       the card (qs ipc on the flagship, a small Qt window on Tenka Lite)
+  tenka-moon [YYYY-MM-DD[THH:MM]] [state|text]   another night (local time)
+"""
+import datetime as dt, json, math, os, subprocess, sys, time
+
+RT = os.environ.get("XDG_RUNTIME_DIR") or "/tmp"
+CONF = os.path.join(os.environ.get("XDG_CONFIG_HOME") or os.path.expanduser("~/.config"), "tenka")
+_alm = None
+
+def almanac():
+    global _alm
+    if _alm is None:
+        from importlib.machinery import SourceFileLoader
+        _alm = SourceFileLoader("tenka_almanac", os.environ.get("TENKA_ALMANAC", "/usr/bin/tenka-almanac")).load_module()
+    return _alm
+
+def theme():
+    try: return json.load(open(os.path.join(CONF, "shell-theme.json"))).get("name") or "samurai"
+    except (OSError, ValueError): return "samurai"
+
+# ---- the old lunar months (all English): Japan's month names for Tenka, China's flower months for Tianxia
+MONTHS = {
+    "samurai": ["Month of Affection", "Month of Layered Robes", "Month of New Growth", "Month of the Deutzia",
+                "Month of Rice Planting", "Month of Water", "Month of Letters", "Month of Leaves", "The Long Month",
+                "Month Without Gods", "Frost Month", "Month of Running Priests"],
+    "xianxia": ["Primal Month", "Apricot Month", "Peach Month", "Pagoda-tree Month", "Pomegranate Month", "Lotus Month",
+                "Orchid Month", "Osmanthus Month", "Chrysanthemum Month", "Little Spring Month", "Reed Month",
+                "Month of Offerings"],
+}
+# the nights with names of their own (Japan kept a name for the waiting after the full moon)
+NIGHTS = {
+    "samurai": {1: "The new moon", 3: "The crescent of the third night", 7: "The half moon of the seventh night",
+                13: "The moon of the thirteenth night", 15: "The full moon of the fifteenth night",
+                16: "The hesitating moon", 17: "The standing-waiting moon", 18: "The sitting-waiting moon",
+                19: "The lying-down-waiting moon", 20: "The late-night-waiting moon", 23: "The moon of the twenty-third night",
+                30: "The moon in hiding"},
+    "xianxia": {1: "The dark moon", 3: "The eyebrow moon", 8: "The upper string", 15: "The full moon", 16: "The full moon, waning",
+                23: "The lower string", 29: "The fading moon", 30: "The dark moon"},
+}
+FEASTS = {("xianxia", 8, 15): "The Mid-Autumn moon", ("samurai", 8, 15): "The mid-autumn moon",
+          ("samurai", 9, 13): "The chestnut moon of the thirteenth night", ("xianxia", 1, 15): "The Lantern Festival moon",
+          ("xianxia", 7, 7): "The Double Seventh", ("samurai", 7, 7): "Tanabata"}
+
+def ordinal(n): return "%d%s" % (n, "th" if 10 <= n % 100 <= 20 else {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th"))
+
+CN = dt.timezone(dt.timedelta(hours=8))                 # the old calendar's days are kept at UTC+8
+
+def cday(j):  # Julian day -> calendar date at UTC+8
+    return dt.datetime.fromtimestamp((j - 2440587.5) * 86400, CN).date()
+
+def solstice(year):
+    """Julian day of the December solstice (sun at 270 degrees)."""
+    A = almanac()
+    lo = A.jd(dt.datetime(year, 12, 15, tzinfo=dt.timezone.utc).timestamp()); hi = lo + 14
+    for _ in range(40):
+        mid = (lo + hi) / 2
+        if (A.sun_longitude(mid) - 270 + 180) % 360 - 180 < 0: lo = mid
+        else: hi = mid
+    return lo
+
+def nm_on_or_before(j):
+    A = almanac(); a, _ = A.lunation(j)
+    if cday(_) <= cday(j): a = _
+    return a
+
+def lunar(j):
+    """(month 1..12, leap, day 1..30) of the old calendar for Julian day j."""
+    A = almanac(); d = cday(j); y = d.year
+    m11 = lambda yy: nm_on_or_before(solstice(yy))
+    a = m11(y)
+    if cday(a) > d: b = a; a = m11(y - 1)
+    else: b = m11(y + 1)
+    moons = [a]
+    while cday(moons[-1]) < cday(b):                   # the new moons from month 11 to the next month 11
+        moons.append(A.lunation(moons[-1] + 2)[1])
+    leap_at = None
+    if len(moons) - 1 == 13:                            # a leap year: the first month with no major term is the leap
+        def dawn(j):                                    # the start of that calendar day (UTC+8): terms count by the day
+            d0 = cday(j); return A.jd(dt.datetime(d0.year, d0.month, d0.day, tzinfo=CN).timestamp())
+        for i in range(len(moons) - 1):
+            if int(A.sun_longitude(dawn(moons[i])) // 30) == int(A.sun_longitude(dawn(moons[i + 1])) // 30):
+                leap_at = i; break
+    i = max(k for k in range(len(moons)) if cday(moons[k]) <= d)
+    n = i - (1 if leap_at is not None and i >= leap_at else 0)
+    month = (11 + n - 1) % 12 + 1
+    return month, (leap_at is not None and i == leap_at), (d - cday(moons[i])).days + 1
+
+# ---- where the moon is (Astronomical Almanac low-precision series: ~0.3 degrees, rise and set to a few minutes)
+def moon_radec(j):
+    T = (j - 2451545.0) / 36525; s = lambda a: math.sin(math.radians(a)); c = lambda a: math.cos(math.radians(a))
+    lam = (218.32 + 481267.881 * T + 6.29 * s(135.0 + 477198.87 * T) - 1.27 * s(259.3 - 413335.36 * T)
+           + 0.66 * s(235.7 + 890534.22 * T) + 0.21 * s(269.9 + 954397.74 * T) - 0.19 * s(357.5 + 35999.05 * T)
+           - 0.11 * s(186.5 + 966404.03 * T))
+    bet = (5.13 * s(93.3 + 483202.02 * T) + 0.28 * s(228.2 + 960400.89 * T) - 0.28 * s(318.3 + 6003.15 * T)
+           - 0.17 * s(217.6 - 407332.21 * T))
+    par = (0.9508 + 0.0518 * c(135.0 + 477198.87 * T) + 0.0095 * c(259.3 - 413335.36 * T)
+           + 0.0078 * c(235.7 + 890534.22 * T) + 0.0028 * c(269.9 + 954397.74 * T))
+    e = math.radians(23.439); L = math.radians(lam); B = math.radians(bet)
+    ra = math.atan2(math.sin(L) * math.cos(e) - math.tan(B) * math.sin(e), math.cos(L))
+    dec = math.asin(math.sin(B) * math.cos(e) + math.cos(B) * math.sin(e) * math.sin(L))
+    return ra, dec, par
+
+def altitude(j, lat, lon):
+    ra, dec, par = moon_radec(j)
+    gmst = math.radians((280.46061837 + 360.98564736629 * (j - 2451545.0)) % 360)
+    H = gmst + math.radians(lon) - ra; f = math.radians(lat)
+    alt = math.degrees(math.asin(math.sin(f) * math.sin(dec) + math.cos(f) * math.cos(dec) * math.cos(H)))
+    return alt - (0.7275 * par - 0.5667)               # above the horizon once positive (parallax, refraction, radius)
+
+def rise_set(t, lat, lon):
+    """moonrise and moonset in the local calendar day around t, as unix seconds (None when it does not happen)"""
+    A = almanac()
+    mid = time.mktime(dt.datetime.fromtimestamp(t).date().timetuple())
+    step = 600; rise = set_ = None
+    prev = altitude(A.jd(mid), lat, lon)
+    for k in range(1, 24 * 3600 // step + 1):
+        u = mid + k * step; cur = altitude(A.jd(u), lat, lon)
+        if (prev < 0) != (cur < 0):
+            lo, hi = u - step, u
+            for _ in range(12):                         # to the second, more or less
+                m = (lo + hi) / 2
+                if (altitude(A.jd(m), lat, lon) < 0) == (prev < 0): lo = m
+                else: hi = m
+            if prev < 0 and rise is None: rise = hi
+            elif prev >= 0 and set_ is None: set_ = hi
+        prev = cur
+    return rise, set_, altitude(A.jd(t), lat, lon) > 0
+
+def full_moon(k):
+    """Julian day of true full moon number k (k=0: 2000-01-21), Meeus ch. 49 full-moon terms (~minutes)."""
+    k = k + 0.5; T = k / 1236.85; r = math.radians
+    j = 2451550.09766 + almanac().SYNODIC * k + 0.00015437 * T * T
+    E = 1 - 0.002516 * T
+    M = r((2.5534 + 29.10535670 * k) % 360)
+    Mp = r((201.5643 + 385.81693528 * k + 0.0107582 * T * T) % 360)
+    F = r((160.7108 + 390.67050284 * k - 0.0016118 * T * T) % 360)
+    Om = r((124.7746 - 1.56375588 * k) % 360)
+    return j + (-0.40614 * math.sin(Mp) + 0.17302 * E * math.sin(M) + 0.01614 * math.sin(2 * Mp)
+                + 0.01043 * math.sin(2 * F) + 0.00734 * E * math.sin(Mp - M) - 0.00515 * E * math.sin(Mp + M)
+                + 0.00209 * E * E * math.sin(2 * M) - 0.00111 * math.sin(Mp - 2 * F) - 0.00057 * math.sin(Mp + 2 * F)
+                + 0.00056 * E * math.sin(2 * Mp + M) - 0.00042 * math.sin(3 * Mp) + 0.00042 * E * math.sin(M + 2 * F)
+                + 0.00038 * E * math.sin(M - 2 * F) - 0.00024 * E * math.sin(2 * Mp - M) - 0.00017 * math.sin(Om))
+
+def full_after(j):
+    """Julian day of the next full moon after j"""
+    k = math.floor((j - 2451550.09766) / almanac().SYNODIC) - 1
+    while full_moon(k) <= j: k += 1
+    return full_moon(k)
+
+def state(t=None):
+    A = almanac(); t = time.time() if t is None else t; j = A.jd(t)
+    th = theme(); xia = th == "xianxia"
+    m = A.almanac(t, th)["moon"]
+    p = A.place()
+    month, leap, day = lunar(j)
+    mname = MONTHS[th if th in MONTHS else "samurai"][month - 1]
+    night = FEASTS.get((th, month, day)) or NIGHTS[th if th in NIGHTS else "samurai"].get(day) or ("The %s night" % ordinal(day))
+    fj = full_after(j); fu = (fj - 2440587.5) * 86400
+    fmonth, fleap, fday = lunar(fj)
+    fname = FEASTS.get((th, fmonth, fday)) or "The full moon of the %s" % ("leap " if fleap else "") + MONTHS[th if th in MONTHS else "samurai"][fmonth - 1].replace("The ", "")
+    out = {"title": "The Moon Palace" if xia else "Moon Viewing", "phase": m["phase"], "illumination": m["illumination"],
+           "age_days": m["age_days"], "fraction": m["fraction"], "waxing": m["waxing"],
+           "south": bool(p and p["lat"] < 0), "place": p["name"] if p else "",
+           "month": month, "leap": leap, "day": day, "month_name": ("Leap " + mname.replace("The ", "") if leap else mname), "night": night,
+           "full": {"date": dt.datetime.fromtimestamp(fu).strftime("%a %-d %b"), "at": dt.datetime.fromtimestamp(fu).strftime("%H:%M"),
+                    "in_days": max(0, round((fu - t) / 86400, 1)), "name": fname},
+           "rise": None, "set": None, "up": None}
+    if p:
+        r, s, up = rise_set(t, p["lat"], p["lon"])
+        hm = lambda u: dt.datetime.fromtimestamp(u).strftime("%H:%M") if u else None
+        out.update(rise=hm(r), set=hm(s), up=up)
+    return out
+
+def text(s):
+    print(s["title"].upper())
+    print("%s, %d%% lit, %.1f days old" % (s["phase"], round(s["illumination"] * 100), s["age_days"]))
+    print("%s of the %s" % (s["night"], s["month_name"].replace("The ", "")) if "night" in s["night"] else
+          "%s, the %s night of the %s" % (s["night"], ordinal(s["day"]), s["month_name"].replace("The ", "")))
+    if s["place"]: print("Moonrise %s  ·  Moonset %s  over %s" % (s["rise"] or "none today", s["set"] or "none today", s["place"]))
+    print("Next full moon: %s %s (%s)" % (s["full"]["date"], s["full"]["at"], s["full"]["name"]))
+
+def open_card():
+    if os.environ.get("WAYLAND_DISPLAY") and subprocess.run(["pgrep", "-x", "qs"], capture_output=True).returncode == 0:
+        subprocess.run(["qs", "-c", "tenka", "ipc", "call", "moon", "toggle"], capture_output=True); return 0
+    if not os.environ.get("DISPLAY"): text(state()); return 0
+    lock = os.path.join(RT, "tenka-moon-card.pid")
+    try:                                                # asked again while open: close it
+        pid = int(open(lock).read().strip())
+        if b"LiteMoon.qml" not in open("/proc/%d/cmdline" % pid, "rb").read(): raise ValueError
+        os.kill(pid, 15); os.remove(lock); return 0
+    except (OSError, ValueError):
+        pass
+    facts = os.path.join(RT, "tenka-moon.json")
+    with open(facts, "w", encoding="utf-8") as f: json.dump(state(), f, ensure_ascii=False)
+    env = dict(os.environ, QML_XHR_ALLOW_FILE_READ="1", QT_QPA_PLATFORM="xcb")
+    p = subprocess.Popen(["/usr/lib/qt6/bin/qml", "/usr/share/tenka/moon/LiteMoon.qml", "--", facts, os.path.join(CONF, "shell-theme.json")],
+                         stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=env)
+    with open(lock, "w") as f: f.write(str(p.pid))
+    p.wait()
+    for f in (lock, facts):
+        try: os.remove(f)
+        except OSError: pass
+    return 0
+
+def main(a):
+    when, mode = None, "state"
+    for x in a:
+        if x in ("state", "text", "json"): mode = x
+        elif x == "open": return open_card()
+        elif x in ("-h", "--help", "help"): print(__doc__.strip()); return 0
+        else:
+            try: when = (dt.datetime.strptime(x, "%Y-%m-%dT%H:%M") if "T" in x else dt.datetime.strptime(x, "%Y-%m-%d").replace(hour=21)).timestamp()
+            except ValueError: print("tenka-moon: not a date (YYYY-MM-DD or YYYY-MM-DDTHH:MM): " + x, file=sys.stderr); return 2
+    if when is None and os.environ.get("TENKA_NOW"): when = float(os.environ["TENKA_NOW"])
+    s = state(when)
+    if mode == "text": text(s)
+    else: print(json.dumps(s, ensure_ascii=False))
+    return 0
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

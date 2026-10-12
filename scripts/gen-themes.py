@@ -424,6 +424,10 @@ def gen(name, T):
        soft drop shadow so it reads over any wallpaper. One tint per window, no patchwork of panes. No glow. ---- */
     /* GtkDialog windows are `dialog` nodes, not `window` (the settings manager, properties and file dialogs): the same glass */
     window.background:not(.xfce4-panel):not(.thunar), dialog.background {{ background-color: {gl_win}; background-image: linear-gradient(to bottom, {gl_frost}, transparent 40%); box-shadow: inset 0 1px {gl_lit}; color: {p['text']}; }}
+    /* message dialogs ("Replace this file?", "Delete permanently?") are `messagedialog` nodes, which neither rule above
+       reaches, so the base theme painted them a near-solid 98% slab. Same glass now; the answers keep their gold, the message takes the page's ink. */
+    messagedialog.background {{ background-color: {gl_win}; background-image: linear-gradient(to bottom, {gl_frost}, transparent 40%); box-shadow: inset 0 1px {gl_lit}; color: {p['text']}; }}
+    messagedialog.background box > label {{ color: {p['text']}; }}
     window.background:not(.xfce4-panel):not(.thunar) textview text, dialog.background textview text, window.background:not(.xfce4-panel):not(.thunar) .view:not(iconview), dialog.background .view:not(iconview) {{ background-color: {gl_view}; }}
     .sidebar {{ background-color: {gl_side}; color: {p['text']}; }}
     headerbar, .titlebar {{ background-color: {gl_head}; background-image: none; color: {p['text']}; box-shadow: none; border-bottom: 1px solid {rgba(p['accent2'], 0.18)}; }}

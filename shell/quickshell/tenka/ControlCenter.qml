@@ -261,12 +261,23 @@ PanelWindow {
     component Row2: Item {
         id: r2
         property string k: ""; property string v: ""; property bool on: false; property bool toggle: false; property bool last: false
+        property bool step: false   // the value is its own small control: a tap steps it, a hairline marks it
         signal hit()
+        signal stepped()
         width: parent ? parent.width : 0; height: 38
         Text { anchors.verticalCenter: parent.verticalCenter; text: r2.k; color: Theme.t.text; font.family: Theme.display; font.pixelSize: 16 }
         Row {
+            id: vrow
             anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter; spacing: 12
-            Text { anchors.verticalCenter: parent.verticalCenter; text: r2.v; color: Theme.alpha(Theme.t.text, 0.55); font.family: Theme.display; font.pixelSize: 13; font.letterSpacing: 1 }
+            Text { id: vt; anchors.verticalCenter: parent.verticalCenter; text: r2.v; font.family: Theme.display; font.pixelSize: 13; font.letterSpacing: 1
+                   color: r2.step && r2.v !== "" ? Theme.alpha(Theme.t.text, 0.75) : Theme.alpha(Theme.t.text, 0.55)
+                   Rectangle {   // a dotted hairline under a value that can be stepped
+                       visible: r2.step && r2.v !== ""; anchors.top: parent.bottom; anchors.topMargin: 3; width: parent.width; height: 1
+                       color: "transparent"
+                       Row { spacing: 2
+                             Repeater { model: Math.floor(vt.width / 4)
+                                        Rectangle { width: 2; height: 1; color: Theme.alpha(Theme.gold, 0.7) } } }
+                   } }
             Rectangle {   // the toggle: a small square, outlined when off, filled when on
                 visible: r2.toggle; anchors.verticalCenter: parent.verticalCenter
                 width: 11; height: 11; radius: Theme.xia ? 6 : 1; rotation: Theme.xia ? 0 : 45
@@ -276,6 +287,8 @@ PanelWindow {
         }
         Rectangle { visible: !r2.last; anchors.bottom: parent.bottom; width: parent.width; height: 1; color: Theme.alpha(Theme.t.text, 0.08) }
         MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: r2.hit() }
+        MouseArea { visible: r2.step && r2.v !== ""; x: vrow.x + vt.x - 8; width: vt.width + 16; height: parent.height
+                    cursorShape: Qt.PointingHandCursor; onClicked: r2.stepped() }
     }
     component Hair: Item {
         id: hs
@@ -363,8 +376,10 @@ PanelWindow {
                        on: cc.watch.on; toggle: true
                        onHit: { watchSet.command = ["tenka-watch", "toggle"]; watchSet.running = true } }
                 Row2 { k: Theme.xia ? "Rest the qi" : "The pause"; v: cc.pause.on ? "every " + cc.pause.every + " min" : ""
-                       on: cc.pause.on; toggle: true
-                       onHit: { pauseSet.command = ["tenka-breath", "pause", "toggle", "--say"]; pauseSet.running = true } }
+                       on: cc.pause.on; toggle: true; step: true
+                       onHit: { pauseSet.command = ["tenka-breath", "pause", "toggle", "--say"]; pauseSet.running = true }
+                       // a tap on "every 50 min" steps the stretch: 30, 45, 50, 60, 90, 120
+                       onStepped: { pauseSet.command = ["tenka-breath", "pause", "every", "next"]; pauseSet.running = true } }
                 // a tap goes off -> with the sun -> warm now -> off
                 Row2 { k: "Night ink"; v: !cc.ink.on ? "" : cc.ink.mode === "sun" && cc.ink.kelvin < 6500 ? cc.ink.kelvin + " K" : cc.inkWord.toLowerCase(); on: cc.ink.on; toggle: true
                        onHit: cc.inkCmd("cycle") }

@@ -12,6 +12,7 @@ The Pause (off until asked): after a long stretch at the desk, one quiet note of
   tenka-breath pause               whether it is kept, how often, and how long you have sat, as JSON
   tenka-breath pause on|off|toggle [--say]    keep it or let it rest (~/.config/tenka/pause.json)
   tenka-breath pause every MINUTES how long a stretch before the note (20-120, default 50)
+  tenka-breath pause every next [--say]  step to the next usual stretch (30 45 50 60 90 120)
   tenka-breath away | back         from hypridle: two minutes away from the desk start the stretch again
   tenka-breath run                 the session's watcher (one at a time; X11 reads its own idle time)
 """
@@ -226,6 +227,8 @@ def run():
         try: tick()
         except Exception: pass
 
+STEPS = (30, 45, 50, 60, 90, 120)
+
 def pause_cmd(a):
     d = pause_conf()
     if not a: print(json.dumps(pause_state())); return 0
@@ -234,8 +237,12 @@ def pause_cmd(a):
         if d["on"]: s = sat_read(); s["since"] = clock(); sat_write(s)
         if "--say" in a: say_pause(d)
         print(json.dumps(pause_state())); return 0
-    if a[0] == "every" and len(a) > 1 and a[1].isdigit() and 20 <= int(a[1]) <= 120:
-        d["every"] = int(a[1]); pause_write(d); print(json.dumps(pause_state())); return 0
+    if a[0] == "every" and len(a) > 1 and (a[1] == "next" or (a[1].isdigit() and 20 <= int(a[1]) <= 120)):
+        # "next" steps through the usual stretches, the way the Control Center row does
+        d["every"] = next((m for m in STEPS if m > d["every"]), STEPS[0]) if a[1] == "next" else int(a[1])
+        pause_write(d)
+        if "--say" in a: say_pause(d)
+        print(json.dumps(pause_state())); return 0
     print(__doc__.strip(), file=sys.stderr); return 2
 
 def main():

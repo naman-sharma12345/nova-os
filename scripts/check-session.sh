@@ -376,6 +376,9 @@ TENKA_NOW=7000 IDLE=200000 tp tick && [ -z "$(TENKA_NOW=9900 tp tick)" ] &&
 TENKA_NOW=10000 tp away && TENKA_NOW=13100 tp back && [ -z "$(TENKA_NOW=15000 tp tick)" ] &&
 echo '{"on": true}' > "$P2/.config/tenka/focus.json" && [ -z "$(TENKA_NOW=17000 tp tick)" ] && rm "$P2/.config/tenka/focus.json" &&
 tp pause every 25 | grep -q '"every": 25' && ! tp pause every 5 2>/dev/null &&
+# the stretch steps 25 -> 30 -> ... -> 120 -> 30 (the Control Center's dotted value, Lite's menu action)
+tp pause every next | grep -q '"every": 30' && tp pause every 120 >/dev/null && tp pause every next | grep -q '"every": 30' &&
+grep -q '"pause", "every", "next"' "$ROOT/shell/quickshell/tenka/ControlCenter.qml" && grep -q 'pause every next' "$ROOT/live/config/includes.chroot/usr/share/applications/tenka-breath.desktop" &&
 grep -q 'on-timeout = tenka-breath away' "$IC/etc/skel/.config/hypr/hypridle.conf" && grep -q 'on-resume = tenka-breath back' "$IC/etc/skel/.config/hypr/hypridle.conf" &&
 grep -q '^tenka-breath run' "$BIN/tenka-session" && grep -q 'setsid tenka-breath run' "$BIN/tenka-lite-apply" &&
 grep -q '"tenka-breath", "pause"' "$ROOT/shell/quickshell/tenka/ControlCenter.qml" && grep -q 'id: lfl' "$ROOT/shell/quickshell/tenka/ControlCenter.qml" || { echo "FAIL: the pause"; fail=1; }

@@ -7,8 +7,12 @@ Exec=tenka-breath open
 Icon=media-record-symbolic
 Categories=Utility;
 Keywords=breath;breathe;breathing;calm;relax;meditate;meditation;pause;enso;qi;mindful;
-Actions=pause;
+Actions=pause;often;
 
 [Desktop Action pause]
 Name=The pause: on or off
 Exec=tenka-breath pause toggle --say
+
+[Desktop Action often]
+Name=The pause: how often (30, 45, 50, 60, 90, 120 min)
+Exec=tenka-breath pause every next --say

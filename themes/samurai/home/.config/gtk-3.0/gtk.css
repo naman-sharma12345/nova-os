@@ -34,6 +34,9 @@ dialog.background > headerbar.titlebar, dialog.background > .titlebar { backgrou
 dialog.background > box > box > image.icon-dropshadow + label { font-family: "Cinzel Decorative"; font-size: 20px; letter-spacing: 1px; color: #efe6d6; }
 /* T22: the version line in Inter, so its figures read as figures (Marcellus set 0.1.0 as "O.I.O") */
 dialog.background > box > box > stack > box > label:first-child { font-family: "Inter"; font-size: 12px; letter-spacing: 1px; color: rgba(239, 230, 214, 0.66); }
+/* T22: GTK 3 sliders had no rule and kept the stock blue knob, and a list box was a near-solid grey slab */
+scale slider { background-color: #c9a35a; background-image: none; border: none; border-radius: 99px; min-width: 14px; min-height: 14px; margin: -5px; box-shadow: none; }
+list { background-color: rgba(10, 9, 8, 0.22); }
 dialog.background *:link, dialog.background label > link:link { color: #c9a35a; }
 dialog.background *:visited, dialog.background label > link:visited { color: rgba(201, 163, 90, 0.75); }
 dialog.background label > selection { background-color: rgba(201, 163, 90, 0.28); color: #efe6d6; }

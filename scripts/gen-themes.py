@@ -411,6 +411,10 @@ def gen(name, T):
     levelbar trough {{ background-color: {rgba(p['text'], 0.08)}; border-radius: 99px; border: none; }}
     levelbar block.filled, levelbar block.high, levelbar block.low {{ background-color: {p['accent2']}; border-radius: 99px; }}
     checkbutton check:checked, radiobutton radio:checked, check:checked, radio:checked {{ background-color: {p['accent']}; border-color: {p['accent']}; color: {p['base']}; }}
+    /* T22: GTK 4 paints checks, radios and knobs with a background-image, which beat the colours above, so the stock blue showed through; text selection and links were stock too */
+    checkbutton check:checked, checkbutton radio:checked, check:checked, radio:checked, switch slider, scale slider {{ background-image: none; }}
+    text > selection, text > selection:focus-within, entry > text > selection, textview > text > selection {{ background-color: {gl_sel}; color: {p['text']}; }}
+    link, link:link, button.link, button.link > label {{ color: {p['accent2']}; }}
     switch {{ background-color: {rgba(p['text'], 0.14)}; border: none; border-radius: 99px; }}
     switch:checked {{ background-color: {p['accent']}; }}
     switch slider {{ background-color: {p['text']}; border-radius: 99px; box-shadow: none; }}
@@ -481,6 +485,9 @@ def gen(name, T):
     dialog.background > box > box > image.icon-dropshadow + label {{ font-family: "Cinzel Decorative"; font-size: 20px; letter-spacing: 1px; color: {p['text']}; }}
     /* T22: the version line in Inter, so its figures read as figures (Marcellus set 0.1.0 as "O.I.O") */
     dialog.background > box > box > stack > box > label:first-child {{ font-family: "Inter"; font-size: 12px; letter-spacing: 1px; color: {rgba(p['text'], 0.66)}; }}
+    /* T22: GTK 3 sliders had no rule and kept the stock blue knob, and a list box was a near-solid grey slab */
+    scale slider {{ background-color: {p['accent2']}; background-image: none; border: none; border-radius: 99px; min-width: 14px; min-height: 14px; margin: -5px; box-shadow: none; }}
+    list {{ background-color: {gl_view}; }}
     dialog.background *:link, dialog.background label > link:link {{ color: {p['accent2']}; }}
     dialog.background *:visited, dialog.background label > link:visited {{ color: {rgba(p['accent2'], 0.75)}; }}
     dialog.background label > selection {{ background-color: {rgba(p['accent2'], 0.28)}; color: {p['text']}; }}

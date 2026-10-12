@@ -41,6 +41,10 @@ scale slider { background-color: #efe6d6; border: none; border-radius: 99px; min
 levelbar trough { background-color: rgba(239, 230, 214, 0.08); border-radius: 99px; border: none; }
 levelbar block.filled, levelbar block.high, levelbar block.low { background-color: #c9a35a; border-radius: 99px; }
 checkbutton check:checked, radiobutton radio:checked, check:checked, radio:checked { background-color: #d8412f; border-color: #d8412f; color: #0f0d0c; }
+/* T22: GTK 4 paints checks, radios and knobs with a background-image, which beat the colours above, so the stock blue showed through; text selection and links were stock too */
+checkbutton check:checked, checkbutton radio:checked, check:checked, radio:checked, switch slider, scale slider { background-image: none; }
+text > selection, text > selection:focus-within, entry > text > selection, textview > text > selection { background-color: rgba(216, 65, 47, 0.34); color: #efe6d6; }
+link, link:link, button.link, button.link > label { color: #c9a35a; }
 switch { background-color: rgba(239, 230, 214, 0.14); border: none; border-radius: 99px; }
 switch:checked { background-color: #d8412f; }
 switch slider { background-color: #efe6d6; border-radius: 99px; box-shadow: none; }

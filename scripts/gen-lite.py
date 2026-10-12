@@ -522,7 +522,8 @@ def terminal(name, T):
     ColorBold={p['text']}
     ColorBoldUseDefault=FALSE
     ColorPalette={';'.join(k[i] for i in range(16))}
-    BackgroundMode=TERMINAL_BACKGROUND_SOLID
+    BackgroundMode=TERMINAL_BACKGROUND_TRANSPARENT
+    BackgroundDarkness=0.80
     MiscBorderless=FALSE
     MiscMenubarDefault=FALSE
     MiscToolbarDefault=FALSE

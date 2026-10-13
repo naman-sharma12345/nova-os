@@ -105,6 +105,9 @@ libavif-gdk-pixbuf
 heif-gdk-pixbuf
 # video thumbnails in Thunar (tumbler reads its .thumbnailer); without it every .mp4/.mkv was a generic icon. ~0.3 MB, ffmpeg libs already ship with mpv
 ffmpegthumbnailer
+# gdk-pixbuf-thumbnailer: the per-file helper behind tenka-pixbuf.thumbnailer (AVIF/WebP/SVG/HEIF decoded one process
+# per file, so a decoder crash costs one thumbnail, not tumblerd's whole batch). 76 KB.
+libgdk-pixbuf2.0-bin
 # themed terminal + reader tools (configs from scripts/gen-themes.py)
 neovim
 bat

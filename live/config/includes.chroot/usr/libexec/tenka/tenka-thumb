@@ -1,0 +1,6 @@
+#!/bin/sh
+# Tenka: per-file thumbnail helper (tenka-pixbuf.thumbnailer). tumblerd runs with a loader list that leaves out
+# AVIF/HEIF/WebP/SVG (GDK_PIXBUF_MODULE_FILE from /run/tenka/tumbler.env); this process gets the full list, or the
+# no-AVIF one under emulation. If it crashes, only this file loses its thumbnail.
+if [ -n "${TENKA_THUMB_LOADERS:-}" ]; then export GDK_PIXBUF_MODULE_FILE="$TENKA_THUMB_LOADERS"; else unset GDK_PIXBUF_MODULE_FILE; fi
+exec /usr/bin/gdk-pixbuf-thumbnailer "$@"

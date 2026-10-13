@@ -1,0 +1,5 @@
+[Thumbnailer Entry]
+# Tenka: one helper process per file for the decoders tumblerd no longer loads itself (see tenka-session-default)
+TryExec=/usr/bin/gdk-pixbuf-thumbnailer
+Exec=/usr/libexec/tenka/tenka-thumb -s %s %u %o
+MimeType=image/avif;image/webp;image/svg+xml;image/svg+xml-compressed;image/heif;image/heic;image/heif-sequence;image/heic-sequence;

@@ -1,4 +1,6 @@
-# Tenka: the stock file, with one change (DesktopThumbnailer Priority 0 -> 4).
+# Tenka: the stock file, with two changes: DesktopThumbnailer Priority 0 -> 4, GstThumbnailer disabled (video goes
+# through tenka-video.thumbnailer, one ffmpegthumbnailer per file; the in-process GStreamer plugin made no thumbnails
+# here and would have been tumbler's in-process fallback after a crashed or killed helper).
 # Tumbler's in-process plugins share one process: one decoder crash (dav1d on an .avif, seen under emulation)
 # killed tumblerd and every thumbnail in the folder's batch. Formats that ship a .thumbnailer (AVIF, WebP, SVG,
 # HEIC, video) now run one helper process per file, so a crash costs that one file. JPEG and PNG stay on the fast
@@ -82,7 +84,7 @@ MaxFileSize=0
 
 # GStreamer plugin
 [GstThumbnailer]
-Disabled=false
+Disabled=true
 Priority=1
 Locations=
 Excludes=

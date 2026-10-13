@@ -6,8 +6,8 @@ mkdir -p /etc/default /etc/sysctl.d /etc/sddm.conf.d
 # ---------------------------------------------------------------- thumbnails
 # tenka-pixbuf.thumbnailer owns AVIF/WebP/SVG/HEIF (a helper process per file). Divert the stock files that call
 # gdk-pixbuf-thumbnailer directly: the catch-all one would push JPEG/PNG through a subprocess too, and the per-format
-# ones would run without the full loader list.
-for t in gdk-pixbuf-thumbnailer avif webp-pixbuf librsvg; do
+# ones would run without the full loader list. tenka-video.thumbnailer replaces ffmpegthumbnailer's with a 30 s timeout.
+for t in gdk-pixbuf-thumbnailer avif webp-pixbuf librsvg ffmpegthumbnailer; do
   f=/usr/share/thumbnailers/$t.thumbnailer
   if ! dpkg-divert --list "$f" | grep -q .; then dpkg-divert --quiet --local --rename --add --divert "$f.tenka-off" "$f"; fi
 done

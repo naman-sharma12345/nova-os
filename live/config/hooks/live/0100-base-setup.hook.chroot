@@ -12,6 +12,12 @@ for t in gdk-pixbuf-thumbnailer avif webp-pixbuf librsvg ffmpegthumbnailer; do
   if ! dpkg-divert --list "$f" | grep -q .; then dpkg-divert --quiet --local --rename --add --divert "$f.tenka-off" "$f"; fi
 done
 
+# ---------------------------------------------------------------- installer
+# includes.chroot carries Tenka's calamares-bootloader-config (works without a package pool on the ISO); divert without
+# --rename so a calamares-settings-debian upgrade writes its copy to .debian instead of over ours
+f=/usr/share/calamares/helpers/calamares-bootloader-config
+if ! dpkg-divert --list "$f" | grep -q .; then dpkg-divert --quiet --local --add --divert "$f.debian" "$f"; fi
+
 # ---------------------------------------------------------------- identity
 if [ ! -e /usr/lib/os-release.debian ]; then
   dpkg-divert --quiet --local --rename --add --divert /usr/lib/os-release.debian /usr/lib/os-release

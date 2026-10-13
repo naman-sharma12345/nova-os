@@ -9,8 +9,16 @@ if [ "$(systemd-detect-virt 2>/dev/null)" = qemu ]; then
   mkdir -p /etc/sddm.conf.d /etc/environment.d
   printf '[General]\nGreeterEnvironment=LP_NATIVE_VECTOR_WIDTH=128,GALLIUM_OVERRIDE_CPU_CAPS=sse4.1\n' > /etc/sddm.conf.d/30-tenka-emulated.conf
   printf 'LP_NATIVE_VECTOR_WIDTH=128\nGALLIUM_OVERRIDE_CPU_CAPS=sse4.1\n' > /etc/environment.d/95-tenka-emulated.conf
+  # tumblerd makes thumbnails in-process: an AVIF decode (dav1d's SIMD code) segfaulted it under emulation and took
+  # every thumbnail of that batch down with it (REAL-VM, a22ddfa nightly). Under emulation only, tumbler reads a loader
+  # list without AVIF (tumblerd.service.d/tenka-emulated.conf), so .avif files get an icon and the rest get thumbnails.
+  lc=$(ls /usr/lib/*/gdk-pixbuf-2.0/2.10.0/loaders.cache 2>/dev/null | head -1)
+  if [ -n "$lc" ]; then
+    awk 'BEGIN { RS = ""; ORS = "\n\n" } /libpixbufloader-avif\.so/ { next } { gsub(/ "image\/avif"/, ""); gsub(/ "avif"/, ""); print }' "$lc" > /run/tenka/loaders-noavif.cache
+    printf 'GDK_PIXBUF_MODULE_FILE=/run/tenka/loaders-noavif.cache\n' > /run/tenka/tumbler.env
+  fi
 else
-  rm -f /run/tenka/emulated /etc/sddm.conf.d/30-tenka-emulated.conf /etc/environment.d/95-tenka-emulated.conf
+  rm -f /run/tenka/emulated /etc/sddm.conf.d/30-tenka-emulated.conf /etc/environment.d/95-tenka-emulated.conf /run/tenka/tumbler.env /run/tenka/loaders-noavif.cache
 fi
 if [ "$mode" = lite ]; then sess=tenka-lite.desktop; else sess=tenka.desktop; fi
 # live session autologin (live-config writes /etc/sddm.conf)

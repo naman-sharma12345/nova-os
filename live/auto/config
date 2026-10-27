@@ -23,5 +23,5 @@ lb config noauto \
   --memtest none \
   --firmware-binary false --firmware-chroot false \
   --win32-loader false \
-  --bootappend-live "boot=live components quiet splash loglevel=0 rd.systemd.show_status=false systemd.show_status=false rd.udev.log_level=0 udev.log_priority=0 vt.global_cursor_default=0 plymouth.ignore-serial-consoles username=live user-fullname=Live hostname=${DISTRO_ID} locales=en_US.UTF-8 keyboard-layouts=us" \
+  --bootappend-live "boot=live components nomodeset loglevel=0 rd.systemd.show_status=false systemd.show_status=false rd.udev.log_level=0 udev.log_priority=0 vt.global_cursor_default=0 plymouth.ignore-serial-consoles username=live user-fullname=Live hostname=${DISTRO_ID} locales=en_US.UTF-8 keyboard-layouts=us" \
   "${@}"
